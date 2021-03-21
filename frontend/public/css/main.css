@@ -1,0 +1,14 @@
+.centered {
+  position: relative;
+  top: 50%;
+  left: 50%;
+  margin-top: -50px;
+  margin-left: -100px;
+}
+
+#canvas {
+  position: absolute;
+  height: auto;
+  width: 100%;
+  display: block;
+}

@@ -39,12 +39,17 @@
     ></script>
 
     <!-- JavaScript -->
-    <script src="./js/client.js"></script>
+    <script type="module" src="./js/client.js"></script>
   </head>
   <body>
-    <div class="page-header" style="margin-left: 2rem">
-      <h1>PhotoSpaces</h1>
+    <div class="container">
+      <div class="row">
+        <div class="page-header" style="margin-left: 2rem">
+          <h1>PhotoSpaces</h1>
+        </div>
+      </div>
+      <input class="centered" type="file" id="inputModel"></input>
+      <div class="row"><canvas id="canvas"></canvas></div>
     </div>
-    <input class="centered" type="file" id="model" onchange="saveModel(this)" />
   </body>
 </html>

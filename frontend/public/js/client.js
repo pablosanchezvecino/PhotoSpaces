@@ -1,8 +1,21 @@
 import * as THREE from "/build/three.module.js";
 import { OrbitControls } from "/jsm/controls/OrbitControls.js";
+import { PointerLockControls } from "/jsm/controls/PointerLockControls.js";
 import { GLTFLoader } from "/jsm/loaders/GLTFLoader.js";
 
 const inputField = document.getElementById("inputModel");
+const canvas = document.getElementById("canvas");
+
+let moveForward = false;
+let moveBackward = false;
+let moveLeft = false;
+let moveRight = false;
+let moveUp = false;
+let moveDown = false;
+const velocity = new THREE.Vector3();
+const direction = new THREE.Vector3();
+let prevTime = performance.now();
+let controls;
 
 const loadModel = async (file) => {
   const canvas = document.querySelector("#canvas");
@@ -15,12 +28,83 @@ const loadModel = async (file) => {
   const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
   camera.position.set(0, 0, 5);
 
-  const controls = new OrbitControls(camera, canvas);
-  controls.target.set(0, 0, 0);
-  controls.update();
-
   const scene = new THREE.Scene();
   scene.background = new THREE.Color("white");
+
+  {
+    controls = new PointerLockControls(camera, canvas);
+    scene.add(controls.getObject());
+
+    const onKeyDown = function (event) {
+      switch (event.code) {
+        case "ArrowUp":
+        case "KeyW":
+          moveForward = true;
+          break;
+
+        case "ArrowLeft":
+        case "KeyA":
+          moveLeft = true;
+          break;
+
+        case "ArrowDown":
+        case "KeyS":
+          moveBackward = true;
+          break;
+
+        case "ArrowRight":
+        case "KeyD":
+          moveRight = true;
+          break;
+
+        case "Space":
+          moveUp = true;
+          break;
+
+        case "ShiftLeft":
+          moveDown = true;
+          break;
+      }
+    };
+
+    const onKeyUp = function (event) {
+      switch (event.code) {
+        case "ArrowUp":
+        case "KeyW":
+          moveForward = false;
+          break;
+
+        case "ArrowLeft":
+        case "KeyA":
+          moveLeft = false;
+          break;
+
+        case "ArrowDown":
+        case "KeyS":
+          moveBackward = false;
+          break;
+
+        case "ArrowRight":
+        case "KeyD":
+          moveRight = false;
+          break;
+
+        case "Space":
+          moveUp = false;
+          break;
+
+        case "ShiftLeft":
+          moveDown = false;
+          break;
+      }
+    };
+
+    canvas.addEventListener("click", () => {
+      controls.isLocked ? controls.unlock() : controls.lock();
+    });
+    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("keyup", onKeyUp);
+  }
 
   {
     const skyColor = 0xb1e1ff; // light blue
@@ -44,21 +128,6 @@ const loadModel = async (file) => {
     gltfLoader.parse(file, "./", (gltf) => {
       const root = gltf.scene;
       scene.add(root);
-
-      // compute the box that contains all the stuff
-      // from root and below
-      const box = new THREE.Box3().setFromObject(root);
-
-      const boxSize = box.getSize(new THREE.Vector3()).length();
-      const boxCenter = box.getCenter(new THREE.Vector3());
-
-      // set the camera to frame the box
-      frameArea(boxSize * 0.5, boxSize, boxCenter, camera);
-
-      // update the Trackball controls to handle the new size
-      controls.maxDistance = boxSize * 10;
-      controls.target.copy(boxCenter);
-      controls.update();
     });
   }
 
@@ -80,9 +149,37 @@ const loadModel = async (file) => {
       camera.updateProjectionMatrix();
     }
 
-    renderer.render(scene, camera);
-
+    //renderer.render(scene, camera);
     requestAnimationFrame(render);
+
+    const time = performance.now();
+    if (controls.isLocked === true) {
+      const delta = (time - prevTime) / 1000;
+
+      velocity.x -= velocity.x * 5.0 * delta;
+      velocity.z -= velocity.z * 5.0 * delta;
+      velocity.y -= velocity.y * 5.0 * delta;
+
+      //velocity.y -= 9.8 * 100.0 * delta; // 100.0 = mass
+
+      direction.z = Number(moveForward) - Number(moveBackward);
+      direction.x = Number(moveRight) - Number(moveLeft);
+      direction.y = Number(moveDown) - Number(moveUp);
+      direction.normalize(); // this ensures consistent movements in all directions
+
+      if (moveForward || moveBackward)
+        velocity.z -= direction.z * 400.0 * delta;
+      if (moveLeft || moveRight) velocity.x -= direction.x * 400.0 * delta;
+      if (moveUp || moveDown) velocity.y -= direction.y * 400.0 * delta;
+
+      controls.moveRight(-velocity.x * delta);
+      controls.moveForward(-velocity.z * delta);
+
+      controls.getObject().position.y += velocity.y * delta; // new behavior
+    }
+    prevTime = time;
+
+    renderer.render(scene, camera);
   };
 
   requestAnimationFrame(render);
@@ -90,7 +187,6 @@ const loadModel = async (file) => {
 
 inputField.onchange = (event) => {
   const file = event.target.files[0];
-  const encoding = "ISO-8859-1";
 
   if (
     file.name.substring(file.name.length - 5, file.name.length) === ".gltf" ||

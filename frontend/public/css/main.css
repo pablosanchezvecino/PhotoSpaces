@@ -1,3 +1,7 @@
+body {
+  overflow: hidden;
+}
+
 .centered {
   position: relative;
   top: 50%;

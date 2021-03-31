@@ -1,10 +1,10 @@
 import * as THREE from "/build/three.module.js";
-import { OrbitControls } from "/jsm/controls/OrbitControls.js";
 import { PointerLockControls } from "/jsm/controls/PointerLockControls.js";
 import { GLTFLoader } from "/jsm/loaders/GLTFLoader.js";
 
 const inputField = document.getElementById("inputModel");
 const canvas = document.getElementById("canvas");
+const btnRender = document.getElementById("btnRender");
 
 let moveForward = false;
 let moveBackward = false;
@@ -12,30 +12,77 @@ let moveLeft = false;
 let moveRight = false;
 let moveUp = false;
 let moveDown = false;
+
+let speedMulti = 10.0;
+
 const velocity = new THREE.Vector3();
 const direction = new THREE.Vector3();
 let prevTime = performance.now();
 let controls;
 
+const sendModel = async (cam) => {
+  const formData = new FormData();
+  const model = inputField.files[0];
+
+  formData.append("model", model);
+
+  console.log(cam);
+
+  try {
+    const res = await fetch("http://localhost:3030/render", {
+      method: "POST",
+      body: formData,
+    });
+    console.log("HTTP response code:", res.status);
+  } catch (e) {
+    console.log(e);
+  }
+};
+
 const loadModel = async (file) => {
   const canvas = document.querySelector("#canvas");
   const renderer = new THREE.WebGLRenderer({ canvas });
-
-  const fov = 75;
-  const aspect = window.innerWidth / window.innerHeight; // the canvas default
-  const near = 0.1;
-  const far = 1000;
-  const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-  camera.position.set(0, 0, 5);
-
   const scene = new THREE.Scene();
+  let camera = new THREE.PerspectiveCamera(
+    75,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    1000
+  );
   scene.background = new THREE.Color("white");
+
+  {
+    const gltfLoader = new GLTFLoader();
+    gltfLoader.parse(file, "./", (gltf) => {
+      const root = gltf.scene;
+      const cameras = root.children.filter(
+        (obj) => obj.type === "PerspectiveCamera"
+      );
+      console.log(cameras);
+
+      if (cameras.length > 0) {
+        camera.position.x = cameras[0].parent.position.x;
+        camera.position.y = cameras[0].parent.position.y;
+        camera.position.z = cameras[0].parent.position.z;
+
+        camera.aspect = cameras[0].aspect;
+        camera.fov = cameras[0].fov;
+        camera.far = cameras[0].far;
+        camera.near = cameras[0].near;
+      }
+
+      scene.add(root);
+    });
+
+    btnRender.addEventListener("click", () => sendModel(camera));
+    btnRender.style.display = "block";
+  }
 
   {
     controls = new PointerLockControls(camera, canvas);
     scene.add(controls.getObject());
 
-    const onKeyDown = function (event) {
+    const onKeyDown = (event) => {
       switch (event.code) {
         case "ArrowUp":
         case "KeyW":
@@ -67,7 +114,7 @@ const loadModel = async (file) => {
       }
     };
 
-    const onKeyUp = function (event) {
+    const onKeyUp = (event) => {
       switch (event.code) {
         case "ArrowUp":
         case "KeyW":
@@ -99,8 +146,21 @@ const loadModel = async (file) => {
       }
     };
 
+    // event.deltaY => UP: - ; DOWN: +
+    const onScroll = (event) => {
+      if (event.deltaY > 0 && speedMulti < 200.0) {
+        speedMulti += 1.0;
+      } else if (event.deltaY < 0 && speedMulti > 1.0) {
+        speedMulti -= 1.0;
+      }
+    };
+
     canvas.addEventListener("click", () => {
       controls.isLocked ? controls.unlock() : controls.lock();
+    });
+
+    document.addEventListener("wheel", (e) => {
+      controls.isLocked ? onScroll(e) : null;
     });
     document.addEventListener("keydown", onKeyDown);
     document.addEventListener("keyup", onKeyUp);
@@ -123,14 +183,6 @@ const loadModel = async (file) => {
     scene.add(light.target);
   }
 
-  {
-    const gltfLoader = new GLTFLoader();
-    gltfLoader.parse(file, "./", (gltf) => {
-      const root = gltf.scene;
-      scene.add(root);
-    });
-  }
-
   function resizeRendererToDisplaySize(renderer) {
     const canvas = renderer.domElement;
     const width = canvas.clientWidth;
@@ -145,6 +197,9 @@ const loadModel = async (file) => {
   const render = () => {
     if (resizeRendererToDisplaySize(renderer)) {
       const canvas = renderer.domElement;
+
+      // Wait for the camera to load!
+      console.log(camera);
       camera.aspect = canvas.clientWidth / canvas.clientHeight;
       camera.updateProjectionMatrix();
     }
@@ -156,16 +211,14 @@ const loadModel = async (file) => {
     if (controls.isLocked === true) {
       const delta = (time - prevTime) / 1000;
 
-      velocity.x -= velocity.x * 5.0 * delta;
-      velocity.z -= velocity.z * 5.0 * delta;
-      velocity.y -= velocity.y * 5.0 * delta;
-
-      //velocity.y -= 9.8 * 100.0 * delta; // 100.0 = mass
+      velocity.x -= velocity.x * speedMulti * delta;
+      velocity.z -= velocity.z * speedMulti * delta;
+      velocity.y -= velocity.y * speedMulti * delta;
 
       direction.z = Number(moveForward) - Number(moveBackward);
       direction.x = Number(moveRight) - Number(moveLeft);
       direction.y = Number(moveDown) - Number(moveUp);
-      direction.normalize(); // this ensures consistent movements in all directions
+      direction.normalize();
 
       if (moveForward || moveBackward)
         velocity.z -= direction.z * 400.0 * delta;
@@ -184,6 +237,8 @@ const loadModel = async (file) => {
 
   requestAnimationFrame(render);
 };
+
+btnRender.style.display = "none";
 
 inputField.onchange = (event) => {
   const file = event.target.files[0];

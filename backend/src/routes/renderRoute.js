@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const service = require("../services/modelService");
+const service = require("../services/renderService");
 
 router.post("/", service.upload);
 /*

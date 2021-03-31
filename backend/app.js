@@ -45,9 +45,9 @@ app.use((req, res, next) => {
 
 /* Routes */
 const root = "./src/routes";
-const routes = require(root + "/modelRoute");
+const routes = require(root + "/renderRoute");
 
-app.use("/model", routes);
+app.use("/render", routes);
 
 /*Error Route*/
 

@@ -1,18 +1,21 @@
 import * as THREE from "/build/three.module.js";
 import { PointerLockControls } from "/jsm/controls/PointerLockControls.js";
 import { GLTFLoader } from "/jsm/loaders/GLTFLoader.js";
+import { GLTFExporter } from "/jsm/exporters/GLTFExporter.js";
 
+// HTML Elements
 const inputField = document.getElementById("inputModel");
 const canvas = document.getElementById("canvas");
 const btnRender = document.getElementById("btnRender");
+const renderDiv = document.getElementById("renderDiv");
 
+// Movement var.
 let moveForward = false;
 let moveBackward = false;
 let moveLeft = false;
 let moveRight = false;
 let moveUp = false;
 let moveDown = false;
-
 let speedMulti = 10.0;
 
 const velocity = new THREE.Vector3();
@@ -20,13 +23,41 @@ const direction = new THREE.Vector3();
 let prevTime = performance.now();
 let controls;
 
+// Scene
+const scene = new THREE.Scene();
+
+// Send the model to backend
 const sendModel = async (cam) => {
+  const exporter = new GLTFExporter();
   const formData = new FormData();
-  const model = inputField.files[0];
+  const quaternion = new THREE.Quaternion();
+  quaternion.setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2);
+  const newQ = quaternion.multiply(cam.quaternion);
+  const camData = {
+    lens: cam.getFocalLength(),
+    clip_start: cam.near,
+    clip_end: cam.far,
+    location_x: cam.position.x,
+    location_y: -cam.position.z,
+    location_z: cam.position.y,
+    qua_w: newQ.w,
+    qua_x: newQ.x,
+    qua_y: newQ.y,
+    qua_z: newQ.z,
+  };
+
+  let model;
+  // Parse the input and generate the glTF output
+  exporter.parse(
+    scene,
+    function (gltf) {
+      model = gltf;
+    },
+    {}
+  );
 
   formData.append("model", model);
-
-  console.log(cam);
+  formData.append("data", JSON.stringify(camData));
 
   try {
     const res = await fetch("http://localhost:3030/render", {
@@ -39,10 +70,165 @@ const sendModel = async (cam) => {
   }
 };
 
+const addModelToScene = (file, camera) => {
+  const gltfLoader = new GLTFLoader();
+  gltfLoader.parse(file, "./", (gltf) => {
+    const root = gltf.scene;
+    const cameras = root.children.filter(
+      (obj) => obj.type === "PerspectiveCamera"
+    );
+
+    if (cameras.length > 0) {
+      camera.position.set(
+        cameras[0].position.x,
+        cameras[0].position.y,
+        cameras[0].position.z
+      );
+      camera.rotation.set(
+        cameras[0].rotation.x,
+        cameras[0].rotation.y,
+        cameras[0].rotation.z
+      );
+
+      camera.aspect = cameras[0].aspect;
+      camera.fov = cameras[0].fov;
+      camera.far = cameras[0].far;
+      camera.near = cameras[0].near;
+    }
+    camera.updateProjectionMatrix();
+
+    scene.add(root);
+  });
+};
+
+const initializeControls = (camera) => {
+  controls = new PointerLockControls(camera, canvas);
+  scene.add(controls.getObject());
+
+  const onKeyDown = (event) => {
+    switch (event.code) {
+      case "ArrowUp":
+      case "KeyW":
+        moveForward = true;
+        break;
+
+      case "ArrowLeft":
+      case "KeyA":
+        moveLeft = true;
+        break;
+
+      case "ArrowDown":
+      case "KeyS":
+        moveBackward = true;
+        break;
+
+      case "ArrowRight":
+      case "KeyD":
+        moveRight = true;
+        break;
+
+      case "Space":
+        moveUp = true;
+        break;
+
+      case "ShiftLeft":
+        moveDown = true;
+        break;
+    }
+  };
+
+  const onKeyUp = (event) => {
+    switch (event.code) {
+      case "ArrowUp":
+      case "KeyW":
+        moveForward = false;
+        break;
+
+      case "ArrowLeft":
+      case "KeyA":
+        moveLeft = false;
+        break;
+
+      case "ArrowDown":
+      case "KeyS":
+        moveBackward = false;
+        break;
+
+      case "ArrowRight":
+      case "KeyD":
+        moveRight = false;
+        break;
+
+      case "Space":
+        moveUp = false;
+        break;
+
+      case "ShiftLeft":
+        moveDown = false;
+        break;
+    }
+  };
+
+  // event.deltaY => UP: - ; DOWN: +
+  const onScroll = (event) => {
+    if (event.deltaY > 0 && speedMulti < 200.0) {
+      speedMulti += 1.0;
+    } else if (event.deltaY < 0 && speedMulti > 1.0) {
+      speedMulti -= 1.0;
+    }
+  };
+
+  canvas.addEventListener("click", () => {
+    controls.isLocked ? controls.unlock() : controls.lock();
+  });
+
+  btnRender.addEventListener("click", () => sendModel(camera));
+  renderDiv.style.display = "block";
+
+  document.addEventListener("wheel", (e) => {
+    controls.isLocked ? onScroll(e) : null;
+  });
+  document.addEventListener("keydown", onKeyDown);
+  document.addEventListener("keyup", onKeyUp);
+};
+
+// Only directional, point and spot lights are supported
+const addLightToScene = () => {
+  const skyColor = 0xb1e1ff; // light blue
+  const groundColor = 0xb97a20; // brownish orange
+  const intensity = 1;
+  const hemisphereLight = new THREE.HemisphereLight(
+    skyColor,
+    groundColor,
+    intensity
+  );
+  const color = 0xffffff;
+  const directionalLight = new THREE.DirectionalLight(color, intensity);
+  directionalLight.position.set(5, 10, 2);
+
+  scene.add(hemisphereLight);
+  scene.add(directionalLight);
+  scene.add(directionalLight.target);
+};
+
+const resizeRendererToDisplaySize = (renderer) => {
+  const canvas = renderer.domElement;
+  const width = canvas.clientWidth;
+  const height = canvas.clientHeight;
+  const needResize = canvas.width !== width || canvas.height !== height;
+  if (needResize) {
+    renderer.setSize(width, height, false);
+  }
+  return needResize;
+};
+
+// Load the model into the visualizer
 const loadModel = async (file) => {
-  const canvas = document.querySelector("#canvas");
-  const renderer = new THREE.WebGLRenderer({ canvas });
-  const scene = new THREE.Scene();
+  const renderer = new THREE.WebGLRenderer({
+    canvas,
+    antialias: true,
+    alpha: true,
+  });
   let camera = new THREE.PerspectiveCamera(
     75,
     window.innerWidth / window.innerHeight,
@@ -51,160 +237,25 @@ const loadModel = async (file) => {
   );
   scene.background = new THREE.Color("white");
 
-  {
-    const gltfLoader = new GLTFLoader();
-    gltfLoader.parse(file, "./", (gltf) => {
-      const root = gltf.scene;
-      const cameras = root.children.filter(
-        (obj) => obj.type === "PerspectiveCamera"
-      );
-      console.log(cameras);
+  // Load the model
+  addModelToScene(file, camera);
 
-      if (cameras.length > 0) {
-        camera.position.x = cameras[0].parent.position.x;
-        camera.position.y = cameras[0].parent.position.y;
-        camera.position.z = cameras[0].parent.position.z;
+  // Initialize the controls
+  initializeControls(camera);
 
-        camera.aspect = cameras[0].aspect;
-        camera.fov = cameras[0].fov;
-        camera.far = cameras[0].far;
-        camera.near = cameras[0].near;
-      }
+  // Light into the scene
+  addLightToScene();
 
-      scene.add(root);
-    });
-
-    btnRender.addEventListener("click", () => sendModel(camera));
-    btnRender.style.display = "block";
-  }
-
-  {
-    controls = new PointerLockControls(camera, canvas);
-    scene.add(controls.getObject());
-
-    const onKeyDown = (event) => {
-      switch (event.code) {
-        case "ArrowUp":
-        case "KeyW":
-          moveForward = true;
-          break;
-
-        case "ArrowLeft":
-        case "KeyA":
-          moveLeft = true;
-          break;
-
-        case "ArrowDown":
-        case "KeyS":
-          moveBackward = true;
-          break;
-
-        case "ArrowRight":
-        case "KeyD":
-          moveRight = true;
-          break;
-
-        case "Space":
-          moveUp = true;
-          break;
-
-        case "ShiftLeft":
-          moveDown = true;
-          break;
-      }
-    };
-
-    const onKeyUp = (event) => {
-      switch (event.code) {
-        case "ArrowUp":
-        case "KeyW":
-          moveForward = false;
-          break;
-
-        case "ArrowLeft":
-        case "KeyA":
-          moveLeft = false;
-          break;
-
-        case "ArrowDown":
-        case "KeyS":
-          moveBackward = false;
-          break;
-
-        case "ArrowRight":
-        case "KeyD":
-          moveRight = false;
-          break;
-
-        case "Space":
-          moveUp = false;
-          break;
-
-        case "ShiftLeft":
-          moveDown = false;
-          break;
-      }
-    };
-
-    // event.deltaY => UP: - ; DOWN: +
-    const onScroll = (event) => {
-      if (event.deltaY > 0 && speedMulti < 200.0) {
-        speedMulti += 1.0;
-      } else if (event.deltaY < 0 && speedMulti > 1.0) {
-        speedMulti -= 1.0;
-      }
-    };
-
-    canvas.addEventListener("click", () => {
-      controls.isLocked ? controls.unlock() : controls.lock();
-    });
-
-    document.addEventListener("wheel", (e) => {
-      controls.isLocked ? onScroll(e) : null;
-    });
-    document.addEventListener("keydown", onKeyDown);
-    document.addEventListener("keyup", onKeyUp);
-  }
-
-  {
-    const skyColor = 0xb1e1ff; // light blue
-    const groundColor = 0xb97a20; // brownish orange
-    const intensity = 1;
-    const light = new THREE.HemisphereLight(skyColor, groundColor, intensity);
-    scene.add(light);
-  }
-
-  {
-    const color = 0xffffff;
-    const intensity = 1;
-    const light = new THREE.DirectionalLight(color, intensity);
-    light.position.set(5, 10, 2);
-    scene.add(light);
-    scene.add(light.target);
-  }
-
-  function resizeRendererToDisplaySize(renderer) {
-    const canvas = renderer.domElement;
-    const width = canvas.clientWidth;
-    const height = canvas.clientHeight;
-    const needResize = canvas.width !== width || canvas.height !== height;
-    if (needResize) {
-      renderer.setSize(width, height, false);
-    }
-    return needResize;
-  }
+  // Resize
+  resizeRendererToDisplaySize(renderer);
 
   const render = () => {
     if (resizeRendererToDisplaySize(renderer)) {
       const canvas = renderer.domElement;
-
-      // Wait for the camera to load!
-      console.log(camera);
       camera.aspect = canvas.clientWidth / canvas.clientHeight;
       camera.updateProjectionMatrix();
     }
 
-    //renderer.render(scene, camera);
     requestAnimationFrame(render);
 
     const time = performance.now();
@@ -238,14 +289,14 @@ const loadModel = async (file) => {
   requestAnimationFrame(render);
 };
 
-btnRender.style.display = "none";
-
+// HTML Events
 inputField.onchange = (event) => {
   const file = event.target.files[0];
 
   if (
-    file.name.substring(file.name.length - 5, file.name.length) === ".gltf" ||
-    file.name.substring(file.name.length - 4, file.name.length) === ".glb"
+    file &&
+    (file.name.substring(file.name.length - 5, file.name.length) === ".gltf" ||
+      file.name.substring(file.name.length - 4, file.name.length) === ".glb")
   ) {
     // create a file reader
     const reader = new FileReader();

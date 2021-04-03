@@ -40,19 +40,42 @@
 
     <!-- JavaScript -->
     <script type="module" src="./js/client.js"></script>
-    <script  src="./js/utils.js"></script>
+    <script src="./js/utils.js"></script>
   </head>
   <body>
-    <div class="container">
-      <div class="row">
-        <div class="page-header" style="margin-left: 2rem">
-          <h1>PhotoSpaces</h1>
-          <button id="btnRender">Render!</button>
+    <div class="wrapper">
+      <!-- Sidebar -->
+      <nav id="sidebar">
+        <div id="sidebar-header">
+          <h3>PhotoSpaces</h3>
         </div>
-      </div>
-      <input class="centered" type="file" id="inputModel"></input>
-      
-      <div class="row"><canvas id="canvas"></canvas></div>
+        <div class="row row-border">
+          <div class="centered">
+            <p style="font-size: 1.5rem">Upload model:</p>
+            <input type="file" id="inputModel" />
+            <label type="primary" for="inputModel">Choose a file</label>
+          </div>
+        </div>
+        <div id="renderDiv" class="row row-border" style="display: none">
+          <div class="centered">
+            <p style="font-size: 1.5rem; font-weight: bold;">Instructions:</p>
+            <p style="font-size: 1.5rem">
+              Left Click: Lock controls</br>
+              W: Move forward</br>
+              S: Move backwards</br>
+              A: Move right</br>
+              D: Move left</br>
+              Scroll Up: Speed Up</br>
+              Scroll Down: Speed Down</br>
+            </p>
+            <button id="btnRender">Render!</button>
+          </div>
+        </div>
+      </nav>
+    </div>
+    <!-- Page Content -->
+    <div id="content">
+      <canvas id="canvas"></canvas>
     </div>
   </body>
 </html>

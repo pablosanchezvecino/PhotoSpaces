@@ -2,6 +2,7 @@
 import bpy
 import sys
 import mathutils
+import os
 
 argv_length = len(sys.argv)
 
@@ -13,8 +14,10 @@ for obj in list(bpy.data.objects):
     bpy.data.objects.remove(obj)
 
 # Import .glb/.gltf model
+publicFolder = os.path.abspath(os.getcwd()) + "\\public\\uploads\\"
+
 bpy.ops.import_scene.gltf(
-    filepath="C:\\Users\\Jose\\Documents\\Clase\\4o Año\\2o Semestre\\TFG\\Resources\\Scenes\\escena_completa.glb")
+    filepath=publicFolder+sys.argv[argv_length-11]+".gltf")
 
 # Create a new camera
 camera_data = bpy.data.cameras.new(name="Camera")
@@ -55,5 +58,6 @@ bpy.context.scene.collection.objects.link(camera_object)
 bpy.context.scene.camera = camera_object
 
 
-bpy.context.scene.render.filepath = "C:\\Users\\Jose\\Documents\\Clase\\4o Año\\2o Semestre\\TFG\\Resources\\Scenes\\test.png"
+bpy.context.scene.render.filepath = publicFolder + \
+    sys.argv[argv_length-11] + ".png"
 bpy.ops.render.render(write_still=True)

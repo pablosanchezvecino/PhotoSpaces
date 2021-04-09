@@ -2,33 +2,13 @@ const express = require("express");
 const app = express();
 const port = process.env.PORT || 3030;
 const morgan = require("morgan");
-const formData = require("express-form-data");
-const os = require("os");
-const bodyParser = require("body-parser");
+const fileUpload = require("express-fileupload");
 
 /* Middleware */
 app.use(morgan("dev"));
 
-// for parsing application/json
-app.use(bodyParser.json());
-
-// for parsing application/xwww-
-app.use(bodyParser.urlencoded({ extended: false }));
-
-// for parsing multipart/form-data
-// parse data with connect-multiparty.
-app.use(
-  formData.parse({
-    uploadDir: os.tmpdir(),
-    autoClean: true,
-  })
-);
-// delete from the request all empty files (size == 0)
-app.use(formData.format());
-// change the file objects to fs.ReadStream
-app.use(formData.stream());
-// union the body and the files
-app.use(formData.union());
+// For form data
+app.use(fileUpload());
 
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");

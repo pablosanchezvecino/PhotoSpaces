@@ -46,28 +46,30 @@ const sendModel = async (cam) => {
     qua_z: newQ.z,
   };
 
-  let model;
   // Parse the input and generate the glTF output
   exporter.parse(
     scene,
-    function (gltf) {
-      model = gltf;
+    async (gltf) => {
+      formData.append(
+        "model",
+        new Blob([JSON.stringify(gltf, null, 2)], { type: "text/plain" })
+      );
+      formData.append("data", JSON.stringify(camData));
+
+      try {
+        const res = await fetch("http://localhost:3030/render", {
+          method: "POST",
+          body: formData,
+        });
+        console.log("HTTP response code:", res.status);
+      } catch (e) {
+        console.log(e);
+      }
     },
-    {}
+    {
+      //binary: true
+    }
   );
-
-  formData.append("model", model);
-  formData.append("data", JSON.stringify(camData));
-
-  try {
-    const res = await fetch("http://localhost:3030/render", {
-      method: "POST",
-      body: formData,
-    });
-    console.log("HTTP response code:", res.status);
-  } catch (e) {
-    console.log(e);
-  }
 };
 
 const addModelToScene = (file, camera) => {

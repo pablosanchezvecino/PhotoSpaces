@@ -2,7 +2,7 @@ const renderFacade = require("../dao/renderFacade");
 
 exports.upload = async (req, res, next) => {
   try {
-    res.status(201).json(await renderFacade.upload(req.body));
+    res.status(201).json(await renderFacade.upload(req.body, req.files.model));
   } catch (e) {
     next(e);
   }

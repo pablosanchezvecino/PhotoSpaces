@@ -14,7 +14,7 @@ for obj in list(bpy.data.objects):
     bpy.data.objects.remove(obj)
 
 # Import .glb/.gltf model
-publicFolder = os.path.abspath(os.getcwd()) + "\\public\\uploads\\"
+publicFolder = os.path.abspath(os.getcwd()) + "\\public\\"
 
 bpy.ops.import_scene.gltf(
     filepath=publicFolder+sys.argv[argv_length-11]+".gltf")

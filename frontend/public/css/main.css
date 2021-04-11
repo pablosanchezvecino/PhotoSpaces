@@ -13,7 +13,7 @@ body {
 }
 
 .row-border {
-  width: 26.5rem;
+  width: 20.9rem;
   border-bottom: 0.1rem solid #ccc;
 }
 
@@ -21,8 +21,8 @@ body {
   background: #fff;
   color: #000;
   transition: all 0.3s;
-  min-width: 25rem;
-  max-width: 25rem;
+  min-width: 20rem;
+  max-width: 20rem;
   height: 100vh;
   border-right: 0.1rem solid #ccc;
 }
@@ -37,12 +37,11 @@ body {
 }
 
 #inputModel + label {
-  font-size: 1.5rem;
   color: white;
   background-color: rgb(155, 0, 147);
   display: inline-block;
   cursor: pointer;
-  border-radius: 1rem;
+  border-radius: 0.25rem;
   padding: 0.5rem;
 }
 
@@ -51,8 +50,23 @@ body {
   background-color: rgb(105, 0, 100);
 }
 
+#btnRender,
+#btnLoading {
+  color: white;
+  background-color: rgb(155, 0, 147);
+}
+
+#btnRender:focus,
+#btnRender:hover {
+  background-color: rgb(105, 0, 100);
+}
+
+#btnLoading {
+  cursor: default;
+}
+
 #content {
-  width: calc(100% - 250px);
+  width: calc(100% - 20rem);
   min-height: 100vh;
   transition: all 0.3s;
   position: absolute;

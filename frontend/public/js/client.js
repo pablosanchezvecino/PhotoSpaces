@@ -7,7 +7,12 @@ import { GLTFExporter } from "/jsm/exporters/GLTFExporter.js";
 const inputField = document.getElementById("inputModel");
 const canvas = document.getElementById("canvas");
 const btnRender = document.getElementById("btnRender");
+const btnLoading = document.getElementById("btnLoading");
+btnLoading.style.display = "none";
 const renderDiv = document.getElementById("renderDiv");
+const link = document.createElement("a");
+link.style.display = "none";
+document.body.appendChild(link);
 
 // Movement var.
 let moveForward = false;
@@ -25,6 +30,37 @@ let controls;
 
 // Scene
 const scene = new THREE.Scene();
+
+// Options controls
+const options = {
+  camera: {
+    fov: 75,
+  },
+};
+
+const downloadImage = (body) => {
+  const fileCN = inputField.files[0].name;
+  const fileName =
+    fileCN.substring(fileCN.length - 5, fileCN.length) === ".gltf"
+      ? fileCN.substring(0, fileCN.length - 5)
+      : fileCN.substring(fileCN.length - 4, fileCN.length) === ".glb"
+      ? fileCN.substring(0, fileCN.length - 4)
+      : "undefined";
+  const fileStream = body.getReader();
+  let chunks = [];
+  fileStream
+    .read()
+    .then(function processData({ done, value }) {
+      if (done) return;
+      chunks.push(value);
+      return fileStream.read().then(processData);
+    })
+    .then(() => {
+      link.href = URL.createObjectURL(new Blob(chunks, { type: "image/png" }));
+      link.download = `${fileName}.png`;
+      link.click();
+    });
+};
 
 // Send the model to backend
 const sendModel = async (cam) => {
@@ -57,11 +93,15 @@ const sendModel = async (cam) => {
       formData.append("data", JSON.stringify(camData));
 
       try {
+        btnRender.style.display = "none";
+        btnLoading.style.display = "block";
         const res = await fetch("http://localhost:3030/render", {
           method: "POST",
           body: formData,
         });
-        console.log("HTTP response code:", res.status);
+        btnLoading.style.display = "none";
+        btnRender.style.display = "block";
+        downloadImage(res.body);
       } catch (e) {
         console.log(e);
       }
@@ -72,7 +112,7 @@ const sendModel = async (cam) => {
   );
 };
 
-const addModelToScene = (file, camera) => {
+const addModelToScene = (file, camera, render) => {
   const gltfLoader = new GLTFLoader();
   gltfLoader.parse(file, "./", (gltf) => {
     const root = gltf.scene;
@@ -100,6 +140,14 @@ const addModelToScene = (file, camera) => {
     camera.updateProjectionMatrix();
 
     scene.add(root);
+
+    // Initialize controls
+    initializeControls(camera);
+
+    // Light into the scene
+    addLightToScene();
+
+    requestAnimationFrame(render);
   });
 };
 
@@ -225,32 +273,18 @@ const resizeRendererToDisplaySize = (renderer) => {
 };
 
 // Load the model into the visualizer
-const loadModel = async (file) => {
+const loadModel = (file) => {
   const renderer = new THREE.WebGLRenderer({
     canvas,
     antialias: true,
     alpha: true,
   });
-  let camera = new THREE.PerspectiveCamera(
+  const camera = new THREE.PerspectiveCamera(
     75,
     window.innerWidth / window.innerHeight,
     0.1,
     1000
   );
-  scene.background = new THREE.Color("white");
-
-  // Load the model
-  addModelToScene(file, camera);
-
-  // Initialize the controls
-  initializeControls(camera);
-
-  // Light into the scene
-  addLightToScene();
-
-  // Resize
-  resizeRendererToDisplaySize(renderer);
-
   const render = () => {
     if (resizeRendererToDisplaySize(renderer)) {
       const canvas = renderer.domElement;
@@ -288,7 +322,16 @@ const loadModel = async (file) => {
     renderer.render(scene, camera);
   };
 
-  requestAnimationFrame(render);
+  scene.background = new THREE.Color("white");
+
+  // Load the model
+  addModelToScene(file, camera, render);
+
+  var gui = new dat.GUI();
+
+  var cam = gui.addFolder("Camera");
+  cam.add(options.camera, "fov", 10, 150).listen();
+  cam.open();
 };
 
 // HTML Events

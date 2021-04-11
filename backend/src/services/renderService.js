@@ -2,7 +2,22 @@ const renderFacade = require("../dao/renderFacade");
 
 exports.upload = async (req, res, next) => {
   try {
-    res.status(201).json(await renderFacade.upload(req.body, req.files.model));
+    console.log("Processing model...");
+
+    const fileName = await renderFacade.upload(req.body, req.files.model);
+    const options = {
+      root: "./public/",
+      dotfiles: "deny",
+      headers: {
+        "x-timestamp": Date.now(),
+        "x-sent": true,
+      },
+    };
+
+    res.status(201).sendFile(`${fileName}.png`, options, (err) => {
+      if (err) throw err;
+      else renderFacade.deleteTempFiles(fileName);
+    });
   } catch (e) {
     next(e);
   }

@@ -1,81 +1,81 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>PhotoSpaces</title>
 
-    <!-- Icon -->
-    <link rel="icon" href="./img/favicon.ico" />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <title>PhotoSpaces</title>
 
-    <!-- CSS -->
-    <link rel="stylesheet" href="./css/main.css" />
+  <!-- Icon -->
+  <link rel="icon" href="./img/favicon.ico" />
 
-    <!-- JQuery -->
-    <script
-      src="https://code.jquery.com/jquery-3.6.0.js"
-      integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk="
-      crossorigin="anonymous"
-    ></script>
+  <!-- CSS -->
+  <link rel="stylesheet" href="./css/main.css" />
 
-    <!-- Bootstrap -->
-    <link
-      rel="stylesheet"
-      href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"
-      integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu"
-      crossorigin="anonymous"
-    />
-    <link
-      rel="stylesheet"
-      href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap-theme.min.css"
-      integrity="sha384-6pzBo3FDv/PJ8r2KRkGHifhEocL+1X2rVCTTkUfGk7/0pbek5mMa1upzvWbrUbOZ"
-      crossorigin="anonymous"
-    />
-    <script
-      src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"
-      integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd"
-      crossorigin="anonymous"
-    ></script>
+  <!-- JQuery -->
+  <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk="
+    crossorigin="anonymous"></script>
 
-    <!-- JavaScript -->
-    <script type="module" src="./js/client.js"></script>
-    <script src="./js/utils.js"></script>
-  </head>
-  <body>
-    <div class="wrapper">
-      <!-- Sidebar -->
-      <nav id="sidebar">
-        <div id="sidebar-header">
-          <h3>PhotoSpaces</h3>
+  <!-- Bootstrap -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+    integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+  <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+    integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+    crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+    integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+    crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+    integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+    crossorigin="anonymous"></script>
+
+  <!-- JavaScript -->
+  <script type="module" src="./js/client.js"></script>
+  <script src="./js/utils.js"></script>
+</head>
+
+<body>
+  <div class="wrapper">
+    <!-- Sidebar -->
+    <nav id="sidebar">
+      <div id="sidebar-header">
+        <h3>PhotoSpaces</h3>
+      </div>
+      <div class="row row-border">
+        <div class="centered">
+          <p>Upload model:</p>
+          <input type="file" id="inputModel" />
+          <label type="primary" for="inputModel">Choose a file</label>
         </div>
-        <div class="row row-border">
-          <div class="centered">
-            <p style="font-size: 1.5rem">Upload model:</p>
-            <input type="file" id="inputModel" />
-            <label type="primary" for="inputModel">Choose a file</label>
-          </div>
+      </div>
+      <div id="renderDiv" class="row row-border" style="display: none">
+        <div class="centered">
+          <p style="font-weight: bold;">Instructions:</p>
+          <p>
+            Left Click: Lock controls</br>
+            W: Move forward</br>
+            S: Move backwards</br>
+            A: Move right</br>
+            D: Move left</br>
+            Scroll Up: Speed Up</br>
+            Scroll Down: Speed Down</br>
+          </p>
+          <button id="btnRender" class="btn" type="button">
+            Render!
+          </button>
+          <button id="btnLoading" class="btn" type="button" disabled>
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            Rendering...
+          </button>
         </div>
-        <div id="renderDiv" class="row row-border" style="display: none">
-          <div class="centered">
-            <p style="font-size: 1.5rem; font-weight: bold;">Instructions:</p>
-            <p style="font-size: 1.5rem">
-              Left Click: Lock controls</br>
-              W: Move forward</br>
-              S: Move backwards</br>
-              A: Move right</br>
-              D: Move left</br>
-              Scroll Up: Speed Up</br>
-              Scroll Down: Speed Down</br>
-            </p>
-            <button id="btnRender">Render!</button>
-          </div>
-        </div>
-      </nav>
-    </div>
-    <!-- Page Content -->
-    <div id="content">
-      <canvas id="canvas"></canvas>
-    </div>
-  </body>
+      </div>
+    </nav>
+  </div>
+  <!-- Page Content -->
+  <div id="content">
+    <canvas id="canvas"></canvas>
+  </div>
+</body>
+
 </html>

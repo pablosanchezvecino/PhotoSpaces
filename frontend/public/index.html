@@ -64,10 +64,18 @@
           <button id="btnRender" class="btn" type="button">
             Render!
           </button>
-          <button id="btnLoading" class="btn" type="button" disabled>
+          <button id="btnLoading" style="display: none;" class="btn" type="button" disabled>
             <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
             Rendering...
           </button>
+        </div>
+      </div>
+      <div id="optionsDiv" class="row row-border" style="display: none;">
+        <div class="centered">
+          <label for="fovRange" class="form-label">
+            <strong id="fovValue"></strong>
+          </label>
+          <input id="fovRange" type="range" style="padding-top: 0;" class="form-range range" min="5" max="150" step="5">
         </div>
       </div>
     </nav>

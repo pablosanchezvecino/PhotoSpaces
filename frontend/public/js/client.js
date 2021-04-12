@@ -8,8 +8,11 @@ const inputField = document.getElementById("inputModel");
 const canvas = document.getElementById("canvas");
 const btnRender = document.getElementById("btnRender");
 const btnLoading = document.getElementById("btnLoading");
-btnLoading.style.display = "none";
 const renderDiv = document.getElementById("renderDiv");
+const optionsDiv = document.getElementById("optionsDiv");
+const optionsFOV = document.getElementById("fovRange");
+const fovValue = document.getElementById("fovValue");
+
 const link = document.createElement("a");
 link.style.display = "none";
 document.body.appendChild(link);
@@ -30,13 +33,6 @@ let controls;
 
 // Scene
 const scene = new THREE.Scene();
-
-// Options controls
-const options = {
-  camera: {
-    fov: 75,
-  },
-};
 
 const downloadImage = (body) => {
   const fileCN = inputField.files[0].name;
@@ -233,7 +229,17 @@ const initializeControls = (camera) => {
   });
 
   btnRender.addEventListener("click", () => sendModel(camera));
+
   renderDiv.style.display = "block";
+  optionsDiv.style.display = "block";
+
+  fovValue.innerHTML = `FOV: ${optionsFOV.value}`;
+
+  optionsFOV.addEventListener("change", () => {
+    camera.fov = optionsFOV.value;
+    fovValue.innerHTML = `FOV: ${optionsFOV.value}`;
+    camera.updateProjectionMatrix();
+  });
 
   document.addEventListener("wheel", (e) => {
     controls.isLocked ? onScroll(e) : null;
@@ -326,12 +332,6 @@ const loadModel = (file) => {
 
   // Load the model
   addModelToScene(file, camera, render);
-
-  var gui = new dat.GUI();
-
-  var cam = gui.addFolder("Camera");
-  cam.add(options.camera, "fov", 10, 150).listen();
-  cam.open();
 };
 
 // HTML Events
@@ -350,7 +350,6 @@ inputField.onchange = (event) => {
     reader.onload = () => loadModel(reader.result);
 
     // read the file as text using the reader
-    //reader.readAsDataURL(file, encoding);
     reader.readAsArrayBuffer(file);
   } else {
     alert("You need to choose a .glb or .gltf file!");

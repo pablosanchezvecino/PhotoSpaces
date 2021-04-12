@@ -17,6 +17,10 @@ body {
   border-bottom: 0.1rem solid #ccc;
 }
 
+.range {
+  width: 15rem;
+}
+
 #sidebar {
   background: #fff;
   color: #000;

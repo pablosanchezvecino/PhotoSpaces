@@ -2,7 +2,7 @@
 
 ## Prerequisitos
 
-Es necesario tener instalada la última versión de NodeJS.
+Es necesario tener instalada la última versión de NodeJS y la versión 2.92 de Blender (con el .exe como variable en el PATH del sistema).
 
 ## Instalación
 

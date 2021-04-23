@@ -13,22 +13,32 @@ body {
 }
 
 .row-border {
-  width: 20.9rem;
+  width: 18.9rem;
   border-bottom: 0.1rem solid #ccc;
 }
 
 .range {
-  width: 15rem;
+  width: 13.5rem;
+}
+
+::-webkit-scrollbar {
+  width: 0;
+  background: transparent;
 }
 
 #sidebar {
+  overflow-y: scroll;
+  overflow-x: hidden;
   background: #fff;
   color: #000;
   transition: all 0.3s;
-  min-width: 20rem;
-  max-width: 20rem;
+  min-width: 18rem;
+  max-width: 18rem;
   height: 100vh;
   border-right: 0.1rem solid #ccc;
+
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
 
 #sidebar-header {
@@ -70,7 +80,7 @@ body {
 }
 
 #content {
-  width: calc(100% - 20rem);
+  width: calc(100% - 18rem);
   min-height: 100vh;
   transition: all 0.3s;
   position: absolute;

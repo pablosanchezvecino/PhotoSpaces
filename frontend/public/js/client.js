@@ -132,6 +132,8 @@ const addModelToScene = (file, camera, render) => {
       camera.fov = cameras[0].fov;
       camera.far = cameras[0].far;
       camera.near = cameras[0].near;
+
+      optionsFOV.value = camera.fov;
     }
     camera.updateProjectionMatrix();
 
@@ -285,6 +287,16 @@ const loadModel = (file) => {
     antialias: true,
     alpha: true,
   });
+
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1;
+  renderer.outputEncoding = THREE.sRGBEncoding;
+
+  const pmremGenerator = new THREE.PMREMGenerator(renderer);
+  pmremGenerator.compileEquirectangularShader();
+
   const camera = new THREE.PerspectiveCamera(
     75,
     window.innerWidth / window.innerHeight,

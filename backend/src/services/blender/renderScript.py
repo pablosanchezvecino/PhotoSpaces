@@ -57,6 +57,11 @@ bpy.context.scene.collection.objects.link(camera_object)
 # Change active camera: bpy.context.scene.camera = bpy.data.objects["Camera"]
 bpy.context.scene.camera = camera_object
 
+# Render settings
+bpy.context.scene.render.image_settings.color_depth = '16'
+bpy.context.scene.render.image_settings.color_mode = 'RGB'
+bpy.context.scene.render.simplify_gpencil_shader_fx = True
+bpy.context.scene.render.threads = 2
 
 bpy.context.scene.render.filepath = publicFolder + \
     sys.argv[argv_length-11] + ".png"

@@ -2,14 +2,21 @@ import * as THREE from "/build/three.module.js";
 import { PointerLockControls } from "/jsm/controls/PointerLockControls.js";
 import { GLTFLoader } from "/jsm/loaders/GLTFLoader.js";
 import { GLTFExporter } from "/jsm/exporters/GLTFExporter.js";
+import { RGBELoader } from "/jsm/loaders/RGBELoader.js";
 
 // HTML Elements
 const inputField = document.getElementById("inputModel");
 const canvas = document.getElementById("canvas");
+
 const btnRender = document.getElementById("btnRender");
 const btnLoading = document.getElementById("btnLoading");
+const btnClear = document.getElementById("btnClear");
+
 const renderDiv = document.getElementById("renderDiv");
 const optionsDiv = document.getElementById("optionsDiv");
+const uploadDiv = document.getElementById("uploadDiv");
+const clearDiv = document.getElementById("clearDiv");
+
 const optionsFOV = document.getElementById("fovRange");
 const fovValue = document.getElementById("fovValue");
 
@@ -32,7 +39,7 @@ let prevTime = performance.now();
 let controls;
 
 // Scene
-const scene = new THREE.Scene();
+let scene;
 
 const downloadImage = (body) => {
   const fileCN = inputField.files[0].name;
@@ -231,9 +238,12 @@ const initializeControls = (camera) => {
   });
 
   btnRender.addEventListener("click", () => sendModel(camera));
+  btnClear.addEventListener("click", clear);
 
   renderDiv.style.display = "block";
   optionsDiv.style.display = "block";
+  uploadDiv.style.display = "none";
+  clearDiv.style.display = "block";
 
   fovValue.innerHTML = `FOV: ${optionsFOV.value}`;
 
@@ -251,23 +261,7 @@ const initializeControls = (camera) => {
 };
 
 // Only directional, point and spot lights are supported
-const addLightToScene = () => {
-  const skyColor = 0xb1e1ff; // light blue
-  const groundColor = 0xb97a20; // brownish orange
-  const intensity = 1;
-  const hemisphereLight = new THREE.HemisphereLight(
-    skyColor,
-    groundColor,
-    intensity
-  );
-  const color = 0xffffff;
-  const directionalLight = new THREE.DirectionalLight(color, intensity);
-  directionalLight.position.set(5, 10, 2);
-
-  scene.add(hemisphereLight);
-  scene.add(directionalLight);
-  scene.add(directionalLight.target);
-};
+const addLightToScene = () => {};
 
 const resizeRendererToDisplaySize = (renderer) => {
   const canvas = renderer.domElement;
@@ -288,21 +282,42 @@ const loadModel = (file) => {
     alpha: true,
   });
 
-  renderer.setPixelRatio(window.devicePixelRatio);
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1;
-  renderer.outputEncoding = THREE.sRGBEncoding;
-
-  const pmremGenerator = new THREE.PMREMGenerator(renderer);
-  pmremGenerator.compileEquirectangularShader();
-
   const camera = new THREE.PerspectiveCamera(
     75,
     window.innerWidth / window.innerHeight,
     0.1,
     1000
   );
+
+  scene = new THREE.Scene();
+
+  new RGBELoader()
+    .setDataType(THREE.UnsignedByteType)
+    .setPath("../img/")
+    .load("comfy_cafe_4k.hdr", (texture) => {
+      console.log(texture);
+      texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+
+      const pmremGenerator = new THREE.PMREMGenerator(renderer);
+      pmremGenerator.compileEquirectangularShader();
+
+      const envMap = pmremGenerator.fromEquirectangular(texture).texture;
+
+      scene.background = envMap;
+      scene.environment = envMap;
+
+      texture.dispose();
+      pmremGenerator.dispose();
+
+      // Load the model
+      addModelToScene(file, camera, render, renderer);
+    });
+
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1;
+  renderer.outputEncoding = THREE.sRGBEncoding;
+
   const render = () => {
     if (resizeRendererToDisplaySize(renderer)) {
       const canvas = renderer.domElement;
@@ -339,11 +354,26 @@ const loadModel = (file) => {
 
     renderer.render(scene, camera);
   };
+};
 
-  scene.background = new THREE.Color("white");
+const clear = () => {
+  scene = new THREE.Scene();
+  moveForward = false;
+  moveBackward = false;
+  moveLeft = false;
+  moveRight = false;
+  moveUp = false;
+  moveDown = false;
+  speedMulti = 10.0;
 
-  // Load the model
-  addModelToScene(file, camera, render);
+  prevTime = performance.now();
+
+  renderDiv.style.display = "none";
+  optionsDiv.style.display = "none";
+  uploadDiv.style.display = "block";
+  clearDiv.style.display = "none";
+
+  inputField.value = "";
 };
 
 // HTML Events

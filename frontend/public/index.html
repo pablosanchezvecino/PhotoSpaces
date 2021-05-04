@@ -43,23 +43,31 @@
         <h3>PhotoSpaces</h3>
       </div>
       <div class="row row-border">
-        <div class="centered">
+        <div class="centered" id="uploadDiv">
           <p>Upload model:</p>
           <input type="file" id="inputModel" />
           <label type="primary" for="inputModel">Choose a file</label>
+        </div>
+        <div class="centered" id="clearDiv" style="display: none;">
+          <p>Clear model:</p>
+          <button id="btnClear" class="btn" type="button">
+            Clear
+          </button>
         </div>
       </div>
       <div id="renderDiv" class="row row-border" style="display: none">
         <div class="centered">
           <p style="font-weight: bold;">Instructions:</p>
-          <p>
-            Left Click: Lock controls</br>
-            W: Move forward</br>
-            S: Move backwards</br>
-            A: Move right</br>
-            D: Move left</br>
-            Scroll Up: Speed Up</br>
-            Scroll Down: Speed Down</br>
+          <br>
+          Left Click: Lock controls</br>
+          W: Move forward</br>
+          S: Move backwards</br>
+          A: Move right</br>
+          D: Move left</br>
+          Space: Move up</br>
+          L. Shift: Move down</br>
+          Scroll Up: Speed Up</br>
+          Scroll Down: Speed Down</br>
           </p>
           <button id="btnRender" class="btn" type="button">
             Render!

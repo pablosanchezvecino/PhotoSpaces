@@ -65,13 +65,16 @@ body {
 }
 
 #btnRender,
-#btnLoading {
+#btnLoading,
+#btnClear {
   color: white;
   background-color: rgb(155, 0, 147);
 }
 
 #btnRender:focus,
-#btnRender:hover {
+#btnRender:hover,
+#btnClear:focus,
+#btnClear:hover {
   background-color: rgb(105, 0, 100);
 }
 

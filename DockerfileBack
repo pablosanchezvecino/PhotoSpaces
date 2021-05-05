@@ -1,0 +1,44 @@
+FROM ubuntu:bionic
+
+RUN apt-get update && \
+	apt-get install -y \
+		curl \
+		libfreetype6 \
+		libglu1-mesa \
+		libxi6 \
+		libxrender1 \
+		python-opengl \
+		xvfb \
+		xz-utils && \
+	apt-get -y autoremove && \
+	rm -rf /var/lib/apt/lists/*
+
+# Install Blender
+ENV BLENDER_MAJOR 2.92
+ENV BLENDER_VERSION 2.92.0
+ENV BLENDER_URL https://download.blender.org/release/Blender${BLENDER_MAJOR}/blender-${BLENDER_VERSION}-linux64.tar.xz
+
+RUN curl -L ${BLENDER_URL} | tar -xJ -C /usr/local/ && \
+	mv /usr/local/blender-${BLENDER_VERSION}-linux64 /usr/local/blender
+
+# Install packages for the dummy display
+RUN ./usr/local/blender/2.92/python/bin/python3.7m -m ensurepip
+RUN ./usr/local/blender/2.92/python/bin/pip3.7 install pyvirtualdisplay
+RUN ./usr/local/blender/2.92/python/bin/pip3.7 install piglet
+
+# Install NodeJS
+RUN curl -fsSL https://deb.nodesource.com/setup_15.x | bash -
+RUN apt-get install -y nodejs  
+
+# Setup Backend
+WORKDIR /usr/src/app
+
+COPY backend/package*.json ./
+
+RUN npm install
+
+COPY ./backend .
+
+EXPOSE 3030
+CMD [ "node", "app.js" ]
+

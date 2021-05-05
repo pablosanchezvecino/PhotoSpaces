@@ -295,9 +295,6 @@ const loadModel = (file) => {
     .setDataType(THREE.UnsignedByteType)
     .setPath("../img/")
     .load("comfy_cafe_4k.hdr", (texture) => {
-      console.log(texture);
-      texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
-
       const pmremGenerator = new THREE.PMREMGenerator(renderer);
       pmremGenerator.compileEquirectangularShader();
 

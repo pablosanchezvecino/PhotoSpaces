@@ -3,6 +3,8 @@ import bpy
 import sys
 import mathutils
 import os
+from pyvirtualdisplay import Display
+Display().start()
 
 argv_length = len(sys.argv)
 
@@ -14,10 +16,10 @@ for obj in list(bpy.data.objects):
     bpy.data.objects.remove(obj)
 
 # Import .glb/.gltf model
-publicFolder = os.path.abspath(os.getcwd()) + "\\public\\"
+publicFolder = os.path.abspath(os.getcwd()) + "/public/"
 
-bpy.ops.import_scene.gltf(
-    filepath=publicFolder+sys.argv[argv_length-11]+".gltf")
+bpy.ops.import_scene.gltf(filepath=publicFolder +
+                          sys.argv[argv_length-11] + ".gltf")
 
 # Create a new camera
 camera_data = bpy.data.cameras.new(name="Camera")

@@ -2,14 +2,14 @@ FROM ubuntu:bionic
 
 RUN apt-get update && \
 	apt-get install -y \
-		curl \
-		libfreetype6 \
-		libglu1-mesa \
-		libxi6 \
-		libxrender1 \
-		python-opengl \
-		xvfb \
-		xz-utils && \
+	curl \
+	libfreetype6 \
+	libglu1-mesa \
+	libxi6 \
+	libxrender1 \
+	python-opengl \
+	xvfb \
+	xz-utils && \
 	apt-get -y autoremove && \
 	rm -rf /var/lib/apt/lists/*
 
@@ -33,11 +33,11 @@ RUN apt-get install -y nodejs
 # Setup Backend
 WORKDIR /usr/src/app
 
-COPY backend/package*.json ./
+COPY package*.json ./
 
 RUN npm install
 
-COPY ./backend .
+COPY . .
 
 EXPOSE 3030
 CMD [ "node", "app.js" ]

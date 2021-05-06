@@ -12,6 +12,5 @@ app.use(
   "/jsm/",
   express.static(path.join(__dirname, "node_modules/three/examples/jsm"))
 );
-app.set("view engine", "html");
 app.get("/", (req, res) => res.render("public/index"));
 app.listen(PORT, () => console.log(`Listening on ${PORT}`));

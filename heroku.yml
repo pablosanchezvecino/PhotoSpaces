@@ -1,3 +1,4 @@
 build:
   docker:
-    web: DockerfileBack
+    web: DockerfileFront
+    server: DockerfileBack

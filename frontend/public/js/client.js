@@ -98,10 +98,13 @@ const sendModel = async (cam) => {
       try {
         btnRender.style.display = "none";
         btnLoading.style.display = "block";
-        const res = await fetch("http://localhost:3030/render", {
-          method: "POST",
-          body: formData,
-        });
+        const res = await fetch(
+          "https://photospaces-server.herokuapp.com/render/render",
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
         btnLoading.style.display = "none";
         btnRender.style.display = "block";
         downloadImage(res.body);

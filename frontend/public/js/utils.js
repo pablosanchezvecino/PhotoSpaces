@@ -5,7 +5,7 @@ const sendModel = async (inp) => {
   formData.append("model", model);
 
   try {
-    const res = await fetch("http://localhost:3030/model", {
+    const res = await fetch("https://photospaces-server.herokuapp.com/model", {
       method: "POST",
       body: formData,
     });

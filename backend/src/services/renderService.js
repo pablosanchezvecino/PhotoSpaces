@@ -1,10 +1,10 @@
-const renderFacade = require("../dao/renderFacade");
+const renderLogic = require("../logic/renderLogic");
 
 exports.upload = async (req, res, next) => {
   try {
     console.log("Processing model...");
 
-    const fileName = await renderFacade.upload(req.body, req.files.model);
+    const fileName = await renderLogic.upload(req.body, req.files.model);
     const options = {
       root: "./public/",
       dotfiles: "deny",
@@ -16,7 +16,7 @@ exports.upload = async (req, res, next) => {
 
     res.status(201).sendFile(`${fileName}.png`, options, (err) => {
       if (err) throw err;
-      else renderFacade.deleteTempFiles(fileName);
+      else renderLogic.deleteTempFiles(fileName);
     });
   } catch (e) {
     next(e);

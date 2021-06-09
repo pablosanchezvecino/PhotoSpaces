@@ -3,8 +3,10 @@ import bpy
 import sys
 import mathutils
 import os
-from pyvirtualdisplay import Display
-Display().start()
+
+# Only for the Docker build
+# from pyvirtualdisplay import Display
+# Display().start()
 
 argv_length = len(sys.argv)
 

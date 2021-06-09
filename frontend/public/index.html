@@ -46,7 +46,11 @@
         <div class="centered" id="uploadDiv">
           <p>Upload model:</p>
           <input type="file" id="inputModel" />
-          <label type="primary" for="inputModel">Choose a file</label>
+          <label id="chooseFileLabel" type="primary" for="inputModel">Choose a file</label>
+          <button id="loadingModelLabel" style="display: none;" class="btn" type="button" disabled>
+            Loading...
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+          </button>
         </div>
         <div class="centered" id="clearDiv" style="display: none;">
           <p>Clear model:</p>
@@ -55,35 +59,61 @@
           </button>
         </div>
       </div>
-      <div id="renderDiv" class="row row-border" style="display: none">
-        <div class="centered">
-          <p style="font-weight: bold;">Instructions:</p>
-          <br>
-          Left Click: Lock controls</br>
-          W: Move forward</br>
-          S: Move backwards</br>
-          A: Move right</br>
-          D: Move left</br>
-          Space: Move up</br>
-          L. Shift: Move down</br>
-          Scroll Up: Speed Up</br>
-          Scroll Down: Speed Down</br>
-          </p>
-          <button id="btnRender" class="btn" type="button">
-            Render!
-          </button>
-          <button id="btnLoading" style="display: none;" class="btn" type="button" disabled>
-            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-            Rendering...
-          </button>
+      <div id="optionsDiv" style="display: none">
+        <div class="row row-border">
+          <div class="centered">
+            <p style="font-weight: bold;">Instructions:</p>
+            Left Click: Lock controls</br>
+            W: Move forward</br>
+            S: Move backwards</br>
+            A: Move right</br>
+            D: Move left</br>
+            Space: Move up</br>
+            L. Shift: Move down</br>
+            Scroll Up: Speed Up</br>
+            Scroll Down: Speed Down</br>
+            </p>
+          </div>
+        </div>
+        <div class="row row-border">
+          <div class="centered">
+            <p style="font-weight: bold;">Actions</p>
+            <p>
+              Change background:
+              <select id="backgroundSelect" class="form-select" aria-label="Default select example">
+                <option value="" selected>Nothing</option>
+                <option value="comfy_cafe_4k.hdr">Café</option>
+                <option value="lilienstein_4k.hdr">Field</option>
+                <option value="royal_esplanade_4k.hdr">Mall</option>
+              </select>
+            </p>
+
+            <button id="btnRender" style="margin-top:2rem" class="btn" type="button">
+              Render!
+            </button>
+            <button id="btnLoading" style="display: none;" class="btn" type="button" disabled>
+              Rendering...
+              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            </button>
+          </div>
+        </div>
+        <div class="row row-border">
+          <div class="centered">
+            <p style="font-weight: bold;">Parameters</p>
+            <label for="fovRange" class="form-label">
+              <b id="fovValue"></b>
+            </label>
+            <input id="fovRange" type="range" style="padding-top: 0;" class="form-range range" min="5" max="150"
+              step="5">
+          </div>
         </div>
       </div>
-      <div id="optionsDiv" class="row row-border" style="display: none;">
-        <div class="centered">
-          <label for="fovRange" class="form-label">
-            <strong id="fovValue"></strong>
-          </label>
-          <input id="fovRange" type="range" style="padding-top: 0;" class="form-range range" min="5" max="150" step="5">
+      <div id="elementsDiv" style="display: none">
+        <div class="row row-border">
+          <div class="centered">
+            <b>Lights</b>
+            <ul id="lightsList" style="margin: auto auto auto -1rem;"></ul>
+          </div>
         </div>
       </div>
     </nav>
@@ -91,6 +121,10 @@
   <!-- Page Content -->
   <div id="content">
     <canvas id="canvas"></canvas>
+    <div id="context-menu">
+      <div class="item" id="addDLight">Add Directional Light</div>
+      <div class="item" id="addPLight">Add Point Light</div>
+    </div>
   </div>
 </body>
 

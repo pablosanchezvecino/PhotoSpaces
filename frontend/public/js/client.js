@@ -3,6 +3,7 @@ import { PointerLockControls } from "/jsm/controls/PointerLockControls.js";
 import { GLTFLoader } from "/jsm/loaders/GLTFLoader.js";
 import { GLTFExporter } from "/jsm/exporters/GLTFExporter.js";
 import { RGBELoader } from "/jsm/loaders/RGBELoader.js";
+import { GUI } from "/jsm/libs/dat.gui.module.js";
 
 // HTML Elements
 const inputField = document.getElementById("inputModel");
@@ -11,14 +12,17 @@ const canvas = document.getElementById("canvas");
 const btnRender = document.getElementById("btnRender");
 const btnLoading = document.getElementById("btnLoading");
 const btnClear = document.getElementById("btnClear");
+const chooseFileLabel = document.getElementById("chooseFileLabel");
+const loadingModelLabel = document.getElementById("loadingModelLabel");
 
-const renderDiv = document.getElementById("renderDiv");
 const optionsDiv = document.getElementById("optionsDiv");
 const uploadDiv = document.getElementById("uploadDiv");
 const clearDiv = document.getElementById("clearDiv");
 
 const optionsFOV = document.getElementById("fovRange");
 const fovValue = document.getElementById("fovValue");
+
+const backgroundSelect = document.getElementById("backgroundSelect");
 
 const link = document.createElement("a");
 link.style.display = "none";
@@ -38,8 +42,12 @@ const direction = new THREE.Vector3();
 let prevTime = performance.now();
 let controls;
 
+const elementsDiv = document.getElementById("elementsDiv");
+const lightsList = document.getElementById("lightsList");
+let lights = 0;
+
 // Scene
-let scene;
+let scene, renderer;
 
 const downloadImage = (body) => {
   const fileCN = inputField.files[0].name;
@@ -99,7 +107,8 @@ const sendModel = async (cam) => {
         btnRender.style.display = "none";
         btnLoading.style.display = "block";
         const res = await fetch(
-          "https://photospaces-server.herokuapp.com/render",
+          "http://localhost:3030/render",
+          //"https://photospaces-server.herokuapp.com/render",
           {
             method: "POST",
             body: formData,
@@ -151,9 +160,6 @@ const addModelToScene = (file, camera, render) => {
 
     // Initialize controls
     initializeControls(camera);
-
-    // Light into the scene
-    addLightToScene();
 
     requestAnimationFrame(render);
   });
@@ -243,7 +249,6 @@ const initializeControls = (camera) => {
   btnRender.addEventListener("click", () => sendModel(camera));
   btnClear.addEventListener("click", clear);
 
-  renderDiv.style.display = "block";
   optionsDiv.style.display = "block";
   uploadDiv.style.display = "none";
   clearDiv.style.display = "block";
@@ -263,8 +268,95 @@ const initializeControls = (camera) => {
   document.addEventListener("keyup", onKeyUp);
 };
 
+const makeXYZGUI = (gui, vector3, name, onChangeFn) => {
+  const folder = gui.addFolder(name);
+  folder.add(vector3, "x", -1000, 1000).onChange(onChangeFn);
+  folder.add(vector3, "y", -1000, 1000).onChange(onChangeFn);
+  folder.add(vector3, "z", -1000, 1000).onChange(onChangeFn);
+  folder.open();
+};
+
+const removeLight = (name, gui) => {
+  const lightToRemove = scene.getObjectByName(name);
+  scene.remove(lightToRemove);
+  gui.destroy();
+  lightsList.removeChild(document.getElementById(name));
+  lights--;
+  if (lights === 0) elementsDiv.style.display = "none";
+};
+
+const addLightToDiv = (type, name, gui) => {
+  if (lights === 1) elementsDiv.style.display = "block";
+
+  const node = document.createElement("li");
+  node.id = name;
+  const span = document.createElement("span");
+  span.textContent = type + " " + lights;
+  span.style.display = "ruby";
+
+  const img = document.createElement("img");
+  img.src = "../img/trash.svg";
+  img.className = "removeLight";
+  img.style.width = "1.5rem";
+  img.style.height = "1.5rem";
+  img.style.marginLeft = "2rem";
+  img.onclick = () => removeLight(name, gui);
+
+  span.appendChild(img);
+  node.appendChild(span);
+
+  node.style.marginTop = "0.5rem";
+
+  lightsList.appendChild(node);
+};
+
 // Only directional, point and spot lights are supported
-const addLightToScene = () => {};
+const addLightToScene = (type) => {
+  const color = 0xffffff;
+  const intensity = 1;
+  const gui = new GUI();
+  let light, helper;
+
+  lights++;
+
+  if (type === "Directional") {
+    light = new THREE.DirectionalLight(color, intensity);
+
+    light.position.set(0, 10, 0);
+    light.target.position.set(-5, 0, 0);
+    light.name = type + " " + lights;
+
+    scene.add(light);
+    scene.add(light.target);
+
+    helper = new THREE.DirectionalLightHelper(light, 10, 0x000000);
+  } else if (type === "Point") {
+    light = new THREE.PointLight(color, intensity);
+
+    light.position.set(0, 10, 0);
+    light.name = type + " " + lights;
+
+    scene.add(light);
+
+    helper = new THREE.PointLightHelper(light, 10, 0x000000);
+  }
+  scene.add(helper);
+
+  // On GUI change
+  const updateLight = () => {
+    helper.update();
+  };
+
+  updateLight();
+
+  const mainFolder = gui.addFolder(type + " " + lights);
+  mainFolder.add(light, "intensity", 0, 2, 0.01).onChange(updateLight);
+  makeXYZGUI(mainFolder, light.position, "Position", updateLight);
+  if (type === "Directional")
+    makeXYZGUI(mainFolder, light.target.position, "Target", updateLight);
+
+  addLightToDiv(type, light.name, gui);
+};
 
 const resizeRendererToDisplaySize = (renderer) => {
   const canvas = renderer.domElement;
@@ -279,7 +371,7 @@ const resizeRendererToDisplaySize = (renderer) => {
 
 // Load the model into the visualizer
 const loadModel = (file) => {
-  const renderer = new THREE.WebGLRenderer({
+  renderer = new THREE.WebGLRenderer({
     canvas,
     antialias: true,
     alpha: true,
@@ -289,34 +381,17 @@ const loadModel = (file) => {
     75,
     window.innerWidth / window.innerHeight,
     0.1,
-    1000
+    10000
   );
 
   scene = new THREE.Scene();
 
-  new RGBELoader()
-    .setDataType(THREE.UnsignedByteType)
-    .setPath("../img/")
-    .load("comfy_cafe_4k.hdr", (texture) => {
-      const pmremGenerator = new THREE.PMREMGenerator(renderer);
-      pmremGenerator.compileEquirectangularShader();
-
-      const envMap = pmremGenerator.fromEquirectangular(texture).texture;
-
-      scene.background = envMap;
-      scene.environment = envMap;
-
-      texture.dispose();
-      pmremGenerator.dispose();
-
-      // Load the model
-      addModelToScene(file, camera, render, renderer);
-    });
-
   renderer.setPixelRatio(window.devicePixelRatio);
+  /*
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1;
   renderer.outputEncoding = THREE.sRGBEncoding;
+  */
 
   const render = () => {
     if (resizeRendererToDisplaySize(renderer)) {
@@ -354,6 +429,9 @@ const loadModel = (file) => {
 
     renderer.render(scene, camera);
   };
+
+  // Load the model
+  addModelToScene(file, camera, render, renderer);
 };
 
 const clear = () => {
@@ -368,10 +446,11 @@ const clear = () => {
 
   prevTime = performance.now();
 
-  renderDiv.style.display = "none";
   optionsDiv.style.display = "none";
   uploadDiv.style.display = "block";
   clearDiv.style.display = "none";
+  chooseFileLabel.style.display = "block";
+  loadingModelLabel.style.display = "none";
 
   inputField.value = "";
 };
@@ -388,8 +467,14 @@ inputField.onchange = (event) => {
     // create a file reader
     const reader = new FileReader();
 
+    // loading label
+    chooseFileLabel.style.display = "none";
+    loadingModelLabel.style.display = "block";
+
     // set on load handler for reader
-    reader.onload = () => loadModel(reader.result);
+    reader.onload = () => {
+      loadModel(reader.result);
+    };
 
     // read the file as text using the reader
     reader.readAsArrayBuffer(file);
@@ -397,3 +482,58 @@ inputField.onchange = (event) => {
     alert("You need to choose a .glb or .gltf file!");
   }
 };
+
+const backgroundChange = (sel) => {
+  if (sel === "") {
+    scene.background = 0xffffff;
+  } else {
+    // ENV Background
+    new RGBELoader()
+      .setDataType(THREE.UnsignedByteType)
+      .setPath("../img/")
+      .load(sel, (texture) => {
+        const pmremGenerator = new THREE.PMREMGenerator(renderer);
+        pmremGenerator.compileEquirectangularShader();
+
+        const envMap = pmremGenerator.fromEquirectangular(texture).texture;
+
+        scene.background = envMap;
+
+        texture.dispose();
+        pmremGenerator.dispose();
+      });
+  }
+};
+
+$("#backgroundSelect").on("change", function () {
+  backgroundChange(this.value);
+});
+
+backgroundSelect.selectedIndex = 0;
+
+// Menu click-derecho
+// TODO Hacer innacesible antes de cargar el modelo
+const contextMenu = document.getElementById("context-menu");
+const body = document.querySelector("body");
+const addDirectional = document.getElementById("addDLight");
+const addPoint = document.getElementById("addPLight");
+
+canvas.addEventListener("contextmenu", (event) => {
+  event.preventDefault();
+
+  const { clientX: mouseX, clientY: mouseY } = event;
+
+  contextMenu.style.top = `${mouseY}px`;
+  contextMenu.style.left = `${mouseX}px`;
+
+  contextMenu.classList.add("visible");
+});
+
+body.addEventListener("click", (e) => {
+  if (e.target.offsetParent != contextMenu) {
+    contextMenu.classList.remove("visible");
+  }
+});
+
+addDirectional.addEventListener("click", (e) => addLightToScene("Directional"));
+addPoint.addEventListener("click", (e) => addLightToScene("Point"));

@@ -3,7 +3,7 @@ const fs = require("fs");
 
 const execute = async (data, filename) => {
   execSync(
-    `/usr/local/blender/blender -b -P blender/renderScript.py -- ${filename} ${data.lens} ${data.clip_start} ${data.clip_end} ${data.location_x} ${data.location_y} ${data.location_z} ${data.qua_w} ${data.qua_x} ${data.qua_y} ${data.qua_z}`
+    `blender -b -P src/logic/blender/renderScript.py -- ${filename} ${data.lens} ${data.clip_start} ${data.clip_end} ${data.location_x} ${data.location_y} ${data.location_z} ${data.qua_w} ${data.qua_x} ${data.qua_y} ${data.qua_z}`
   );
 };
 

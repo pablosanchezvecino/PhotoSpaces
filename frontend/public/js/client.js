@@ -278,8 +278,13 @@ const makeXYZGUI = (gui, vector3, name, onChangeFn) => {
 
 const removeLight = (name, gui) => {
   const lightToRemove = scene.getObjectByName(name);
+  const helperToRemove = scene.getObjectByName(name + "Helper");
+
   scene.remove(lightToRemove);
+  scene.remove(helperToRemove);
+
   gui.destroy();
+
   lightsList.removeChild(document.getElementById(name));
   lights--;
   if (lights === 0) elementsDiv.style.display = "none";
@@ -340,6 +345,8 @@ const addLightToScene = (type) => {
 
     helper = new THREE.PointLightHelper(light, 10, 0x000000);
   }
+
+  helper.name = light.name + "Helper";
   scene.add(helper);
 
   // On GUI change

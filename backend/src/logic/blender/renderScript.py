@@ -5,8 +5,8 @@ import mathutils
 import os
 
 # Only for the Docker build
-# from pyvirtualdisplay import Display
-# Display().start()
+from pyvirtualdisplay import Display
+Display().start()
 
 argv_length = len(sys.argv)
 

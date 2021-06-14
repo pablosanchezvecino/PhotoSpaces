@@ -3,28 +3,27 @@ FROM ubuntu:bionic
 RUN apt-get update && \
 	apt-get install -y \
 	curl \
-	libfreetype6 \
-	libglu1-mesa \
 	libxi6 \
 	libxrender1 \
-	python-opengl \
 	xvfb \
 	xz-utils && \
 	apt-get -y autoremove && \
 	rm -rf /var/lib/apt/lists/*
 
 # Install Blender
-ENV BLENDER_MAJOR 2.92
-ENV BLENDER_VERSION 2.92.0
-ENV BLENDER_URL https://download.blender.org/release/Blender${BLENDER_MAJOR}/blender-${BLENDER_VERSION}-linux64.tar.xz
+ENV BLENDER_MAJOR 3.0
 
-RUN curl -L ${BLENDER_URL} | tar -xJ -C /usr/local/ && \
-	mv /usr/local/blender-${BLENDER_VERSION}-linux64 /usr/local/blender
+RUN apt-get update
+RUN apt-get install unzip -y
+ADD https://download936.mediafire.com/433vse65l0mg/n03p2hvnavt5xjt/blender.zip /usr/local
+RUN unzip /usr/local/blender.zip -d /usr/local
+RUN rm /usr/local/blender.zip
 
 # Install packages for the dummy display
-RUN ./usr/local/blender/2.92/python/bin/python3.7m -m ensurepip
-RUN ./usr/local/blender/2.92/python/bin/pip3.7 install pyvirtualdisplay
-RUN ./usr/local/blender/2.92/python/bin/pip3.7 install piglet
+RUN chmod +x -R /usr/local/blender/${BLENDER_MAJOR}/python/bin
+RUN ./usr/local/blender/${BLENDER_MAJOR}/python/bin/python3.9 -m ensurepip
+RUN ./usr/local/blender/${BLENDER_MAJOR}/python/bin/pip3.9 install pyvirtualdisplay
+RUN ./usr/local/blender/${BLENDER_MAJOR}/python/bin/pip3.9 install piglet
 
 # Install NodeJS
 RUN curl -fsSL https://deb.nodesource.com/setup_15.x | bash -

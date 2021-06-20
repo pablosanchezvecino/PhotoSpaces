@@ -29,8 +29,10 @@ export async function upload(req, res, next) {
         setTimeEstimation(JSON.parse(message));
       } else {
         res.status(201).sendFile(`${message}.png`, options, (err) => {
-          if (err) throw err;
-          else deleteTempFiles(message);
+          if (err) {
+            console.log(err);
+            res.status(500);
+          } else deleteTempFiles(message);
         });
       }
     });

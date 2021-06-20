@@ -2,8 +2,9 @@
 import bpy, sys, mathutils, os, json
 
 # Only for the Docker build
-# from pyvirtualdisplay import Display
-# Display().start()
+if os.environ.get("BLENDER_MAJOR") is not None:
+    from pyvirtualdisplay import Display
+    Display().start()
 
 argv_length = len(sys.argv)
 

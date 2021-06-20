@@ -22,10 +22,10 @@ const execute = async (modelData, filename) => {
     remaining: 0,
   };
   const dataString = JSON.stringify(modelData);
-  const command = spawn("blender", [
+  const command = spawn(process.env.BLENDER_CMD || "blender", [
     "-b",
     "-P",
-    "src\\logic\\blender\\renderScript.py",
+    process.env.BLENDER_SCRIPT || "src/logic/blender/renderScript.py",
     `${filename}`,
     `${dataString}`,
   ]);
@@ -39,6 +39,10 @@ const execute = async (modelData, filename) => {
         : timeEstimation.remaining;
       parentPort.postMessage(JSON.stringify(timeEstimation));
     }
+  });
+
+  command.stderr.on("data", (data) => {
+    console.error(`stderr: ${data}`);
   });
 
   command.on("close", (code) => {

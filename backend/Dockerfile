@@ -15,9 +15,11 @@ ENV BLENDER_MAJOR 3.0
 
 RUN apt-get update
 RUN apt-get install unzip -y
-ADD https://download936.mediafire.com/433vse65l0mg/n03p2hvnavt5xjt/blender.zip /usr/local
+ADD https://download936.mediafire.com/1x0lmgf5rodg/n03p2hvnavt5xjt/blender.zip /usr/local
 RUN unzip /usr/local/blender.zip -d /usr/local
 RUN rm /usr/local/blender.zip
+
+RUN export PATH=$PATH:/usr/local/blender/blender
 
 # Install packages for the dummy display
 RUN chmod +x -R /usr/local/blender/${BLENDER_MAJOR}/python/bin

@@ -42,88 +42,135 @@
       <div id="sidebar-header">
         <h3>PhotoSpaces</h3>
       </div>
-      <div class="row row-border">
-        <div class="centered" id="uploadDiv">
-          <p>Upload model:</p>
-          <input type="file" id="inputModel" />
-          <label id="chooseFileLabel" type="primary" for="inputModel">Choose a file</label>
-          <button id="loadingModelLabel" style="display: none;" class="btn" type="button" disabled>
-            Loading...
-            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-          </button>
-        </div>
-        <div class="centered" id="clearDiv" style="display: none;">
-          <p>Clear model:</p>
+      <div class="row row-border" id="clearDiv" style="display: none;">
+        <div class="centered">
+          <p>Limpiar visor:</p>
           <button id="btnClear" class="btn" type="button">
-            Clear
+            Limpiar
           </button>
         </div>
       </div>
       <div id="optionsDiv" style="display: none">
         <div class="row row-border">
           <div class="centered">
-            <p style="font-weight: bold;">Instructions:</p>
-            Left Click: Lock controls</br>
-            W: Move forward</br>
-            S: Move backwards</br>
-            A: Move right</br>
-            D: Move left</br>
-            Space: Move up</br>
-            L. Shift: Move down</br>
-            Scroll Up: Speed Up</br>
-            Scroll Down: Speed Down</br>
+            <p style="font-weight: bold;">Intrucciones:</p>
+            Click izquierdo: Bloquear puntero</br>
+            Click derecho: Menú de objetos</br>
+            W: Adelante</br>
+            S: Atrás</br>
+            A: Izquierda</br>
+            D: Derecha</br>
+            Espacio: Arriba</br>
+            Shift Izq.: Abajo</br>
+            Scroll Arriba: Más velocidad</br>
+            Scroll Abajo: Menos velocidad</br>
             </p>
           </div>
         </div>
         <div class="row row-border">
           <div class="centered">
-            <p style="font-weight: bold;">Actions</p>
+            <p style="font-weight: bold;">Renderizado</p>
+
+            <p>Motor de renderizado:</p>
+            <input type="radio" id="eevee" name="motor" value="eevee">
+            <label for="eevee">Eevee</label>
+            <input type="radio" id="cycles" name="motor" value="cycles" style="margin-left: 2rem; margin-bottom: 2rem;">
+            <label for="cycles">Cycles</label></br>
+
+            <div id="eeveeDiv">
+              <label for="gtao" class="form-label">
+                <p>Oclusión ambiental: <input id="gtao" type="checkbox" style="margin-left: 1rem;" /></p>
+              </label></br>
+
+              <label for="bloom" class="form-label">
+                <p>Resplandor: <input id="bloom" type="checkbox" style="margin-left: 1rem;" /></p>
+              </label></br>
+
+              <label for="ssr" class="form-label">
+                <p>SSGI: <input id="ssr" type="checkbox" style="margin-left: 1rem;" /></p>
+              </label></br>
+            </div>
+
+            <label for="fovRange" class="form-label">
+              <p id="fovValue"></p>
+            </label>
+            <input id="fovRange" type="range" style="padding-top: 0;" class="form-range range" min="5" max="150"
+              step="5" />
+
+            <div style="margin-top: 1rem;">
+              <button id="btnRender" class="btn" type="button">
+                Renderizar!
+              </button>
+              <button id="btnLoading" style="display: none;" class="btn" type="button" disabled>
+                Renderizando...
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+        <div class="row row-border">
+          <div class="centered">
+            <p style="font-weight: bold;">Acciones</p>
             <p>
-              Change background:
+              Cambiar el fondo:
               <select id="backgroundSelect" class="form-select" aria-label="Default select example">
-                <option value="" selected>Nothing</option>
+                <option value="" selected>Vacío</option>
                 <option value="comfy_cafe_4k.hdr">Café</option>
                 <option value="lilienstein_4k.hdr">Field</option>
                 <option value="royal_esplanade_4k.hdr">Mall</option>
               </select>
             </p>
-
-            <button id="btnRender" style="margin-top:2rem" class="btn" type="button">
-              Render!
+            <button id="btnDownload" style="display: none;" class="btn" type="button">
+              Descargar imagen <img src="../img/download.svg" style="width: 1.2rem; height: 1.2rem; margin: 0.5rem;" />
             </button>
-            <button id="btnLoading" style="display: none;" class="btn" type="button" disabled>
-              Rendering...
-              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-            </button>
-          </div>
-        </div>
-        <div class="row row-border">
-          <div class="centered">
-            <p style="font-weight: bold;">Parameters</p>
-            <label for="fovRange" class="form-label">
-              <b id="fovValue"></b>
-            </label>
-            <input id="fovRange" type="range" style="padding-top: 0;" class="form-range range" min="5" max="150"
-              step="5">
           </div>
         </div>
       </div>
       <div id="elementsDiv" style="display: none">
         <div class="row row-border">
           <div class="centered">
-            <b>Lights</b>
+            <b>Luces</b>
             <ul id="lightsList" style="margin: auto auto auto -1rem;"></ul>
           </div>
         </div>
       </div>
     </nav>
   </div>
+  <div class="modal fade" id="renderInfoModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title" id="exampleModalLongTitle">Renderizando modelo</h4>
+          <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        </div>
+        <div class="modal-body">
+          <p>Peticiones actuales en cola: <span id="actualQueue"></span></p>
+          <p>Tiempo estimado del proceso actual: <span id="actualTime"></span></p>
+        </div>
+        <div id="modalFooter" class="modal-footer" style="display: none;">
+          <button id="btnCloseModal" type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
   <!-- Page Content -->
   <div id="content">
+    <div id="loadModelDiv" class="drag-area">
+      <header>Arrastra un modelo glTF/glb</header>
+      <span style="font-size: 1.5rem;color: #fff; margin: 0.5rem 0 0.75rem 0; font-weight: 600;">o</span>
+      <input type="file" id="inputModel" />
+      <label id="chooseFileLabel" type="primary" for="inputModel">Elige un
+        archivo</label>
+      <button id="loadingModelLabel" style="display: none;" class="btn" type="button" disabled>
+        Cargando...
+        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+      </button>
+    </div>
     <canvas id="canvas"></canvas>
     <div id="context-menu">
-      <div class="item" id="addDLight">Add Directional Light</div>
-      <div class="item" id="addPLight">Add Point Light</div>
+      <div class="item" id="addDLight">Añadir Luz Direccional</div>
+      <div class="item" id="addPLight">Añadir Luz de Punto</div>
     </div>
   </div>
 </body>

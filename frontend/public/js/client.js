@@ -12,17 +12,25 @@ const canvas = document.getElementById("canvas");
 const btnRender = document.getElementById("btnRender");
 const btnLoading = document.getElementById("btnLoading");
 const btnClear = document.getElementById("btnClear");
+const btnDownload = document.getElementById("btnDownload");
 const chooseFileLabel = document.getElementById("chooseFileLabel");
 const loadingModelLabel = document.getElementById("loadingModelLabel");
 
 const optionsDiv = document.getElementById("optionsDiv");
-const uploadDiv = document.getElementById("uploadDiv");
+const loadModelDiv = document.getElementById("loadModelDiv");
 const clearDiv = document.getElementById("clearDiv");
 
 const optionsFOV = document.getElementById("fovRange");
 const fovValue = document.getElementById("fovValue");
 
 const backgroundSelect = document.getElementById("backgroundSelect");
+
+// Parametros de renderizacion
+const eeveeEngine = document.getElementById("eevee");
+const cyclesEngine = document.getElementById("cycles");
+const gtao = document.getElementById("gtao");
+const bloom = document.getElementById("bloom");
+const ssr = document.getElementById("ssr");
 
 const link = document.createElement("a");
 link.style.display = "none";
@@ -45,12 +53,15 @@ let controls;
 const elementsDiv = document.getElementById("elementsDiv");
 const lightsList = document.getElementById("lightsList");
 let lights = 0;
+let fileCN;
 
 // Scene
 let scene, renderer;
 
+// Descarga lista
+let intervalUpdate;
+
 const downloadImage = (body) => {
-  const fileCN = inputField.files[0].name;
   const fileName =
     fileCN.substring(fileCN.length - 5, fileCN.length) === ".gltf"
       ? fileCN.substring(0, fileCN.length - 5)
@@ -67,10 +78,41 @@ const downloadImage = (body) => {
       return fileStream.read().then(processData);
     })
     .then(() => {
+      btnDownload.style.display = "block";
+
       link.href = URL.createObjectURL(new Blob(chunks, { type: "image/png" }));
       link.download = `${fileName}.png`;
-      link.click();
+
+      btnDownload.onclick = () => link.click();
+
+      clearInterval(intervalUpdate);
+
+      $("#renderInfoModal").modal("hide");
     });
+};
+
+const updateTimeAndQueue = () => {
+  const actualQueue = document.getElementById("actualQueue");
+  const actualTime = document.getElementById("actualTime");
+
+  $("#renderInfoModal").modal("show");
+
+  intervalUpdate = setInterval(() => {
+    // Fetch cola
+    fetch("http://localhost:3030/queue", { method: "GET" })
+      .then((res) => res.json())
+      .then((queue) => (actualQueue.innerHTML = queue));
+
+    // Fetch tiempo
+    fetch("http://localhost:3030/time", { method: "GET" })
+      .then((res) => res.json())
+      .then(
+        (time) =>
+          (actualTime.innerHTML = new Date(time.remaining)
+            .toISOString()
+            .slice(11, -1))
+      );
+  }, 2000);
 };
 
 // Send the model to backend
@@ -80,51 +122,47 @@ const sendModel = async (cam) => {
   const quaternion = new THREE.Quaternion();
   quaternion.setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2);
   const newQ = quaternion.multiply(cam.quaternion);
+
   const camData = {
     lens: cam.getFocalLength(),
     clip_start: cam.near,
     clip_end: cam.far,
-    location_x: cam.position.x,
-    location_y: -cam.position.z,
-    location_z: cam.position.y,
-    qua_w: newQ.w,
-    qua_x: newQ.x,
-    qua_y: newQ.y,
-    qua_z: newQ.z,
+    location: { x: cam.position.x, y: -cam.position.z, z: cam.position.y },
+    qua: newQ,
+    motor: eeveeEngine.checked ? "BLENDER_EEVEE" : "CYCLES",
+    gtao: gtao.checked,
+    bloom: bloom.checked,
+    ssr: ssr.checked,
   };
 
   // Parse the input and generate the glTF output
-  exporter.parse(
-    scene,
-    async (gltf) => {
-      formData.append(
-        "model",
-        new Blob([JSON.stringify(gltf, null, 2)], { type: "text/plain" })
-      );
-      formData.append("data", JSON.stringify(camData));
+  exporter.parse(scene, async (gltf) => {
+    formData.append(
+      "model",
+      new Blob([JSON.stringify(gltf, null, 2)], { type: "text/plain" })
+    );
+    formData.append("data", JSON.stringify(camData));
 
-      try {
-        btnRender.style.display = "none";
-        btnLoading.style.display = "block";
-        const res = await fetch(
-          "http://localhost:3030/render",
-          //"https://photospaces-server.herokuapp.com/render",
-          {
-            method: "POST",
-            body: formData,
-          }
-        );
+    btnRender.style.display = "none";
+    btnLoading.style.display = "block";
+    fetch(
+      "http://localhost:3030/render",
+      //"https://photospaces-server.herokuapp.com/render",
+      {
+        method: "POST",
+        body: formData,
+      }
+    )
+      .then((res) => {
         btnLoading.style.display = "none";
         btnRender.style.display = "block";
         downloadImage(res.body);
-      } catch (e) {
-        console.log(e);
-      }
-    },
-    {
-      //binary: true
-    }
-  );
+      })
+      .catch((e) => console.log(e));
+
+    // Controlar el tiempo y la cola
+    updateTimeAndQueue();
+  });
 };
 
 const addModelToScene = (file, camera, render) => {
@@ -250,7 +288,7 @@ const initializeControls = (camera) => {
   btnClear.addEventListener("click", clear);
 
   optionsDiv.style.display = "block";
-  uploadDiv.style.display = "none";
+  loadModelDiv.style.display = "none";
   clearDiv.style.display = "block";
 
   fovValue.innerHTML = `FOV: ${optionsFOV.value}`;
@@ -331,19 +369,24 @@ const addLightToScene = (type) => {
     light.target.position.set(-5, 0, 0);
     light.name = type + " " + lights;
 
+    light.children[0] = light.target;
+
+    console.log(light);
+
     scene.add(light);
     scene.add(light.target);
 
-    helper = new THREE.DirectionalLightHelper(light, 10, 0x000000);
+    helper = new THREE.DirectionalLightHelper(light, 1, 0x000000);
   } else if (type === "Point") {
     light = new THREE.PointLight(color, intensity);
 
     light.position.set(0, 10, 0);
     light.name = type + " " + lights;
+    light.decay = 2;
 
     scene.add(light);
 
-    helper = new THREE.PointLightHelper(light, 10, 0x000000);
+    helper = new THREE.PointLightHelper(light, 1, 0x000000);
   }
 
   helper.name = light.name + "Helper";
@@ -352,12 +395,16 @@ const addLightToScene = (type) => {
   // On GUI change
   const updateLight = () => {
     helper.update();
+    if (light.type === "DirectionalLight") {
+      scene.remove(light.target);
+      scene.add(light.target);
+    }
   };
 
   updateLight();
 
   const mainFolder = gui.addFolder(type + " " + lights);
-  mainFolder.add(light, "intensity", 0, 2, 0.01).onChange(updateLight);
+  mainFolder.add(light, "intensity", 0, 1000, 0.01).onChange(updateLight);
   makeXYZGUI(mainFolder, light.position, "Position", updateLight);
   if (type === "Directional")
     makeXYZGUI(mainFolder, light.target.position, "Target", updateLight);
@@ -384,6 +431,8 @@ const loadModel = (file) => {
     alpha: true,
   });
 
+  renderer.physicallyCorrectLights = true;
+
   const camera = new THREE.PerspectiveCamera(
     75,
     window.innerWidth / window.innerHeight,
@@ -394,11 +443,6 @@ const loadModel = (file) => {
   scene = new THREE.Scene();
 
   renderer.setPixelRatio(window.devicePixelRatio);
-  /*
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1;
-  renderer.outputEncoding = THREE.sRGBEncoding;
-  */
 
   const render = () => {
     if (resizeRendererToDisplaySize(renderer)) {
@@ -454,7 +498,7 @@ const clear = () => {
   prevTime = performance.now();
 
   optionsDiv.style.display = "none";
-  uploadDiv.style.display = "block";
+  loadModelDiv.style.display = "block";
   clearDiv.style.display = "none";
   chooseFileLabel.style.display = "block";
   loadingModelLabel.style.display = "none";
@@ -462,10 +506,7 @@ const clear = () => {
   inputField.value = "";
 };
 
-// HTML Events
-inputField.onchange = (event) => {
-  const file = event.target.files[0];
-
+const handleNewFile = (file) => {
   if (
     file &&
     (file.name.substring(file.name.length - 5, file.name.length) === ".gltf" ||
@@ -473,6 +514,7 @@ inputField.onchange = (event) => {
   ) {
     // create a file reader
     const reader = new FileReader();
+    fileCN = file.name;
 
     // loading label
     chooseFileLabel.style.display = "none";
@@ -488,6 +530,12 @@ inputField.onchange = (event) => {
   } else {
     alert("You need to choose a .glb or .gltf file!");
   }
+};
+
+// HTML Events
+inputField.onchange = (event) => {
+  const file = event.target.files[0];
+  handleNewFile(file);
 };
 
 const backgroundChange = (sel) => {
@@ -517,6 +565,36 @@ $("#backgroundSelect").on("change", function () {
 });
 
 backgroundSelect.selectedIndex = 0;
+
+const eeveeDiv = document.getElementById("eeveeDiv");
+eeveeEngine.addEventListener(
+  "change",
+  () => (eeveeDiv.style.display = "block")
+);
+
+cyclesEngine.addEventListener(
+  "change",
+  () => (eeveeDiv.style.display = "none")
+);
+
+if (eeveeEngine.checked) eeveeDiv.style.display = "block";
+else eeveeDiv.style.display = "none";
+
+// Drag & Drop
+const preventDefaults = (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+};
+
+["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
+  loadModelDiv.addEventListener(eventName, preventDefaults, false);
+});
+
+loadModelDiv.addEventListener(
+  "drop",
+  (e) => handleNewFile(e.dataTransfer.files[0]),
+  false
+);
 
 // Menu click-derecho
 // TODO Hacer innacesible antes de cargar el modelo

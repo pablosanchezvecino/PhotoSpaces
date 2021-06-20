@@ -1,10 +1,10 @@
-const renderLogic = require("../logic/renderLogic");
+import { Worker } from "worker_threads";
+import { saveTempFile, deleteTempFiles } from "../logic/fileLogic.js";
+import { setTimeEstimation } from "../logic/timeLogic.js";
 
-exports.upload = async (req, res, next) => {
+export async function upload(req, res, next) {
   try {
     console.log("Processing model...");
-
-    const fileName = await renderLogic.upload(req.body, req.files.model);
     const options = {
       root: "./public/",
       dotfiles: "deny",
@@ -14,21 +14,27 @@ exports.upload = async (req, res, next) => {
       },
     };
 
-    res.status(201).sendFile(`${fileName}.png`, options, (err) => {
-      if (err) throw err;
-      else renderLogic.deleteTempFiles(fileName);
+    const model = req.files.model;
+    saveTempFile(model);
+
+    const worker = new Worker("./src/logic/renderLogic.js", {
+      workerData: {
+        data: req.body.data,
+        fileName: model.md5,
+      },
+    });
+
+    worker.on("message", (message) => {
+      if (message.includes("file")) {
+        setTimeEstimation(JSON.parse(message));
+      } else {
+        res.status(201).sendFile(`${message}.png`, options, (err) => {
+          if (err) throw err;
+          else deleteTempFiles(message);
+        });
+      }
     });
   } catch (e) {
     next(e);
   }
-};
-
-/*
-exports.findAll = async function (req, res, next) {
-  try {
-    res.status(200).json(await allFacade.find(Template));
-  } catch (err) {
-    next(err);
-  }
-};
-*/
+}

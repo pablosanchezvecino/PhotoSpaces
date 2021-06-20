@@ -1,13 +1,17 @@
-const express = require("express");
+import express from "express";
+import morgan from "morgan";
+import fileUpload from "express-fileupload";
+import queue from "express-queue";
 const app = express();
 const port = process.env.PORT || 3030;
-const morgan = require("morgan");
-const fileUpload = require("express-fileupload");
 
-/* Middleware */
+// Para el log de consola
 app.use(morgan("dev"));
 
-// For form data
+// La cola de la app
+export const requestQueue = queue({ activeLimit: 1, queuedLimit: -1 });
+
+// Para aceptar FormData
 app.use(fileUpload());
 
 app.use((req, res, next) => {
@@ -24,13 +28,15 @@ app.use((req, res, next) => {
 });
 
 /* Routes */
-const root = "./src/routes";
-const routes = require(root + "/renderRoute");
+import renderRoute from "./src/routes/renderRoute.js";
+import timeRoute from "./src/routes/timeRoute.js";
+import queueRoute from "./src/routes/queueRoute.js";
 
-app.use("/render", routes);
+app.use("/render", requestQueue, renderRoute);
+app.use("/queue", queueRoute);
+app.use("/time", timeRoute);
 
 /*Error Route*/
-
 app.use((req, res, next) => {
   const error = new Error(
     "Method " + req.method + " for " + req.originalUrl + " not found"

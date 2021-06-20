@@ -1,19 +1,17 @@
 FROM node:14.15
 
-# Create app directory
+# Crea el directorio de la aplicacion
 WORKDIR /usr/src/app
 
-# Install app dependencies
-# A wildcard is used to ensure both package.json AND package-lock.json are copied
-# where available (npm@5+)
+# Instala las dependencias de la aplicacion que estan en el archivo
 COPY package*.json ./
-
 RUN npm install
-# If you are building your code for production
-# RUN npm ci --only=production
 
-# Bundle app source
+# Copia toda la informacion al contenedor
 COPY . .
 
+# Abre el puerto 8080
 EXPOSE 8080
+
+# Ejecuta el comando al inicio
 CMD [ "node", "app.js" ]

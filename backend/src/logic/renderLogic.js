@@ -1,25 +1,54 @@
-const { execSync } = require("child_process");
-const fs = require("fs");
+import { parentPort, workerData } from "worker_threads";
+import { spawn } from "child_process";
 
-const execute = async (data, filename) => {
-  execSync(
-    `/usr/local/blender/blender -b -P src/logic/blender/renderScript.py -- ${filename} ${data.lens} ${data.clip_start} ${data.clip_end} ${data.location_x} ${data.location_y} ${data.location_z} ${data.qua_w} ${data.qua_x} ${data.qua_y} ${data.qua_z}`
+const timeToMillis = (data, type) => {
+  const slice =
+    type === "Time"
+      ? data.slice(data.indexOf("Time") + 5, data.indexOf("Time") + 14)
+      : data.slice(
+          data.indexOf("Remaining") + 10,
+          data.indexOf("Remaining") + 18
+        );
+  const time = slice.toString().replace(".", ":").split(":");
+  return (
+    (parseInt(time[0]) * 60 + parseInt(time[1])) * 1000 + parseInt(time[2])
   );
 };
 
-exports.upload = async (body, model) => {
-  fs.writeFileSync(`./public/${model.md5}.gltf`, Buffer.from(model.data));
+const execute = async (modelData, filename) => {
+  const timeEstimation = {
+    file: "",
+    time: 0,
+    remaining: 0,
+  };
+  const dataString = JSON.stringify(modelData);
+  const command = spawn(process.env.BLENDER_CMD || "blender", [
+    "-b",
+    "-P",
+    process.env.BLENDER_SCRIPT || "src/logic/blender/renderScript.py",
+    `${filename}`,
+    `${dataString}`,
+  ]);
 
-  await execute(JSON.parse(body.data), model.md5);
+  command.stdout.on("data", (data) => {
+    if (data.toString().includes("Time")) {
+      timeEstimation.file = filename;
+      timeEstimation.time = timeToMillis(data.toString(), "Time");
+      timeEstimation.remaining = data.toString().includes("Remaining")
+        ? timeToMillis(data.toString(), "Remaining")
+        : timeEstimation.remaining;
+      parentPort.postMessage(JSON.stringify(timeEstimation));
+    }
+  });
 
-  return model.md5;
+  command.stderr.on("data", (data) => {
+    console.error(`stderr: ${data}`);
+  });
+
+  command.on("close", (code) => {
+    parentPort.postMessage(workerData.fileName);
+    process.exit();
+  });
 };
 
-exports.deleteTempFiles = (fileName) => {
-  fs.unlink(`./public/${fileName}.gltf`, (err) => {
-    if (err) throw err;
-  });
-  fs.unlink(`./public/${fileName}.png`, (err) => {
-    if (err) throw err;
-  });
-};
+execute(JSON.parse(workerData.data), workerData.fileName);

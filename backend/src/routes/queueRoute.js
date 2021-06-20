@@ -1,7 +1,7 @@
 import express from "express";
+import { checkQueue } from "../services/queueService.js";
 const router = express.Router();
-import { upload } from "../services/renderService.js";
 
-router.post("/", upload);
+router.get("/", checkQueue);
 
 export default router;

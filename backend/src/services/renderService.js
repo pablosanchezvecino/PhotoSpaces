@@ -5,6 +5,8 @@ import { setTimeEstimation } from "../logic/timeLogic.js";
 export async function upload(req, res, next) {
   try {
     console.log("Processing model...");
+
+    // Optiones para la respuesta de la petición
     const options = {
       root: "./public/",
       dotfiles: "deny",
@@ -14,9 +16,11 @@ export async function upload(req, res, next) {
       },
     };
 
+    // Tomamos el modelo de la petición y lo guardamos temporalmente
     const model = req.files.model;
     saveTempFile(model);
 
+    // Creamos el worker (thread) para la ejecución de el renderizado
     const worker = new Worker("./src/logic/renderLogic.js", {
       workerData: {
         data: req.body.data,
@@ -24,6 +28,9 @@ export async function upload(req, res, next) {
       },
     });
 
+    // Recibimos los mensajes del worker, si es un mensaje de tiempo
+    // actualizamos el objeto, sino, respondemos a la petición y
+    // borramos los ficheros temporales
     worker.on("message", (message) => {
       if (message.includes("file")) {
         setTimeEstimation(JSON.parse(message));

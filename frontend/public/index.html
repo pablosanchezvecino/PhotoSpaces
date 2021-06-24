@@ -7,7 +7,7 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge" />
   <title>PhotoSpaces</title>
 
-  <!-- Icon -->
+  <!-- Icono -->
   <link rel="icon" href="./img/favicon.ico" />
 
   <!-- CSS -->
@@ -32,12 +32,11 @@
 
   <!-- JavaScript -->
   <script type="module" src="./js/client.js"></script>
-  <script src="./js/utils.js"></script>
 </head>
 
 <body>
   <div class="wrapper">
-    <!-- Sidebar -->
+    <!-- Panel lateral -->
     <nav id="sidebar">
       <div id="sidebar-header">
         <h3>PhotoSpaces</h3>
@@ -137,11 +136,12 @@
       </div>
     </nav>
   </div>
+  <!-- Ventana de información de renderizado -->
   <div class="modal fade" id="renderInfoModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h4 class="modal-title" id="exampleModalLongTitle">Renderizando modelo</h4>
+          <h4 class="modal-title">Renderizando modelo</h4>
           <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
         </div>
         <div class="modal-body">
@@ -154,7 +154,7 @@
       </div>
     </div>
   </div>
-  <!-- Page Content -->
+  <!-- Contenido del visor (Drag&Drop, Canvas y Menú de luces) -->
   <div id="content">
     <div id="loadModelDiv" class="drag-area">
       <header>Arrastra un modelo glTF/glb</header>

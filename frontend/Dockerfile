@@ -1,7 +1,8 @@
-FROM node:14.15
+FROM node:16-alpine
 
 # Crea el directorio de la aplicacion
 WORKDIR /usr/src/app
+ENV BLENDER_MAJOR 3.0
 
 # Instala las dependencias de la aplicacion que estan en el archivo
 COPY package*.json ./

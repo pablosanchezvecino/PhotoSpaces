@@ -5,7 +5,7 @@ import { GLTFExporter } from "/jsm/exporters/GLTFExporter.js";
 import { RGBELoader } from "/jsm/loaders/RGBELoader.js";
 import { GUI } from "/jsm/libs/dat.gui.module.js";
 
-// HTML Elements
+// > Elementos HTML
 const inputField = document.getElementById("inputModel");
 const canvas = document.getElementById("canvas");
 
@@ -25,18 +25,25 @@ const fovValue = document.getElementById("fovValue");
 
 const backgroundSelect = document.getElementById("backgroundSelect");
 
-// Parametros de renderizacion
+// - Parametros de renderizacion
 const eeveeEngine = document.getElementById("eevee");
 const cyclesEngine = document.getElementById("cycles");
 const gtao = document.getElementById("gtao");
 const bloom = document.getElementById("bloom");
 const ssr = document.getElementById("ssr");
 
+// - Enlace para la descarga de la imagen
 const link = document.createElement("a");
 link.style.display = "none";
 document.body.appendChild(link);
 
-// Movement var.
+// - Luces
+const elementsDiv = document.getElementById("elementsDiv");
+const lightsList = document.getElementById("lightsList");
+let lights = 0;
+let fileCN;
+
+// > Variables de movimiento
 let moveForward = false;
 let moveBackward = false;
 let moveLeft = false;
@@ -50,123 +57,103 @@ const direction = new THREE.Vector3();
 let prevTime = performance.now();
 let controls;
 
-const elementsDiv = document.getElementById("elementsDiv");
-const lightsList = document.getElementById("lightsList");
-let lights = 0;
-let fileCN;
+// > Escena, renderizador e intervalo de actualizacion
+let scene, renderer, intervalUpdate;
 
-// Scene
-let scene, renderer;
+// Validar y asignar un nuevo archivo
+const handleNewFile = (file) => {
+  if (
+    file &&
+    (file.name.substring(file.name.length - 5, file.name.length) === ".gltf" ||
+      file.name.substring(file.name.length - 4, file.name.length) === ".glb")
+  ) {
+    // create a file reader
+    const reader = new FileReader();
+    fileCN = file.name;
 
-// Descarga lista
-let intervalUpdate;
+    // loading label
+    chooseFileLabel.style.display = "none";
+    loadingModelLabel.style.display = "block";
 
-const downloadImage = (body) => {
-  const fileName =
-    fileCN.substring(fileCN.length - 5, fileCN.length) === ".gltf"
-      ? fileCN.substring(0, fileCN.length - 5)
-      : fileCN.substring(fileCN.length - 4, fileCN.length) === ".glb"
-      ? fileCN.substring(0, fileCN.length - 4)
-      : "undefined";
-  const fileStream = body.getReader();
-  let chunks = [];
-  fileStream
-    .read()
-    .then(function processData({ done, value }) {
-      if (done) return;
-      chunks.push(value);
-      return fileStream.read().then(processData);
-    })
-    .then(() => {
-      btnDownload.style.display = "block";
+    // set on load handler for reader
+    reader.onload = () => {
+      loadModel(reader.result);
+    };
 
-      link.href = URL.createObjectURL(new Blob(chunks, { type: "image/png" }));
-      link.download = `${fileName}.png`;
-
-      btnDownload.onclick = () => link.click();
-
-      clearInterval(intervalUpdate);
-
-      $("#renderInfoModal").modal("hide");
-    });
+    // read the file as text using the reader
+    reader.readAsArrayBuffer(file);
+  } else {
+    alert("You need to choose a .glb or .gltf file!");
+  }
 };
 
-const updateTimeAndQueue = () => {
-  const actualQueue = document.getElementById("actualQueue");
-  const actualTime = document.getElementById("actualTime");
+// Cargar el modelo en el visor
+const loadModel = (file) => {
+  renderer = new THREE.WebGLRenderer({
+    canvas,
+    antialias: true,
+    alpha: true,
+  });
 
-  $("#renderInfoModal").modal("show");
+  renderer.physicallyCorrectLights = true;
 
-  intervalUpdate = setInterval(() => {
-    // Fetch cola
-    fetch("http://localhost:3030/queue", { method: "GET" })
-      .then((res) => res.json())
-      .then((queue) => (actualQueue.innerHTML = queue));
+  const camera = new THREE.PerspectiveCamera(
+    75,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    10000
+  );
 
-    // Fetch tiempo
-    fetch("http://localhost:3030/time", { method: "GET" })
-      .then((res) => res.json())
-      .then(
-        (time) =>
-          (actualTime.innerHTML = new Date(time.remaining)
-            .toISOString()
-            .slice(11, -1))
-      );
-  }, 2000);
-};
+  scene = new THREE.Scene();
 
-// Send the model to backend
-const sendModel = async (cam) => {
-  const exporter = new GLTFExporter();
-  const formData = new FormData();
-  const quaternion = new THREE.Quaternion();
-  quaternion.setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2);
-  const newQ = quaternion.multiply(cam.quaternion);
+  renderer.setPixelRatio(window.devicePixelRatio);
 
-  const camData = {
-    lens: cam.getFocalLength(),
-    clip_start: cam.near,
-    clip_end: cam.far,
-    location: { x: cam.position.x, y: -cam.position.z, z: cam.position.y },
-    qua: newQ,
-    motor: eeveeEngine.checked ? "BLENDER_EEVEE" : "CYCLES",
-    gtao: gtao.checked,
-    bloom: bloom.checked,
-    ssr: ssr.checked,
+  const render = () => {
+    if (resizeRendererToDisplaySize(renderer)) {
+      const canvas = renderer.domElement;
+      camera.aspect = canvas.clientWidth / canvas.clientHeight;
+      camera.updateProjectionMatrix();
+    }
+
+    requestAnimationFrame(render);
+
+    const time = performance.now();
+    if (controls.isLocked === true) {
+      const delta = (time - prevTime) / 1000;
+
+      velocity.x -= velocity.x * speedMulti * delta;
+      velocity.z -= velocity.z * speedMulti * delta;
+      velocity.y -= velocity.y * speedMulti * delta;
+
+      direction.z = Number(moveForward) - Number(moveBackward);
+      direction.x = Number(moveRight) - Number(moveLeft);
+      direction.y = Number(moveDown) - Number(moveUp);
+      direction.normalize();
+
+      if (moveForward || moveBackward)
+        velocity.z -= direction.z * 400.0 * delta;
+      if (moveLeft || moveRight) velocity.x -= direction.x * 400.0 * delta;
+      if (moveUp || moveDown) velocity.y -= direction.y * 400.0 * delta;
+
+      controls.moveRight(-velocity.x * delta);
+      controls.moveForward(-velocity.z * delta);
+
+      controls.getObject().position.y += velocity.y * delta; // new behavior
+    }
+    prevTime = time;
+
+    renderer.render(scene, camera);
   };
 
-  // Parse the input and generate the glTF output
-  exporter.parse(scene, async (gltf) => {
-    formData.append(
-      "model",
-      new Blob([JSON.stringify(gltf, null, 2)], { type: "text/plain" })
-    );
-    formData.append("data", JSON.stringify(camData));
-
-    btnRender.style.display = "none";
-    btnLoading.style.display = "block";
-    fetch(
-      "http://localhost:3030/render",
-      //"https://photospaces-server.herokuapp.com/render",
-      {
-        method: "POST",
-        body: formData,
-      }
-    )
-      .then((res) => {
-        btnLoading.style.display = "none";
-        btnRender.style.display = "block";
-        downloadImage(res.body);
-      })
-      .catch((e) => console.log(e));
-
-    // Controlar el tiempo y la cola
-    updateTimeAndQueue();
-  });
+  // Añadir el modelo a la escena
+  addModelToScene(file, camera, render, renderer);
 };
 
+// Añadir el modelo a la escena
 const addModelToScene = (file, camera, render) => {
   const gltfLoader = new GLTFLoader();
+
+  // Importamos el modelo y usamos la cámara si la tiene
   gltfLoader.parse(file, "./", (gltf) => {
     const root = gltf.scene;
     const cameras = root.children.filter(
@@ -194,15 +181,18 @@ const addModelToScene = (file, camera, render) => {
     }
     camera.updateProjectionMatrix();
 
+    // Añadimos el modelo a la escena
     scene.add(root);
 
-    // Initialize controls
+    // Inicializamos los controles
     initializeControls(camera);
 
+    // Actualizamos el renderizador
     requestAnimationFrame(render);
   });
 };
 
+// Inizialización de los controles con los listeners para los elementos
 const initializeControls = (camera) => {
   controls = new PointerLockControls(camera, canvas);
   scene.add(controls.getObject());
@@ -306,54 +296,20 @@ const initializeControls = (camera) => {
   document.addEventListener("keyup", onKeyUp);
 };
 
-const makeXYZGUI = (gui, vector3, name, onChangeFn) => {
-  const folder = gui.addFolder(name);
-  folder.add(vector3, "x", -1000, 1000).onChange(onChangeFn);
-  folder.add(vector3, "y", -1000, 1000).onChange(onChangeFn);
-  folder.add(vector3, "z", -1000, 1000).onChange(onChangeFn);
-  folder.open();
+// Reestablecer tamañor del renderizador si se modifica el tamaño
+// de la ventana
+const resizeRendererToDisplaySize = (renderer) => {
+  const canvas = renderer.domElement;
+  const width = canvas.clientWidth;
+  const height = canvas.clientHeight;
+  const needResize = canvas.width !== width || canvas.height !== height;
+  if (needResize) {
+    renderer.setSize(width, height, false);
+  }
+  return needResize;
 };
 
-const removeLight = (name, gui) => {
-  const lightToRemove = scene.getObjectByName(name);
-  const helperToRemove = scene.getObjectByName(name + "Helper");
-
-  scene.remove(lightToRemove);
-  scene.remove(helperToRemove);
-
-  gui.destroy();
-
-  lightsList.removeChild(document.getElementById(name));
-  lights--;
-  if (lights === 0) elementsDiv.style.display = "none";
-};
-
-const addLightToDiv = (type, name, gui) => {
-  if (lights === 1) elementsDiv.style.display = "block";
-
-  const node = document.createElement("li");
-  node.id = name;
-  const span = document.createElement("span");
-  span.textContent = type + " " + lights;
-  span.style.display = "ruby";
-
-  const img = document.createElement("img");
-  img.src = "../img/trash.svg";
-  img.className = "removeLight";
-  img.style.width = "1.5rem";
-  img.style.height = "1.5rem";
-  img.style.marginLeft = "2rem";
-  img.onclick = () => removeLight(name, gui);
-
-  span.appendChild(img);
-  node.appendChild(span);
-
-  node.style.marginTop = "0.5rem";
-
-  lightsList.appendChild(node);
-};
-
-// Only directional, point and spot lights are supported
+// Añadir luces a la escena dependiendo de la opción seleccionada
 const addLightToScene = (type) => {
   const color = 0xffffff;
   const intensity = 1;
@@ -412,79 +368,165 @@ const addLightToScene = (type) => {
   addLightToDiv(type, light.name, gui);
 };
 
-const resizeRendererToDisplaySize = (renderer) => {
-  const canvas = renderer.domElement;
-  const width = canvas.clientWidth;
-  const height = canvas.clientHeight;
-  const needResize = canvas.width !== width || canvas.height !== height;
-  if (needResize) {
-    renderer.setSize(width, height, false);
-  }
-  return needResize;
+// Creación de la carpeta de posición para las luces
+const makeXYZGUI = (gui, vector3, name, onChangeFn) => {
+  const folder = gui.addFolder(name);
+  folder.add(vector3, "x", -1000, 1000).onChange(onChangeFn);
+  folder.add(vector3, "y", -1000, 1000).onChange(onChangeFn);
+  folder.add(vector3, "z", -1000, 1000).onChange(onChangeFn);
+  folder.open();
 };
 
-// Load the model into the visualizer
-const loadModel = (file) => {
-  renderer = new THREE.WebGLRenderer({
-    canvas,
-    antialias: true,
-    alpha: true,
-  });
+// Eliminar los objetos de luces de la escena
+const removeLight = (name, gui) => {
+  const lightToRemove = scene.getObjectByName(name);
+  const helperToRemove = scene.getObjectByName(name + "Helper");
 
-  renderer.physicallyCorrectLights = true;
+  scene.remove(lightToRemove);
+  scene.remove(helperToRemove);
 
-  const camera = new THREE.PerspectiveCamera(
-    75,
-    window.innerWidth / window.innerHeight,
-    0.1,
-    10000
-  );
+  gui.destroy();
 
-  scene = new THREE.Scene();
+  lightsList.removeChild(document.getElementById(name));
+  lights--;
+  if (lights === 0) elementsDiv.style.display = "none";
+};
 
-  renderer.setPixelRatio(window.devicePixelRatio);
+// Añadir luces al elemento del div
+const addLightToDiv = (type, name, gui) => {
+  if (lights === 1) elementsDiv.style.display = "block";
 
-  const render = () => {
-    if (resizeRendererToDisplaySize(renderer)) {
-      const canvas = renderer.domElement;
-      camera.aspect = canvas.clientWidth / canvas.clientHeight;
-      camera.updateProjectionMatrix();
-    }
+  const node = document.createElement("li");
+  node.id = name;
+  const span = document.createElement("span");
+  span.textContent = type + " " + lights;
+  span.style.display = "ruby";
 
-    requestAnimationFrame(render);
+  const img = document.createElement("img");
+  img.src = "../img/trash.svg";
+  img.className = "removeLight";
+  img.style.width = "1.5rem";
+  img.style.height = "1.5rem";
+  img.style.marginLeft = "2rem";
+  img.onclick = () => removeLight(name, gui);
 
-    const time = performance.now();
-    if (controls.isLocked === true) {
-      const delta = (time - prevTime) / 1000;
+  span.appendChild(img);
+  node.appendChild(span);
 
-      velocity.x -= velocity.x * speedMulti * delta;
-      velocity.z -= velocity.z * speedMulti * delta;
-      velocity.y -= velocity.y * speedMulti * delta;
+  node.style.marginTop = "0.5rem";
 
-      direction.z = Number(moveForward) - Number(moveBackward);
-      direction.x = Number(moveRight) - Number(moveLeft);
-      direction.y = Number(moveDown) - Number(moveUp);
-      direction.normalize();
+  lightsList.appendChild(node);
+};
 
-      if (moveForward || moveBackward)
-        velocity.z -= direction.z * 400.0 * delta;
-      if (moveLeft || moveRight) velocity.x -= direction.x * 400.0 * delta;
-      if (moveUp || moveDown) velocity.y -= direction.y * 400.0 * delta;
+// Exporta y envía el modelo al servidor
+const sendModel = async (cam) => {
+  const exporter = new GLTFExporter();
+  const formData = new FormData();
+  const quaternion = new THREE.Quaternion();
+  quaternion.setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2);
+  const newQ = quaternion.multiply(cam.quaternion);
 
-      controls.moveRight(-velocity.x * delta);
-      controls.moveForward(-velocity.z * delta);
-
-      controls.getObject().position.y += velocity.y * delta; // new behavior
-    }
-    prevTime = time;
-
-    renderer.render(scene, camera);
+  // Datos de la cámara y parámetros de renderizado
+  const camData = {
+    lens: cam.getFocalLength(),
+    clip_start: cam.near,
+    clip_end: cam.far,
+    location: { x: cam.position.x, y: -cam.position.z, z: cam.position.y },
+    qua: newQ,
+    motor: eeveeEngine.checked ? "BLENDER_EEVEE" : "CYCLES",
+    gtao: gtao.checked,
+    bloom: bloom.checked,
+    ssr: ssr.checked,
   };
 
-  // Load the model
-  addModelToScene(file, camera, render, renderer);
+  // Exportamos la escena y la convertimos en un Blob para enviarla
+  exporter.parse(scene, async (gltf) => {
+    formData.append(
+      "model",
+      new Blob([JSON.stringify(gltf, null, 2)], { type: "text/plain" })
+    );
+    formData.append("data", JSON.stringify(camData));
+
+    btnRender.style.display = "none";
+    btnLoading.style.display = "block";
+    fetch("http://localhost:3030/render", {
+      method: "POST",
+      body: formData,
+    })
+      .then((res) => {
+        btnLoading.style.display = "none";
+        btnRender.style.display = "block";
+        downloadImage(res.body);
+      })
+      .catch((e) => console.log(e));
+
+    // Controlar el tiempo y la cola
+    updateTimeAndQueue();
+  });
 };
 
+// Actualiza los datos del proceso de renderizado
+const updateTimeAndQueue = () => {
+  const actualQueue = document.getElementById("actualQueue");
+  const actualTime = document.getElementById("actualTime");
+
+  $("#renderInfoModal").modal("show");
+
+  intervalUpdate = setInterval(() => {
+    // Fetch cola
+    fetch("http://localhost:3030/queue", { method: "GET" })
+      .then((res) => res.json())
+      .then((queue) => (actualQueue.innerHTML = queue));
+
+    // Fetch tiempo
+    fetch("http://localhost:3030/time", { method: "GET" })
+      .then((res) => res.json())
+      .then(
+        (time) =>
+          (actualTime.innerHTML = new Date(time.remaining)
+            .toISOString()
+            .slice(11, -1))
+      );
+  }, 2000);
+};
+
+// Proceso de descarga de la imagen en respuesta
+const downloadImage = (body) => {
+  // Nombre del archivo
+  const fileName =
+    fileCN.substring(fileCN.length - 5, fileCN.length) === ".gltf"
+      ? fileCN.substring(0, fileCN.length - 5)
+      : fileCN.substring(fileCN.length - 4, fileCN.length) === ".glb"
+      ? fileCN.substring(0, fileCN.length - 4)
+      : "undefined";
+
+  // Flujo de datos
+  const fileStream = body.getReader();
+  let chunks = [];
+  fileStream
+    .read()
+    .then(function processData({ done, value }) {
+      if (done) return;
+      chunks.push(value);
+      return fileStream.read().then(processData);
+    })
+    .then(() => {
+      btnDownload.style.display = "block";
+
+      // Creamos el enlace de descarga
+      link.href = URL.createObjectURL(new Blob(chunks, { type: "image/png" }));
+      link.download = `${fileName}.png`;
+
+      btnDownload.onclick = () => link.click();
+
+      clearInterval(intervalUpdate);
+
+      // Ocultamos la ventana de información de renderizado
+      $("#renderInfoModal").modal("hide");
+    });
+};
+
+// Limpiar el visor
 const clear = () => {
   scene = new THREE.Scene();
   moveForward = false;
@@ -498,41 +540,20 @@ const clear = () => {
   prevTime = performance.now();
 
   optionsDiv.style.display = "none";
-  loadModelDiv.style.display = "block";
+  loadModelDiv.style.display = "";
   clearDiv.style.display = "none";
   chooseFileLabel.style.display = "block";
   loadingModelLabel.style.display = "none";
 
   inputField.value = "";
+
+  // Renovar el canvas <canvas id="canvas"></canvas>
+  renderer.clear();
+  canvas.addEventListener("click", () => {});
+  canvas.addEventListener("contextmenu", () => {});
 };
 
-const handleNewFile = (file) => {
-  if (
-    file &&
-    (file.name.substring(file.name.length - 5, file.name.length) === ".gltf" ||
-      file.name.substring(file.name.length - 4, file.name.length) === ".glb")
-  ) {
-    // create a file reader
-    const reader = new FileReader();
-    fileCN = file.name;
-
-    // loading label
-    chooseFileLabel.style.display = "none";
-    loadingModelLabel.style.display = "block";
-
-    // set on load handler for reader
-    reader.onload = () => {
-      loadModel(reader.result);
-    };
-
-    // read the file as text using the reader
-    reader.readAsArrayBuffer(file);
-  } else {
-    alert("You need to choose a .glb or .gltf file!");
-  }
-};
-
-// HTML Events
+// ---- Eventos de los elementos HTML ----
 inputField.onchange = (event) => {
   const file = event.target.files[0];
   handleNewFile(file);
@@ -572,13 +593,13 @@ eeveeEngine.addEventListener(
   () => (eeveeDiv.style.display = "block")
 );
 
+if (eeveeEngine.checked) eeveeDiv.style.display = "block";
+else eeveeDiv.style.display = "none";
+
 cyclesEngine.addEventListener(
   "change",
   () => (eeveeDiv.style.display = "none")
 );
-
-if (eeveeEngine.checked) eeveeDiv.style.display = "block";
-else eeveeDiv.style.display = "none";
 
 // Drag & Drop
 const preventDefaults = (e) => {
@@ -597,7 +618,6 @@ loadModelDiv.addEventListener(
 );
 
 // Menu click-derecho
-// TODO Hacer innacesible antes de cargar el modelo
 const contextMenu = document.getElementById("context-menu");
 const body = document.querySelector("body");
 const addDirectional = document.getElementById("addDLight");

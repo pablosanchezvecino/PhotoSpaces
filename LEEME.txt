@@ -1,0 +1,80 @@
+/************************************************/
+/*                                              */
+/*  AUTOR: JOSE MARÍA SÁNCHEZ FERNÁNDEZ         */
+/*  GRADO: INGENIERÍA DEL SOFTWARE              */
+/*  TUTOR: RAFAEL MARCOS LUQUE BAENA            */
+/*                                              */
+/************************************************/
+
+En esta carpeta se encuentra el código fuente de la aplicación PhotoSpaces. Esta aplicación es 
+el resultado del Trabajo de Fin de Grado con nombre:
+    - Desarrollo de una aplicación web para la generación de imágenes fotorrealistas a partir de 
+      escenas modeladas en 3D
+
+Esta es una aplicación cliente-servidor, escrita en JavaScript y haciendo uso de node.js. 
+Con la cual podemos subir y visualizar modelos 3D en formator .glb o .gltf, navegarlo, modificar
+diferentes parámetros y características, y mandarlo al servidor para que procese el modelo y cree,
+así, una imagen fotorrealista.
+
+La estructura de los diferentes directorios y archivos es la que sigue:
+    - photospaces
+        - LEEME.txt => documento actual
+        - docker-compose.yml => fichero para el despliegue de la aplicación con Docker Compose
+        - .dockerignore => ficheros para ignorar en la creación de los contenedores de Docker
+        - .gitignore => ficheros que ignorar en los commits de git
+        + backend => ficheros correspondientes a la aplicación del servidor
+            + public => ficheros temporales
+            + src => scripts de la aplicación del servidor
+                + logic => scripts con lógica de negocio
+                + routes => scripts con manejo de rutas
+                + services => scripts con manejo de datos
+            - app.js => script del servidor
+            - Dockerfile => script para la generación del contenedor del servidor 
+            - package-lock.json
+            - package.json => fichero con datos sobre la aplicación node.js
+        + frontend => ficheros correspondientes a la aplicación del cliente
+            + public => ficheros del cliente
+                + css => ficheros de estilo 
+                + img => ficheros de recursos gráficos
+                + js => scripts de la lógica del cliente
+                - index.html => página principal del cliente
+            - app.js => script del cliente
+            - Dockerfile => script para la generación del contenedor del cliente 
+            - package-lock.json
+            - package.json => fichero con datos sobre la aplicación node.js
+
+Para la instalación y uso de la aplicación el lecto puede seguir la guía de instalación y manual
+de usuario que se puede encontrar en el documento del proyecto. Sin embargo aquí se resumirá en 
+unos pocos pasos la instalación y arranque de la aplicación:
+
+- Prerequisitos
+
+Es necesario tener instalada la última versión de node.js y la versión 2.92 de Blender 
+(con el .exe como variable en el PATH del sistema).
+
+- Instalación
+
+    - Backend
+        Desde la carpeta de backend, ejecutar:
+            npm install
+
+    - Frontend
+        Desde la carpeta de frontend, ejecutar:
+            npm install
+
+- Ejecución
+
+    - Backend
+        Desde la carpeta de backend, ejecutar:
+            npm start
+
+        Esto iniciará el servidor en el puerto 3030.
+
+    - Frontend
+        Desde la carpeta de frontend, ejecutar:
+            npm install
+
+        Esto iniciará el cliente en el puerto 8080.
+
+Para más información puede contactar con el autor a través del correo 0619716120@uma.es.
+El código al completo se puede encontrar en https://github.com/JoseSFOc/PhotoSpaces.

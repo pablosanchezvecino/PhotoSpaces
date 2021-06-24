@@ -27,7 +27,7 @@ app.use((req, res, next) => {
   next();
 });
 
-/* Routes */
+// Rutas
 import renderRoute from "./src/routes/renderRoute.js";
 import timeRoute from "./src/routes/timeRoute.js";
 import queueRoute from "./src/routes/queueRoute.js";
@@ -36,7 +36,7 @@ app.use("/render", requestQueue, renderRoute);
 app.use("/queue", queueRoute);
 app.use("/time", timeRoute);
 
-/*Error Route*/
+// Ruta de error
 app.use((req, res, next) => {
   const error = new Error(
     "Method " + req.method + " for " + req.originalUrl + " not found"
@@ -52,7 +52,7 @@ app.use((error, req, res, next) => {
   });
 });
 
-/* Listen */
+// Despliegue del servidor
 app.listen(port, () => {
-  console.log("> Server Running at http://localhost:" + port);
+  console.log("> Servidor desplegado en http://localhost:" + port);
 });

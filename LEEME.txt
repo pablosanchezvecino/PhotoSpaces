@@ -37,6 +37,7 @@ La estructura de los diferentes directorios y archivos es la que sigue:
                 + css => ficheros de estilo 
                 + img => ficheros de recursos gráficos
                 + js => scripts de la lógica del cliente
+                + samples => modelos ejemplos para ser usados por el usuario
                 - index.html => página principal del cliente
             - app.js => script del cliente
             - Dockerfile => script para la generación del contenedor del cliente 

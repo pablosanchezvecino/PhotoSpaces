@@ -33,7 +33,9 @@ app.get("/specs", async (req, res) => {
   child.on("exit", function (code, signal) {});
 
   // Si Blender no está instalado, la ejecución del comando generará un error
-  child.on("error", function (code, signal) {});
+  child.on("error", function (code, signal) {
+    specs.blenderVersion = null;
+  });
 
   // Obtener SO, CPU y GPU del host
   let [osData, cpuData, gpuData] = await Promise.all([si.osInfo(), si.cpu(), si.graphics()]);

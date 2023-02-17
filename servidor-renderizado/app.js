@@ -16,6 +16,13 @@ app.get("/specs", async (req, res) => {
 
   let specs = {};
 
+  // Obtener SO, CPU y GPU del host
+  let [osData, cpuData, gpuData] = await Promise.all([si.osInfo(), si.cpu(), si.graphics()]);
+  specs.os = osData.distro;
+  specs.cpu = cpuData.manufacturer + " " + cpuData.brand;
+  console.log(gpuData.controllers);
+  specs.gpu = gpuData.controllers[gpuData.controllers.length - 1].model;
+  
   // Lanzar proceso que ejecute el comando "blender -v"
   const child = spawn("blender", ["-v"]);
 
@@ -30,22 +37,19 @@ app.get("/specs", async (req, res) => {
   });
 
   // Tras finalizar la ejecución del comando responder a la petición con todos los datos
-  child.on("exit", function (code, signal) {});
+  child.on("exit", function (code, signal) {
+    res.send(specs);
+  });
 
   // Si Blender no está instalado, la ejecución del comando generará un error
   child.on("error", function (code, signal) {
     specs.blenderVersion = null;
+    res.send(specs);
   });
 
-  // Obtener SO, CPU y GPU del host
-  let [osData, cpuData, gpuData] = await Promise.all([si.osInfo(), si.cpu(), si.graphics()]);
-  specs.os = osData.distro;
-  specs.cpu = cpuData.manufacturer + " " + cpuData.brand;
-  console.log(gpuData.controllers);
-  specs.gpu = gpuData.controllers[gpuData.controllers.length - 1].model;
 
   // Devolver información del servidor de renderizado
-  res.send(specs);
+  
 });
 
 app.listen(port, () => {

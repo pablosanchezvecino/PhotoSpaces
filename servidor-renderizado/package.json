@@ -1,0 +1,24 @@
+{
+  "name": "servidor-renderizado",
+  "version": "1.0.0",
+  "description": "Servidor encargado de renderizar las escenas de las peticiones",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon app.js",
+    "start": "node app.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "detect-gpu": "^5.0.11",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "morgan": "^1.10.0",
+    "systeminformation": "^4.34.23"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.20"
+  }
+}

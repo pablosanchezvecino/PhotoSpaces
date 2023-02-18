@@ -31,9 +31,10 @@ app.get("/specs", async (req, res) => {
     // Extraer la versión de la salida estándar del comando
     specs.blenderVersion = data
       .toString()
-      .split("\r\n")[0]
-      .split("\n\t")[0]
-      .substr(8);
+      .split("Blender ")[1]
+      .split("\r")[0]
+      .split("\n")[0]
+      
   });
 
   // Tras finalizar la ejecución del comando responder a la petición con todos los datos

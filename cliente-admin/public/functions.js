@@ -86,7 +86,7 @@ const addServer = (event) => {
   const serverName = nameInput.value;
 
   // Contactar con el microservicio de administración de servidores para que se encargue de añadir el nuevo servidor al sistema
-  fetch(`http://${serverIP}:9000/servers`, {
+  fetch(`http://127.0.0.1:9000/servers`, {
     method: "POST",
     headers: {
       Accept: "application/json",

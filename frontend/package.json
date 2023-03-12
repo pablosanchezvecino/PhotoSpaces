@@ -13,7 +13,7 @@
   "author": "Jose M Sanchez Fernandez",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.17.1",
+    "express": "^4.18.2",
     "three": "^0.125.2"
   }
 }

@@ -449,7 +449,7 @@ const sendModel = async (cam) => {
 
     btnRender.style.display = "none";
     btnLoading.style.display = "block";
-    fetch("http://localhost:3030/render", {
+    fetch("http://localhost:9001/requests", {
       method: "POST",
       body: formData,
     })

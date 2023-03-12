@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const colors = require("colors");
 
 const dbConnection = async () => {
     try {
@@ -9,7 +10,7 @@ const dbConnection = async () => {
         console.log("Conexión establecida con la base de datos".bold.magenta);
 
     } catch (error) {
-        console.error(error);
+        console.error("error");
         throw new Error("No se pudo establecer la conexión con la base de datos");
     }
 }

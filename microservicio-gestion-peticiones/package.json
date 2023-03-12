@@ -1,20 +1,25 @@
 {
-  "name": "microservicio-administracion-servidores",
+  "name": "microservicio-gestion-peticiones",
   "version": "1.0.0",
-  "description": "",
+  "description": "Microservicio encargado de gestionar las peticiones de renderizado",
   "main": "app.js",
   "scripts": {
+    "start": "node app.js",
     "dev": "nodemon app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Pablo Sánchez Vecino",
   "license": "ISC",
   "dependencies": {
+    "body-parser": "^1.20.2",
     "colors": "^1.4.0",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
-    "mongoose": "^6.9.2",
+    "express-fileupload": "^1.4.0",
+    "mongoose": "^7.0.0"
+  },
+  "devDependencies": {
     "morgan": "^1.10.0"
   }
 }

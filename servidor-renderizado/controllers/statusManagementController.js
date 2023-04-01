@@ -17,7 +17,7 @@ const disable = async (req, res) => {
     return;
   }
 
-  console.log("Deshabilitando servidor...");
+  console.log("Deshabilitando servidor...".magenta);
   setStatus(ServerStates.disabled)
   res.status(200).send({ message: "Servidor deshabilitado con éxito" });
 };
@@ -37,7 +37,7 @@ const enable = async (req, res) => {
     return;
   }
 
-  console.log("Habilitando servidor...");
+  console.log("Habilitando servidor...".magenta);
   setStatus(ServerStates.idle);
   res.status(200).send({ message: "Servidor habilitado con éxito" });
 }

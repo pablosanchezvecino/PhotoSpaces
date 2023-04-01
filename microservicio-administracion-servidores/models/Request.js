@@ -17,6 +17,10 @@ const RequestSchema = Schema({
     type: Date,
     require: false
   },
+  processingEndTime: {
+    type: Date,
+    require: false
+  },
   estimatedRemainingProcessingTime: {
     type: Number,
     require: false

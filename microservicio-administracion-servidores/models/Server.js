@@ -32,6 +32,10 @@ const ServerSchema = Schema({
   registrationDate: {
     type: Date,
     require: true
+  },
+  timeSpentOnRenderTest: {
+    type: Number,
+    require: true
   }
 });
 

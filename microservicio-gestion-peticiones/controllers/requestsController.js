@@ -6,6 +6,9 @@ const Server = require("../models/Server");
 const handleNewRequest = async (req, res) => {
 
   const parameters = JSON.parse(req.body.data);
+  console.log("111")
+  console.log(parameters)
+  console.log("222")
 
   // Buscar servidor en estado "idle"
   const idleServers = await Server.find({ status: "idle" });
@@ -15,7 +18,7 @@ const handleNewRequest = async (req, res) => {
   // Obtener dirección IP del cliente
   const ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
 
-  // Creamos nueva petición de renderizado
+  // Crear nueva petición de renderizado
   const newRequest = new Request({
     clientIp: ip,
     parameters: parameters

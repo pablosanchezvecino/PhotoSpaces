@@ -1,4 +1,5 @@
 # Run as: blender -b -P <this_script> -- <filename> <parameters JSON>
+from pathlib import Path
 import bpy, sys, mathutils, os, json
 
 # print(sys.argv)
@@ -23,7 +24,7 @@ for obj in list(bpy.data.objects):
 # Importamos el modelo .glb/.gltf 
 publicFolder = os.path.abspath(os.getcwd()) + "/res/"
 
-bpy.ops.import_scene.gltf(filepath=publicFolder + filename + ".gltf")
+bpy.ops.import_scene.gltf(filepath=publicFolder + filename)
 
 # Creamos un objeto de datos de camara
 camera_data = bpy.data.cameras.new(name="Camera")
@@ -117,5 +118,5 @@ else:
 
 
 # Donde guardar la imagen y renderizar
-bpy.context.scene.render.filepath = publicFolder + filename + ".png"
+bpy.context.scene.render.filepath = publicFolder + f"{Path(filename).stem}.png"
 bpy.ops.render.render(write_still=True)

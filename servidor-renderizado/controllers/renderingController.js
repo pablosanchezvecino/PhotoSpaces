@@ -1,9 +1,14 @@
 // Funciones asociadas al endpoint POST /test
+
 const { spawn } = require("child_process");
 const fs = require("fs");
 const si = require("systeminformation");
 
 const test = async (req, res) => {
+  
+  // Inicializar cronómetro
+  const hrStart = process.hrtime()
+  
   // Realizar renderizado de prueba
   if (!(await renderTest(res))) {
     res.status(500).send({
@@ -11,19 +16,26 @@ const test = async (req, res) => {
     });
     return;
   }
+  // Parar cronómetro
+  const rEnd = process.hrtime(hrStart);
 
+  // Pasar tiempo medido a milisegundos
+  const timeSpentOnRenderTest = Math.round((rEnd[0] * 1000) + (rEnd[1] / 1000000));console.log(timeSpentOnRenderTest);
+
+  let serverInfo = {};
+
+  serverInfo.timeSpentOnRenderTest = timeSpentOnRenderTest;
+  
   // Obtener SO, CPU y GPU del host
-  let specs = {};
-
   let [osData, cpuData, gpuData] = await Promise.all([
     si.osInfo(),
     si.cpu(),
     si.graphics(),
   ]);
-  specs.os = osData.distro;
-  specs.cpu = cpuData.manufacturer + " " + cpuData.brand;
+  serverInfo.os = osData.distro;
+  serverInfo.cpu = cpuData.manufacturer + " " + cpuData.brand;
   //console.log(gpuData.controllers);
-  specs.gpu = gpuData.controllers[gpuData.controllers.length - 1].model;
+  serverInfo.gpu = gpuData.controllers[gpuData.controllers.length - 1].model;
 
   // Lanzar proceso que ejecute el comando "blender -v"
   const child = spawn("blender", ["-v"]);
@@ -31,7 +43,7 @@ const test = async (req, res) => {
   // Si Blender está instalado, devolverá la versión de este
   child.stdout.on("data", (data) => {
     // Extraer la versión de la salida estándar del comando
-    specs.blenderVersion = data
+    serverInfo.blenderVersion = data
       .toString()
       .split("Blender ")[1]
       .split("\r")[0]
@@ -40,12 +52,12 @@ const test = async (req, res) => {
 
   // Tras finalizar la ejecución del comando responder a la petición con todos los datos
   child.on("exit", function (code, signal) {
-    res.status(200).send(specs);
+    res.status(200).send(serverInfo);
   });
 
   child.on("error", function (code, signal) {
     res.status(500).send({
-      error: "Error al intentar obtener las especificaciones del sistema",
+      error: "Error al intentar obtener la información del sistema",
     });
   });
 };
@@ -57,7 +69,7 @@ const renderTest = (res) => {
       "-b",
       "-P",
       process.env.BLENDER_SCRIPT || "./renderScript.py",
-      "renderTest",
+      "renderTest.glb",
       `${dataString}`,
     ]);
 
@@ -78,10 +90,10 @@ const renderTest = (res) => {
     command.on("close", () => {
       if (fs.existsSync("./res/renderTest.png")) {
         try {
-          console.log("Renderizado de prueba realizado con éxito");
-          console.log("Eliminando archivo renderTest.png generado...");
-          fs.unlinkSync("./res/renderTest.png");
-          console.log("Archivo renderTest.png eliminado");
+          console.log("Renderizado de prueba realizado con éxito".magenta);
+          console.log("Eliminando archivo renderTest.png generado...".magenta);
+          // fs.unlinkSync("./res/renderTest.png");
+          console.log("Archivo renderTest.png eliminado".magenta);
         } catch (err) {
           console.error("Error al intentar eliminar renderTest.png");
         }

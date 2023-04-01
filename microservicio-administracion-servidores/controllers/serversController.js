@@ -64,17 +64,18 @@ const addServer = async (req, res, next) => {
     if (response.status === 200) {
       // Todo va bien en el servidor de renderizado
       // Persistir info servidor
-      const serverSpecs = await response.json();
+      const serverInfo = await response.json();
 
       const newServer = new Server({
         name: renderingServerName,
         ip: renderingServerIP,
-        os: serverSpecs.os,
-        cpu: serverSpecs.cpu,
-        gpu: serverSpecs.gpu,
-        blenderVersion: serverSpecs.blenderVersion,
+        os: serverInfo.os,
+        cpu: serverInfo.cpu,
+        gpu: serverInfo.gpu,
+        blenderVersion: serverInfo.blenderVersion,
         status: "idle",
         registrationDate: Date.now(),
+        timeSpentOnRenderTest: serverInfo.timeSpentOnRenderTest
       });
 
       newServer.save();
@@ -138,6 +139,9 @@ const disableServer = async (req, res) => {
     })
     .catch((error) => {
       console.error(error);
+      res.status(500).send({
+        error: "Error al contactar con el servidor de renderizado"
+      });
     });
 };
 
@@ -184,6 +188,9 @@ const enableServer = async (req, res) => {
     })
     .catch((error) => {
       console.error(error);
+      res.status(500).send({
+        error: "Error al contactar con el servidor de renderizado"
+      });
     });
 };
 

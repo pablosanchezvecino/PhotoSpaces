@@ -1,11 +1,11 @@
 // Router para los endpoints servidos al cliente de usuarios finales
 
-const { Router } = require('express');
-const requestsController = require('../controllers/requestsController');
+import { Router } from "express";
+import { handleNewRequest } from "../controllers/requestsController.js";
 
 const router = Router();
 
 // POST /requests
-router.post('', requestsController.handleNewRequest);
+router.post("", handleNewRequest);
 
-module.exports = router;
+export default router;

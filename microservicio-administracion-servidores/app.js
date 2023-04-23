@@ -1,12 +1,13 @@
-require("dotenv").config();
-require("colors");
-const express = require("express");
-const cors = require("cors");
-const morgan = require("morgan");
+import "colors";
+import dotenv from "dotenv";
+import express from "express";
+import cors from "cors";
+import morgan from "morgan";
+import dbConnection from "./database/config.js";
+import serversRouter from "./routes/serversRouter.js";
+import requestsRouter from "./routes/requestsRouter.js";
 
-const dbConnection = require("./database/config");
-const serversRouter = require('./routes/serversRouter.js');
-const requestsRouter = require('./routes/requestsRouter.js');
+dotenv.config();
 
 const app = express();
 const port = process.env.PORT;

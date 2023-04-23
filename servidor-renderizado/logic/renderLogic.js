@@ -1,0 +1,49 @@
+// eslint-disable-next-line no-unused-vars
+import { parentPort, workerData } from "worker_threads";
+import { spawn } from "child_process";
+import fs from "fs";
+import "colors";
+
+// Introducir comando blender -b -p rutaDelScript rutaDelArchivoGLTF stringConLosParámetros
+const command = spawn(process.env.BLENDER_CMD || "blender", [
+  "-b",
+  "-P",
+  process.env.BLENDER_SCRIPT || "./renderScript.py",
+  `${workerData.filename}.gltf`,
+  `${JSON.stringify(workerData.parameters)}`,
+]);
+
+command.stderr.on("data", (data) => {
+  console.error(`stderr: ${data}`);
+});
+
+command.stdout.on("data", (data) => {
+  console.log(data.toString().yellow);
+});
+
+command.on("error", (err) => {
+  console.error(err.message);
+});
+
+command.on("close", () => {
+  // Si se ha generado el png (ha ido todo bien)
+  if (fs.existsSync(`./temp/${workerData.filename}.png`)) {
+    console.log("Renderizado realizado con éxito".magenta);
+
+    // Si no era un renderizado de prueba
+    if (workerData.filename !== "renderTest") {
+      try {
+        // Borrar el archivo temporal con la escena
+        console.log(
+          `Eliminando archivo ${workerData.filename}.gltf...`.magenta
+        );
+        fs.unlinkSync(`./temp/${workerData.filename}.gltf`);
+        console.log(`Archivo ${workerData.filename}.gltf eliminado`.magenta);
+      } catch (err) {
+        console.error(`Error al intentar eliminar ${workerData.filename}.gltf`);
+      }
+    }
+  } else {
+    console.error("Error durante el proceso de renderizado");
+  }
+});

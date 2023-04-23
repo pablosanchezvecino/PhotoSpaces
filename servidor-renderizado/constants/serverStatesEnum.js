@@ -5,4 +5,4 @@ const ServerStates = Object.freeze({
   disabled: Symbol("disabled"),
 });
 
-module.exports = ServerStates;
+export default ServerStates;

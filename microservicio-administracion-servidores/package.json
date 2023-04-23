@@ -2,6 +2,7 @@
   "name": "microservicio-administracion-servidores",
   "version": "1.0.0",
   "description": "",
+  "type": "module",
   "main": "app.js",
   "scripts": {
     "dev": "nodemon app.js",
@@ -16,5 +17,8 @@
     "express": "^4.18.2",
     "mongoose": "^6.9.2",
     "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.38.0"
   }
 }

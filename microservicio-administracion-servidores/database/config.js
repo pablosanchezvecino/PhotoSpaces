@@ -1,17 +1,16 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
 const dbConnection = async () => {
-    try {
-        mongoose.set('strictQuery', true);
-        
-        await mongoose.connect(process.env.MONGODB_CONNECTION_STRING);
+  try {
+    mongoose.set("strictQuery", true);
 
-        console.log("Conexión establecida con la base de datos".bold.magenta);
+    await mongoose.connect(process.env.MONGODB_CONNECTION_STRING);
 
-    } catch (error) {
-        console.error(error);
-        throw new Error("No se pudo establecer la conexión con la base de datos");
-    }
-}
+    console.log("Conexión establecida con la base de datos".bold.magenta);
+  } catch (error) {
+    console.error(error);
+    throw new Error("No se pudo establecer la conexión con la base de datos");
+  }
+};
 
-module.exports = dbConnection
+export default dbConnection;

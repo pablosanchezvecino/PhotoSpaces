@@ -1,6 +1,6 @@
 // Funciones asociadas a los endpoints relacionados con la administración de los servidores de renderizado
 
-const Server = require("../models/Server");
+import Server from "../models/Server.js";
 
 const getServers = async (req, res) => {
   try {
@@ -12,7 +12,7 @@ const getServers = async (req, res) => {
   }
 };
 
-const addServer = async (req, res, next) => {
+const addServer = async (req, res) => {
   // Extraer dirección IP y nombre del servidor del cuerpo de la petición
   const renderingServerIP = req.body.ip;
   const renderingServerName = req.body.name;
@@ -75,10 +75,13 @@ const addServer = async (req, res, next) => {
         blenderVersion: serverInfo.blenderVersion,
         status: "idle",
         registrationDate: Date.now(),
-        timeSpentOnRenderTest: serverInfo.timeSpentOnRenderTest
+        timeSpentOnRenderTest: serverInfo.timeSpentOnRenderTest,
       });
 
       newServer.save();
+
+      // Avisar al microservicio de gestión de peticiones de que hay un nuevo servidor disponible
+      fetch(`http://${process.env.REQUEST_MANAGEMENT_MICROSERVICE_IP}:${process.env.REQUEST_MANAGEMENT_MICROSERVICE_PORT}/new-server-available`);
 
       // Informar del éxito de la operación al cliente
       res.status(201).send(newServer);
@@ -140,7 +143,7 @@ const disableServer = async (req, res) => {
     .catch((error) => {
       console.error(error);
       res.status(500).send({
-        error: "Error al contactar con el servidor de renderizado"
+        error: "Error al contactar con el servidor de renderizado",
       });
     });
 };
@@ -189,7 +192,7 @@ const enableServer = async (req, res) => {
     .catch((error) => {
       console.error(error);
       res.status(500).send({
-        error: "Error al contactar con el servidor de renderizado"
+        error: "Error al contactar con el servidor de renderizado",
       });
     });
 };
@@ -215,10 +218,4 @@ const deleteServer = async (req, res) => {
   });
 };
 
-module.exports = {
-  getServers,
-  addServer,
-  disableServer,
-  enableServer,
-  deleteServer,
-};
+export { getServers, addServer, disableServer, enableServer, deleteServer };

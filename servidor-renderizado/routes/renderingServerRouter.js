@@ -1,21 +1,21 @@
 // Router para los endpoints del servidor de renderizado
-const { Router } = require('express');
-const renderingController = require('../controllers/renderingController');
-const statusManagementController = require('../controllers/statusManagementController');
+
+import { Router } from "express";
+import { test, handleRenderingRequest } from "../controllers/renderingController.js";
+import { disable, enable } from "../controllers/statusManagementController.js";
 
 const router = Router();
 
 // POST /test
-router.get('/test', renderingController.test);
+router.get("/test", test);
 
-// TODO
 // POST /render
-// router.post('', renderingServerController.render);
+router.post("/render", handleRenderingRequest);
 
 // POST /disable
-router.post('/disable', statusManagementController.disable);
+router.post("/disable", disable);
 
 // POST /enable
-router.post('/enable', statusManagementController.enable);
+router.post("/enable", enable);
 
-module.exports = router;
+export default router;

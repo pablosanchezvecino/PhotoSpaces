@@ -2,6 +2,7 @@
   "name": "microservicio-gestion-peticiones",
   "version": "1.0.0",
   "description": "Microservicio encargado de gestionar las peticiones de renderizado",
+  "type": "module",
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
@@ -17,9 +18,12 @@
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "express-fileupload": "^1.4.0",
-    "mongoose": "^7.0.0"
+    "mongoose": "^7.0.0",
+    "node-fetch": "^3.3.1",
+    "nodemailer": "^6.9.1"
   },
   "devDependencies": {
+    "eslint": "^8.38.0",
     "morgan": "^1.10.0"
   }
 }

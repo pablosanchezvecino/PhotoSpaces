@@ -1,7 +1,7 @@
-const { Schema, model } = require("mongoose");
+import { Schema, model } from "mongoose";
 
 const QuaternionSchema = new Schema({
-  _id : false,
+  _id: false,
   _x: {
     type: Number,
     required: true,
@@ -20,9 +20,8 @@ const QuaternionSchema = new Schema({
   },
 });
 
-
 const LocationSchema = new Schema({
-  _id : false,
+  _id: false,
   x: {
     type: Number,
     required: true,
@@ -37,10 +36,8 @@ const LocationSchema = new Schema({
   },
 });
 
-
-
 const ParametersSchema = new Schema({
-  _id : false,
+  _id: false,
   lens: {
     type: Number,
     required: true,
@@ -79,21 +76,20 @@ const ParametersSchema = new Schema({
   },
 });
 
-
 const RequestSchema = Schema({
   status: {
     type: String,
     require: true,
-  },
-  queuePosition: {
-    type: Number,
-    require: false,
   },
   queueStartTime: {
     type: Date,
     require: false,
   },
   processingStartTime: {
+    type: Date,
+    require: false,
+  },
+  processingEndTime: {
     type: Date,
     require: false,
   },
@@ -115,4 +111,4 @@ const RequestSchema = Schema({
   },
 });
 
-module.exports = model("Request", RequestSchema);
+export default model("Request", RequestSchema);

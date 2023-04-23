@@ -2,12 +2,12 @@
 from pathlib import Path
 import bpy, sys, mathutils, os, json
 
-# print(sys.argv)
+print(sys.argv)
 
 # Monitor falso para Eevee
 if os.environ.get("BLENDER_MAJOR") is not None:
     from pyvirtualdisplay import Display
-    Display().start()
+    pyvirtualdisplay.Display().start()
 
 argv_length = len(sys.argv)
 
@@ -22,9 +22,13 @@ for obj in list(bpy.data.objects):
     bpy.data.objects.remove(obj)
 
 # Importamos el modelo .glb/.gltf 
-publicFolder = os.path.abspath(os.getcwd()) + "/res/"
-
-bpy.ops.import_scene.gltf(filepath=publicFolder + filename)
+# publicFolder = os.path.abspath(os.getcwd()) + "/res/"
+# publicFolder = os.environ.get("RES_PATH")
+folder = os.path.abspath(os.getcwd()) + "/temp/"
+print(folder)
+print(folder)
+print(folder)
+bpy.ops.import_scene.gltf(filepath=(folder + filename))
 
 # Creamos un objeto de datos de camara
 camera_data = bpy.data.cameras.new(name="Camera")
@@ -118,5 +122,5 @@ else:
 
 
 # Donde guardar la imagen y renderizar
-bpy.context.scene.render.filepath = publicFolder + f"{Path(filename).stem}.png"
+bpy.context.scene.render.filepath = folder + f"{Path(filename).stem}.png"
 bpy.ops.render.render(write_still=True)

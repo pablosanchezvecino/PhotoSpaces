@@ -1,42 +1,42 @@
-const { Schema, model } = require("mongoose");
+import { Schema, model } from "mongoose";
 
 const ServerSchema = Schema({
   name: {
     type: String,
-    require: true
+    require: true,
   },
   ip: {
     type: String,
-    require: true
+    require: true,
   },
   status: {
     type: String,
-    require: true
+    require: true,
   },
   os: {
     type: String,
-    require: true
+    require: true,
   },
   cpu: {
     type: String,
-    require: true
+    require: true,
   },
   gpu: {
     type: String,
-    require: true
+    require: true,
   },
   blenderVersion: {
     type: String,
-    require: true
+    require: true,
   },
   registrationDate: {
     type: Date,
-    require: true
+    require: true,
   },
   timeSpentOnRenderTest: {
     type: Number,
-    require: true
-  }
+    require: true,
+  },
 });
 
-module.exports = model("Server", ServerSchema)
+export default model("Server", ServerSchema);

@@ -12,7 +12,7 @@
       crossorigin="anonymous"
     />
   </head>
-  <body style="background-color: white" onload="periodicUpdate()">
+  <body style="background-color: white">
     <!-- Modal -->
     <div
       class="modal fade"
@@ -1052,7 +1052,7 @@
             </h1>
           </div>
           <div class="row">
-            <form onsubmit="addServer(event)">
+            <form onsubmit="handleSubmit(event)">
               <div class="mb-3 mt-2">
                 <label for="nameInput" class="form-label">Nombre:</label>
                 <input

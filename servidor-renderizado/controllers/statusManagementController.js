@@ -1,7 +1,7 @@
 // Funciones asociadas a los endpoints relacionados con los cambios de estado del servidor
 
-const ServerStates = require("../constants/serverStatesEnum.js");
-const { currentStatus, setStatus, getStatus } = require("../serverStatus");
+import ServerStates from "../constants/serverStatesEnum.js";
+import { setStatus, getStatus } from "../serverStatus.js";
 
 const disable = async (req, res) => {
   // Solo es posible deshabilitar el servidor si se encuentra en estado "idle"
@@ -18,7 +18,7 @@ const disable = async (req, res) => {
   }
 
   console.log("Deshabilitando servidor...".magenta);
-  setStatus(ServerStates.disabled)
+  setStatus(ServerStates.disabled);
   res.status(200).send({ message: "Servidor deshabilitado con éxito" });
 };
 
@@ -40,9 +40,6 @@ const enable = async (req, res) => {
   console.log("Habilitando servidor...".magenta);
   setStatus(ServerStates.idle);
   res.status(200).send({ message: "Servidor habilitado con éxito" });
-}
-
-module.exports = {
-  disable,
-  enable
 };
+
+export { disable, enable };

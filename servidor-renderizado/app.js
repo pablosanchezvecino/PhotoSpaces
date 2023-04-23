@@ -1,17 +1,21 @@
-require("dotenv").config();
-const ServerStates = require("./constants/serverStatesEnum.js");
-const { setStatus } = require("./serverStatus");
-const express = require("express");
-const cors = require("cors");
-const morgan = require("morgan");
-const colors = require("colors");
-const renderingServerRouter = require('./routes/renderingServerRouter.js');
+import "colors";
+import dotenv from "dotenv";
+import ServerStates from "./constants/serverStatesEnum.js";
+import { setStatus } from "./serverStatus.js";
+import express from "express";
+import cors from "cors";
+import morgan from "morgan";
+import renderingServerRouter from "./routes/renderingServerRouter.js";
+import fileUpload from "express-fileupload";
+
+dotenv.config();
 
 setStatus(ServerStates.idle);
 
 const app = express();
 const port = process.env.PORT;
 
+app.use(fileUpload());
 app.use(cors());
 app.use(morgan("dev"));
 app.use("", renderingServerRouter);

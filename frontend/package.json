@@ -4,6 +4,7 @@
   "description": "A Simple Client",
   "main": "app.js",
   "scripts": {
+    "dev": "nodemon app.js --ignore addresses.json",
     "start": "node app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -15,5 +16,9 @@
   "dependencies": {
     "express": "^4.18.2",
     "three": "^0.125.2"
+  },
+  "devDependencies": {
+    "dotenv": "^16.0.3",
+    "nodemon": "^2.0.22"
   }
 }

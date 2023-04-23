@@ -4,6 +4,12 @@ import { GLTFLoader } from "/jsm/loaders/GLTFLoader.js";
 import { GLTFExporter } from "/jsm/exporters/GLTFExporter.js";
 import { RGBELoader } from "/jsm/loaders/RGBELoader.js";
 import { GUI } from "/jsm/libs/dat.gui.module.js";
+import {
+  requestHandlingMicroserviceIp,
+  requestHandlingMicroservicePort,
+} from "./constants/addresses.js";
+
+
 
 // > Elementos HTML
 const inputField = document.getElementById("inputModel");
@@ -449,7 +455,7 @@ const sendModel = async (cam) => {
 
     btnRender.style.display = "none";
     btnLoading.style.display = "block";
-    fetch("http://localhost:9001/requests", {
+    fetch(`http://${requestHandlingMicroserviceIp}:${requestHandlingMicroservicePort}/requests`, {
       method: "POST",
       body: formData,
     })
@@ -472,22 +478,22 @@ const updateTimeAndQueue = () => {
 
   $("#renderInfoModal").modal("show");
 
-  intervalUpdate = setInterval(() => {
-    // Fetch cola
-    fetch("http://localhost:3030/queue", { method: "GET" })
-      .then((res) => res.json())
-      .then((queue) => (actualQueue.innerHTML = queue));
+  // intervalUpdate = setInterval(() => {
+  //   // Fetch cola
+  //   fetch(`http://${requestHandlingMicroserviceIp}:${requestHandlingMicroservicePort}/queue`, { method: "GET" })
+  //     .then((res) => res.json())
+  //     .then((queue) => (actualQueue.innerHTML = queue));
 
-    // Fetch tiempo
-    fetch("http://localhost:3030/time", { method: "GET" })
-      .then((res) => res.json())
-      .then(
-        (time) =>
-          (actualTime.innerHTML = new Date(time.remaining)
-            .toISOString()
-            .slice(11, -1))
-      );
-  }, 2000);
+  //   // Fetch tiempo
+  //   fetch(`http://${requestHandlingMicroserviceIp}:${requestHandlingnMicroservicePort}/time`, { method: "GET" })
+  //     .then((res) => res.json())
+  //     .then(
+  //       (time) =>
+  //         (actualTime.innerHTML = new Date(time.remaining)
+  //           .toISOString()
+  //           .slice(11, -1))
+  //     );
+  // }, 2000);
 };
 
 // Proceso de descarga de la imagen en respuesta

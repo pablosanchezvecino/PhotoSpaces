@@ -4,6 +4,10 @@ import {
   confirmationModalReturnButton,
   confirmationModalBody,
 } from "./DOMElements.js";
+import {
+  serverAdministrationMicroserviceIp,
+  serverAdministrationMicroservicePort,
+} from "../constants/addresses.js";
 
 const deleteRequest = (requestId) => {
   confirmationModalReturnButton.style.display = "none";
@@ -11,7 +15,7 @@ const deleteRequest = (requestId) => {
   confirmationModalBody.innerHTML =
     "<div class=\"d-flex justify-content-center\"><div class=\"spinner-border text-secondary\" role=\"status\"><span class=\"visually-hidden\">Loading...</span></div></div>";
 
-  fetch(`http://127.0.0.1:9000/requests/${requestId}`, {
+  fetch(`http://${serverAdministrationMicroserviceIp}:${serverAdministrationMicroservicePort}/requests/${requestId}`, {
     method: "DELETE",
   })
     .then(async (response) => {

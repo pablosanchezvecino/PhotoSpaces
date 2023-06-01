@@ -109,6 +109,10 @@ const RequestSchema = Schema({
     type: ParametersSchema,
     require: true,
   },
+  email: {
+    type: String,
+    require: false,
+  },
 });
 
 export default model("Request", RequestSchema);

@@ -1,4 +1,4 @@
-export const msToTime = (duration) => {
+const msToTime = (duration) => {
   let seconds = Math.floor((duration / 1000) % 60),
     minutes = Math.floor((duration / (1000 * 60)) % 60),
     hours = Math.floor(duration / (1000 * 60 * 60));
@@ -9,3 +9,5 @@ export const msToTime = (duration) => {
 
   return hours + ":" + minutes + ":" + seconds;
 };
+
+export { msToTime };

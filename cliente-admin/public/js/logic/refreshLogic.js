@@ -137,8 +137,8 @@ const refresh = () => {
         fulfilledRequestCount === 0
           ? "N/A"
           : msToTime(
-              totalQueueTime / (fulfilledRequestCount + processingRequestCount)
-            );
+            totalQueueTime / (fulfilledRequestCount + processingRequestCount)
+          );
 
       // Mostrar texto informativo si no hay ninguna petición en algún estado
       if (processingRequestCount === 0) {

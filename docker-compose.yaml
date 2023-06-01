@@ -1,0 +1,65 @@
+version: "3.8"
+services:
+
+  cliente-estandar:
+    build:
+      context: ./cliente-estandar
+    container_name: cliente-estandar
+    ports:
+      - 8081:8081
+    environment:  
+      - REQUEST_HANDLING_MICROSERVICE_IP=127.0.0.1
+      - REQUEST_HANDLING_MICROSERVICE_PORT=9001
+    depends_on:  
+      - microservicio-gestion-peticiones 
+
+  cliente-admin:
+    build:
+      context: ./cliente-admin
+    container_name: cliente-admin
+    ports:
+      - 8080:8080
+    environment:  
+      - PORT=8080
+      - SERVER_ADMINISTRATION_MICROSERVICE_IP=127.0.0.1
+      - SERVER_ADMINISTRATION_MICROSERVICE_PORT=9000
+      - REFRESH_PERIOD_MS=5000
+      - ALLOWED_IPS=::1,127.0.0.1,192.168.1.36,172.17.0.1,172.21.0.1
+    depends_on:  
+      - microservicio-administracion 
+
+  microservicio-administracion:
+    build:
+      context: ./microservicio-administracion
+    container_name: microservicio-administracion
+    ports:
+      - 9000:9000
+    environment:  
+      - MONGODB_CONNECTION_STRING=${MONGODB_CONNECTION_STRING}
+      - PORT=9000
+      - RENDER_SERVER_PORT=3000
+      - REQUEST_MANAGEMENT_MICROSERVICE_IP=127.0.0.1
+      - REQUEST_MANAGEMENT_MICROSERVICE_PORT=9001
+      - ALLOWED_IPS=::1,127.0.0.1,192.168.1.36,172.17.0.1,172.21.0.1
+
+  microservicio-gestion-peticiones:
+    build:
+      context: ./microservicio-gestion-peticiones
+    container_name: microservicio-gestion-peticiones
+    ports:
+      - 9001:9001
+    environment:  
+      - MONGODB_CONNECTION_STRING=${MONGODB_CONNECTION_STRING}
+      - PORT=9001
+      - RENDER_SERVER_PORT=3000
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
+      - DB_CHECK_PERIOD_MS=60000
+
+  # servidor-renderizado:
+  #   build:
+  #     context: ./servidor-renderizado
+  #   container_name: servidor-renderizado
+  #   ports:
+  #     - 3000:3000
+  #   environment:  
+  #     - VARIABLE2=valor2

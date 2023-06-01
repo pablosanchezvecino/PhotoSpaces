@@ -3,6 +3,7 @@ import express from "express";
 import path from "path";
 import { writeFileSync } from "fs";
 import "colors";
+import { ipCheckMiddleware } from "./middleware/ipCheckMiddleware.js";
 
 dotenv.config();
 
@@ -21,12 +22,16 @@ try {
   console.error(err);
 }
 
+
+
+app.use(ipCheckMiddleware);
+
 // Servir el directorio /public
 app.use(express.static(path.join(path.resolve(), "public")));
 
 app.listen(PORT, () =>
   console.log(
-    `Cliente de administración de servidores desplegado en el puerto ${PORT}`
+    `Cliente de administración desplegado en el puerto ${PORT}`
       .bold.magenta
   )
 );

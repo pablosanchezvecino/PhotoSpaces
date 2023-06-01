@@ -10,4 +10,4 @@ window.handleSubmit = (event) => {
   addServer(ipInput.value, nameInput.value);
 };
 
-setInterval(refresh, 5000);
+setInterval(refresh, 2000);

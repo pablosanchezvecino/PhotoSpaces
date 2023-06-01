@@ -10,7 +10,7 @@ import {
 const addServer = (serverIP, serverName) => {
   showAddModal();
 
-  // Contactar con el microservicio de administración de servidores para que se encargue de añadir el nuevo servidor al sistema
+  // Contactar con el microservicio de administración para que se encargue de añadir el nuevo servidor al sistema
   fetch("http://127.0.0.1:9000/servers", {
     method: "POST",
     headers: {
@@ -21,30 +21,30 @@ const addServer = (serverIP, serverName) => {
   })
     .then((response) => response.json())
     .then((jsonContent) => {
-      confirmationModal.hide();
-
+      // Espera adicional para que funcione bien modal
       setTimeout(() => {
-        if (jsonContent.error !== undefined) {
-          alert(jsonContent.error);
-        } else {
-          alert("Servidor añadido correctamente");
-        }
-      }, 200);
+        confirmationModal.hide();
+
+        setTimeout(() => {
+          if (jsonContent.error) {
+            alert(jsonContent.error);
+          } else {
+            alert("Servidor añadido correctamente");
+          }
+        }, 200);
+      }, 1000);
+
     })
     .catch((error) => {
       console.error(error);
-      confirmationModal.hide();
-      setTimeout(
-        () => alert("Error: No se ha obtenido respuesta del servidor"),
-        200
-      );
     });
 };
 
 const enableServer = (serverId) => {
   confirmationModalReturnButton.style.display = "none";
   confirmationModalConfirmationButton.style.display = "none";
-  confirmationModalBody.innerHTML = "<div class=\"d-flex justify-content-center\"><div class=\"spinner-border text-secondary\" role=\"status\"><span class=\"visually-hidden\">Loading...</span></div></div>";
+  confirmationModalBody.innerHTML =
+    "<div class=\"d-flex justify-content-center\"><div class=\"spinner-border text-secondary\" role=\"status\"><span class=\"visually-hidden\">Loading...</span></div></div>";
 
   fetch(`http://127.0.0.1:9000/servers/${serverId}/enable`, {
     method: "POST",
@@ -70,7 +70,8 @@ const enableServer = (serverId) => {
 const disableServer = (serverId) => {
   confirmationModalReturnButton.style.display = "none";
   confirmationModalConfirmationButton.style.display = "none";
-  confirmationModalBody.innerHTML = "<div class=\"d-flex justify-content-center\"><div class=\"spinner-border text-secondary\" role=\"status\"><span class=\"visually-hidden\">Loading...</span></div></div>";
+  confirmationModalBody.innerHTML =
+    "<div class=\"d-flex justify-content-center\"><div class=\"spinner-border text-secondary\" role=\"status\"><span class=\"visually-hidden\">Loading...</span></div></div>";
 
   fetch(`http://127.0.0.1:9000/servers/${serverId}/disable`, {
     method: "POST",
@@ -98,7 +99,8 @@ const abortServer = (serverId) => alert("Abortar " + serverId);
 const deleteServer = (serverId) => {
   confirmationModalReturnButton.style.display = "none";
   confirmationModalConfirmationButton.style.display = "none";
-  confirmationModalBody.innerHTML = "<div class=\"d-flex justify-content-center\"><div class=\"spinner-border text-secondary\" role=\"status\"><span class=\"visually-hidden\">Loading...</span></div></div>";
+  confirmationModalBody.innerHTML =
+    "<div class=\"d-flex justify-content-center\"><div class=\"spinner-border text-secondary\" role=\"status\"><span class=\"visually-hidden\">Loading...</span></div></div>";
 
   fetch(`http://127.0.0.1:9000/servers/${serverId}`, {
     method: "DELETE",

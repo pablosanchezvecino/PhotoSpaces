@@ -7,10 +7,11 @@ import cors from "cors";
 import morgan from "morgan";
 import renderingServerRouter from "./routes/renderingServerRouter.js";
 import fileUpload from "express-fileupload";
+import { ipCheckMiddleware } from "./middleware/ipCheckMiddleware.js";
 
 dotenv.config();
 
-setStatus(ServerStates.idle);
+setStatus(ServerStates.unbound);
 
 const app = express();
 const port = process.env.PORT;
@@ -18,6 +19,7 @@ const port = process.env.PORT;
 app.use(fileUpload());
 app.use(cors());
 app.use(morgan("dev"));
+app.use(ipCheckMiddleware);
 app.use("", renderingServerRouter);
 
 app.listen(port, () => {

@@ -3,22 +3,34 @@ import { parentPort, workerData } from "worker_threads";
 import { spawn } from "child_process";
 import fs from "fs";
 import "colors";
+import { extractRemainingTimeMs } from "./timeLogic.js";
 
 // Introducir comando blender -b -p rutaDelScript rutaDelArchivoGLTF stringConLosParámetros
-const command = spawn(process.env.BLENDER_CMD || "blender", [
-  "-b",
-  "-P",
-  process.env.BLENDER_SCRIPT || "./renderScript.py",
-  `${workerData.filename}.gltf`,
-  `${JSON.stringify(workerData.parameters)}`,
-]);
+const command = spawn(
+  process.env.BLENDER_CMD || "blender",
+  [
+    "-b",
+    "-P",
+    process.env.BLENDER_SCRIPT || "./renderScript.py",
+    `${workerData.filename}.gltf`,
+    `${JSON.stringify(workerData.parameters)}`,
+  ],
+  { detached: true }
+);
+
+// setTimeout(() => {
+//   // command.kill();
+// }, 5000);
 
 command.stderr.on("data", (data) => {
   console.error(`stderr: ${data}`);
 });
 
 command.stdout.on("data", (data) => {
-  console.log(data.toString().yellow);
+  console.log(data.toString().green);
+  if (data.toString().includes("Remaining:")) {
+    parentPort.postMessage(extractRemainingTimeMs(data));
+  }
 });
 
 command.on("error", (err) => {

@@ -11,15 +11,15 @@ const addServerCard = (serverData) => {
     serverData.status === "idle"
       ? "idle-server-container"
       : serverData.status === "busy"
-      ? "busy-server-container"
-      : "disabled-server-container";
+        ? "busy-server-container"
+        : "disabled-server-container";
 
   const color =
     serverData.status === "idle"
       ? "#90ee90"
       : serverData.status === "busy"
-      ? "#faf884"
-      : "#f67280";
+        ? "#faf884"
+        : "#f67280";
 
   const container = document.getElementById(containerId);
 
@@ -117,15 +117,15 @@ const addServerCard = (serverData) => {
     serverData.status === "idle"
       ? "Deshabilitar"
       : serverData.status === "busy"
-      ? "Abortar procesamiento"
-      : "Habilitar";
+        ? "Abortar procesamiento"
+        : "Habilitar";
 
   button1.onclick =
     serverData.status === "idle"
       ? () => showDisableModal(serverData._id)
       : serverData.status === "busy"
-      ? () => abortServer(serverData._id)
-      : () => showEnableModal(serverData._id);
+        ? () => alert("Abortar procesamiento servidor")//abortServer(serverData._id)
+        : () => showEnableModal(serverData._id);
 
   cardBody.appendChild(cardTitle);
   cardBody.appendChild(cardTextIP);
@@ -158,15 +158,15 @@ const addRequestCard = (requestData) => {
     requestData.status === "processing"
       ? "processing-request-container"
       : requestData.status === "enqueued"
-      ? "enqueued-request-container"
-      : "fulfilled-request-container";
+        ? "enqueued-request-container"
+        : "fulfilled-request-container";
 
   const color =
     requestData.status === "processing"
       ? "#71f9d5"
       : requestData.status === "enqueued"
-      ? "#c580f9"
-      : "#ffa825";
+        ? "#c580f9"
+        : "#ffa825";
 
   const container = document.getElementById(containerId);
 
@@ -272,23 +272,19 @@ const addRequestCard = (requestData) => {
         : "Tiempo total esperado en cola";
     cardTextQueueTime.appendChild(queueTimeImage);
 
-    if (requestData.status === "enqueued") console.log(msToTime(
-      ((new Date()).getTime()) - (Date.parse(requestData.queueStartTime))
-    ))
-
     queueTimeImage.after(
       document.createTextNode(
         " " + (requestData.status === "enqueued"
           ? msToTime(
-              ((new Date()).getTime()) - (Date.parse(requestData.queueStartTime))
-            )
+            ((new Date()).getTime()) - (Date.parse(requestData.queueStartTime))
+          )
           : requestData.queueStartTime
-          ? msToTime(
+            ? msToTime(
               Date.parse(requestData.processingStartTime) -
                 Date.parse(requestData.queueStartTime)
             )
-          : "00:00:00"
-      ))
+            : "00:00:00"
+        ))
     );
     cardBody.appendChild(cardTextQueueTime);
   }

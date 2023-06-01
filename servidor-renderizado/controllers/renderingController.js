@@ -7,11 +7,13 @@ import { setStatus, getStatus } from "../serverStatus.js";
 import ServerStates from "../constants/serverStatesEnum.js";
 import { Worker } from "worker_threads";
 import dataString from "../constants/renderTestSettings.js";
+import { setEstimatedRemainingProcessingTime } from "../serverStatus.js";
 
 const test = async (req, res) => {
   // Comprobar que el servidor se encuentra disponible
-  if (getStatus() !== ServerStates.idle) {
+  if (getStatus() !== ServerStates.unbound) {
     res.status(400).send({ error: "El servidor no se encuentra disponible" });
+    return;
   }
 
   // Inicializar cronómetro
@@ -26,12 +28,12 @@ const test = async (req, res) => {
     });
     return;
   }
+  
+  // Parar cronómetro
+  const rEnd = process.hrtime(hrStart);
 
   // Borrar archivo renderTest.png generado
   fs.unlinkSync("./temp/renderTest.png");
-
-  // Parar cronómetro
-  const rEnd = process.hrtime(hrStart);
 
   // Pasar tiempo medido a milisegundos
   const timeSpentOnRenderTest = Math.round(rEnd[0] * 1000 + rEnd[1] / 1000000);
@@ -66,6 +68,8 @@ const test = async (req, res) => {
 
   // Tras finalizar la ejecución del comando responder a la petición con todos los datos
   child.on("exit", () => {
+    setStatus(ServerStates.idle);
+
     res.status(200).send(serverInfo);
   });
 
@@ -80,6 +84,7 @@ const handleRenderingRequest = async (req, res) => {
   // Comprobar que el servidor se encuentra disponible
   if (getStatus() !== ServerStates.idle) {
     res.status(400).send({ error: "El servidor no se encuentra disponible" });
+    // return;
   }
 
   // El servidor pasa a encontrarse ocupado
@@ -104,7 +109,9 @@ const handleRenderingRequest = async (req, res) => {
   // Renderizado
   try {
     await render(parameters, requestId);
+    setEstimatedRemainingProcessingTime(null);
   } catch (error) {
+    console.error(error);
     res.status(500).send({ error: "Error en el proceso de renderizado" });
   }
 
@@ -121,7 +128,6 @@ const handleRenderingRequest = async (req, res) => {
       console.log(`Eliminando archivo ${requestId}.png`.magenta);
       fs.unlinkSync(`./temp/${requestId}.png`);
       console.log(`Archivo ${requestId}.png eliminado correctamente`.magenta);
-
     }
   });
 };
@@ -136,16 +142,15 @@ const render = (parameters, filename) => {
       },
     });
 
-    // Recibimos los mensajes del worker, si es un mensaje de tiempo
-    // actualizamos el objeto, sino, respondemos a la petición y
-    // borramos los ficheros temporales
+    // Recibimos los mensajes del worker con el tiempo de espera estimado en ms
     worker.on("message", (message) => {
-      console.log(message.green);
+      // Actualizamos la BD con este valor para que lo pueda consultar el 
+      // microservicio de administración y que el de gestion de peticiones 
+      // pueda responder las peticiones del cliente
+      setEstimatedRemainingProcessingTime(message);
     });
 
-    worker.on("exit", (code) => {
-      console.log(`Worker terminado con código ${code}`);
-
+    worker.on("exit", () => {console.log("worker exit");
       resolve();
     });
   });

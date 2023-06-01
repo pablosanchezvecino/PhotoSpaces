@@ -1,21 +1,22 @@
 {
   "name": "cliente-admin",
   "version": "1.0.0",
-  "description": "Panel de administración de PhotoSpaces",
+  "description": "Panel de administración de la aplicación PhotoSpaces",
   "type": "module",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon app.js --ignore addresses.json"
+    "start": "node app.js",
+    "dev": "nodemon app.js --ignore addresses.json",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Pablo Sánchez Vecino",
   "license": "ISC",
   "dependencies": {
     "colors": "^1.4.0",
-    "dotenv": "^16.0.3",
     "express": "^4.18.2"
   },
   "devDependencies": {
+    "dotenv": "^16.0.3",
     "eslint": "^8.38.0",
     "nodemon": "^2.0.20"
   }

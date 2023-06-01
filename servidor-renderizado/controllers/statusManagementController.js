@@ -42,4 +42,21 @@ const enable = async (req, res) => {
   res.status(200).send({ message: "Servidor habilitado con éxito" });
 };
 
-export { disable, enable };
+const unbind = async (req, res) => {
+  // Solo es posible desvincular el servidor si no se encuentra en estado "busy"
+  if (getStatus() === ServerStates.busy) {
+    res.status(400).send({
+      error: "El servidor se encuentra procesando una petición",
+    });
+    return;
+  } 
+
+  console.log("Desvinculando servidor...".magenta);
+
+  // Cambiar estado y levantar restricción IP
+  setStatus(ServerStates.unbound);
+
+  res.status(200).send({ message: "Servidor desvinculado con éxito" });
+};
+
+export { disable, enable, unbind };

@@ -10,20 +10,19 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT;
 
-const addresses = {
-  serverAdministrationMicroserviceIp: process.env.SERVER_ADMINISTRATION_MICROSERVICE_IP,
-  serverAdministrationMicroservicePort: process.env.SERVER_ADMINISTRATION_MICROSERVICE_PORT
-};
-
+// Generar archivo addresses.json con las dirección IP y puerto a los que debe dirigirse el navegador
 try {
+  const addresses = {
+    serverAdministrationMicroserviceIp: process.env.SERVER_ADMINISTRATION_MICROSERVICE_IP,
+    serverAdministrationMicroservicePort: process.env.SERVER_ADMINISTRATION_MICROSERVICE_PORT
+  };
   writeFileSync("./public/addresses.json", JSON.stringify(addresses));
   console.log("Archivo creado y contenido escrito correctamente".bold.magenta);
-} catch (err) {
-  console.error(err);
+} catch (error) {
+  console.error(`Error en la escritura del archivo addresses.json. ${error}`.red);
 }
 
-
-
+// Utilizar comprobación de direcciones IP
 app.use(ipCheckMiddleware);
 
 // Servir el directorio /public

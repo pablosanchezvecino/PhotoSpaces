@@ -47,28 +47,26 @@ const handleNewRequest = async (req, res) => {
 
   if (email) {
     request.email = email;
-  } 
+  }
 
   if (queue.length === 0 && bestIdleServer) {
     // La cola está vacía y hay al menos un servidor en estado "idle"
-    
+
     try {
-      if (!email) {
-        res
-          .status(200)
-          .send({ requestId: request._id, requestStatus: "processing" });
-      }
+      res
+        .status(200)
+        .send({ requestId: request._id, requestStatus: "processing" });
       await forwardRequest(request, bestIdleServer, model);
     } catch (error) {
       console.error(error);
-      res.status(500).send("Error durante el reenvío de la petición");
+      // res.status(500).send("Error durante el reenvío de la petición");
     }
 
     // Comprobar si al terminar con la petición se puede ir reenviando otra encolada
     processQueue();
   } else {
     // Hay peticiones por delante en la cola o la cola está vacía pero todos los servidores están ocupados
-    
+
     // Encolar la petición
     enqueueRequest(request, model);
 
@@ -81,12 +79,13 @@ const handleNewRequest = async (req, res) => {
 };
 
 const forwardRequest = async (request, bestIdleServer, model) => {
+  bestIdleServer.status = "busy";
+  await bestIdleServer.save();
+  
   return new Promise((resolve, reject) => {
     // Enviar petición al servidor disponible más adecuado
     console.log(`Reenviando petición a ${bestIdleServer.name}...`.magenta);
 
-    bestIdleServer.status = "busy";
-    bestIdleServer.save();
 
     request.status = "processing";
     request.assignedServer = bestIdleServer.name;
@@ -134,7 +133,6 @@ const forwardRequest = async (request, bestIdleServer, model) => {
         return response.blob();
       })
       .then(async (blob) => {
-        
         // Guardar temporalmente archivo .png recibido
         writeFileSync(
           `./temp/${request._id}.png`,
@@ -221,7 +219,8 @@ const getWaitingInfo = async (req, res) => {
       .lean();
 
     let queuePosition = 0;
-    let estimatedRemainingProcessingTime = requestInfo.estimatedRemainingProcessingTime || null;
+    let estimatedRemainingProcessingTime =
+      requestInfo.estimatedRemainingProcessingTime;
 
     // Si la petición está encolada
     if (requestInfo.status === "enqueued") {
@@ -233,17 +232,23 @@ const getWaitingInfo = async (req, res) => {
           status: "enqueued",
         })) + 1;
 
-      // Obtener estimación de tiempo restante de la petición que se está procesando 
-      // más antigua que esté utilizando el motor Cycles ya que con Eevee no tenemos
+      // Obtener estimación de tiempo restante de la petición que se está procesando
+      // más antigua que esté utilizando el motor Cycles, ya que con Eevee no tenemos
       // acceso al tiempo restante estimado de procesamiento
-      estimatedRemainingProcessingTime = (await Request.findOne({
-        status: "processing",
-        estimatedRemianingProcessingTime: { $exists: true },
-      })
-        .sort({ processingStartTime: "asc" }) // Ordenar en orden ascendente por "processingStartTime"
-        .select("estimatedRemainingProcessingTime") // Seleccionar solo el campo "estimatedRemianingProcessingTime"
-        .exec()).estimatedRemainingProcessingTime;
-      console.log("Tiempo restante ", estimatedRemainingProcessingTime, "(estaba enqueued)");
+      estimatedRemainingProcessingTime = (
+        await Request.findOne({
+          status: "processing",
+          estimatedRemianingProcessingTime: { $exists: true },
+        })
+          .sort({ processingStartTime: "asc" }) // Ordenar en orden ascendente por "processingStartTime"
+          .select("estimatedRemainingProcessingTime") // Seleccionar solo el campo "estimatedRemianingProcessingTime"
+          .exec()
+      ).estimatedRemainingProcessingTime;
+      console.log(
+        "Tiempo restante ",
+        estimatedRemainingProcessingTime,
+        "(estaba enqueued)"
+      );
     }
 
     console.log({
@@ -252,7 +257,7 @@ const getWaitingInfo = async (req, res) => {
         estimatedRemainingProcessingTime,
       requestStatus: requestInfo.status,
     });
-    
+
     res.status(200).send({
       requestQueuePosition: queuePosition,
       processingRequestEstimatedRemainingProcessingTime:
@@ -268,20 +273,28 @@ const getWaitingInfo = async (req, res) => {
   }
 };
 
-
-
 const transferRenderedImage = (req, res) => {
   try {
-    const fileRoute = `./temp/${req.params.requestId}.png`;
+    const fileRoute = `./temp/${req.params.requestId}`;
 
     if (existsSync(fileRoute)) {
       // Enviar imagen renderizada para que el navegador pueda descargarla
       res.status(200).sendFile(fileRoute, options);
 
-      // Hasta que no termine la transferencia no podemos borrar el archivo temporal
+      // Hasta que no termine la transferencia no podemos borrar los archivos temporales
       res.on("finish", () => {
-        // Eliminar archivo .png temporal
-        unlinkSync(fileRoute);
+        try {
+          // Eliminar archivo .png temporal
+          unlinkSync(`${fileRoute}.png`);
+
+          // Si había sido necesario guardar el archivo .gltf 
+          // porque ha pasado por la cola, eliminarlo tambien
+          if (existsSync(`${fileRoute}.gltf`)) {
+            unlinkSync(`${fileRoute}.gltf`);
+          }
+        } catch (error) {
+          console.error(`Error asl eliminar los archivos temporales. ${error}`.red);
+        }
       });
     } else {
       res

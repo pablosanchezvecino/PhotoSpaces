@@ -1,11 +1,10 @@
-// eslint-disable-next-line no-unused-vars
 import { parentPort, workerData } from "worker_threads";
 import { spawn } from "child_process";
 import fs from "fs";
 import "colors";
 import { extractRemainingTimeMs } from "./timeLogic.js";
 
-// Introducir comando blender -b -p rutaDelScript rutaDelArchivoGLTF stringConLosParámetros
+// Introducir comando blender -b -P rutaDelScript rutaDelArchivoGLTF stringConLosParámetros
 const command = spawn(
   process.env.BLENDER_CMD || "blender",
   [
@@ -27,14 +26,14 @@ command.stderr.on("data", (data) => {
 });
 
 command.stdout.on("data", (data) => {
-  console.log(data.toString().green);
+  // console.log(data.toString().green);
   if (data.toString().includes("Remaining:")) {
     parentPort.postMessage(extractRemainingTimeMs(data));
   }
 });
 
-command.on("error", (err) => {
-  console.error(err.message);
+command.on("error", (error) => {
+  console.error(error.message);
 });
 
 command.on("close", () => {

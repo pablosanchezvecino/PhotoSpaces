@@ -7,6 +7,7 @@ import morgan from "morgan";
 import dbConnection from "./database/config.js";
 import requestsRouter from "./routes/requestsRouter.js";
 import { processQueue } from "./controllers/requestsController.js";
+import { setUpCleanupInterval } from "./logic/cleanupLogic.js";
 
 dotenv.config();
 
@@ -38,6 +39,8 @@ app.get("/new-server-available", (req, res) => {
 // durante el cual haya peticiones encoladas y servidores disponibles al 
 // mismo tiempo coincidirá con el periodo especificado
 setInterval(processQueue, process.env.DB_CHECK_PERIOD_MS);
+
+setUpCleanupInterval();
 
 app.listen(port, () => {
   console.log(`Microservicio de gestión de peticiones escuchando en el puerto ${port}`.bold.magenta);

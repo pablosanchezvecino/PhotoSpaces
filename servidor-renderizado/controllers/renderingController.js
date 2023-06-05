@@ -8,6 +8,7 @@ import ServerStates from "../constants/serverStatesEnum.js";
 import { Worker } from "worker_threads";
 import dataString from "../constants/renderTestSettings.js";
 import { setEstimatedRemainingProcessingTime } from "../serverStatus.js";
+import { performCleanup } from "../logic/cleanupLogic.js";
 
 const test = async (req, res) => {
   // Comprobar que el servidor se encuentra disponible
@@ -23,6 +24,7 @@ const test = async (req, res) => {
   try {
     await render(JSON.parse(dataString), "renderTest");
   } catch (error) {
+    console.error(`Error en la prueba de renderizado. ${error}`.red);
     res.status(500).send({
       error: "Error en la prueba de renderizado",
     });
@@ -32,8 +34,12 @@ const test = async (req, res) => {
   // Parar cronómetro
   const rEnd = process.hrtime(hrStart);
 
+  try {
+    performCleanup();
+  } catch (error) {
+    console.error(`Error al intentar borrar archivo renderTest.png. ${error}`.red);
+  }
   // Borrar archivo renderTest.png generado
-  fs.unlinkSync("./temp/renderTest.png");
 
   // Pasar tiempo medido a milisegundos
   const timeSpentOnRenderTest = Math.round(rEnd[0] * 1000 + rEnd[1] / 1000000);
@@ -42,16 +48,25 @@ const test = async (req, res) => {
 
   serverInfo.timeSpentOnRenderTest = timeSpentOnRenderTest;
 
-  // Obtener SO, CPU y GPU del host
-  let [osData, cpuData, gpuData] = await Promise.all([
-    si.osInfo(),
-    si.cpu(),
-    si.graphics(),
-  ]);
-  serverInfo.os = osData.distro;
-  serverInfo.cpu = cpuData.manufacturer + " " + cpuData.brand;
-  //console.log(gpuData.controllers);
-  serverInfo.gpu = gpuData.controllers[gpuData.controllers.length - 1].model;
+  try {
+    // Obtener SO, CPU y GPU del host
+    const [osData, cpuData, gpuData] = await Promise.all([
+      si.osInfo(),
+      si.cpu(),
+      si.graphics(),
+    ]);
+
+    serverInfo.os = osData.distro;
+    serverInfo.cpu = cpuData.manufacturer + " " + cpuData.brand;
+    console.log(gpuData.controllers);
+    serverInfo.gpu = gpuData.controllers[gpuData.controllers.length - 1].model;
+  } catch (error) {
+    console.error(`Error en la obtención de las especificaciones del sistema. ${error}`.red);
+    res.status(500).send({
+      error: "Error al intentar obtener la información del sistema",
+    });
+    return;
+  }
 
   // Lanzar proceso que ejecute el comando "blender -v"
   const child = spawn(process.env.BLENDER_CMD || "blender", ["-v"]);
@@ -69,11 +84,11 @@ const test = async (req, res) => {
   // Tras finalizar la ejecución del comando responder a la petición con todos los datos
   child.on("exit", () => {
     setStatus(ServerStates.idle);
-
     res.status(200).send(serverInfo);
   });
 
-  child.on("error", () => {
+  child.on("error", (data) => {
+    console.error(`Error en la obtención de la versión de Blender. ${data}`.red);
     res.status(500).send({
       error: "Error al intentar obtener la información del sistema",
     });
@@ -81,11 +96,11 @@ const test = async (req, res) => {
 };
 
 const handleRenderingRequest = async (req, res) => {
-  // Comprobar que el servidor se encuentra disponible
-  if (getStatus() !== ServerStates.idle) {
-    res.status(400).send({ error: "El servidor no se encuentra disponible" });
-    // return;
-  }
+  // TODO: Comprobar que el servidor se encuentra disponible
+  // if (getStatus() !== ServerStates.idle) {
+  //   res.status(400).send({ error: "El servidor no se encuentra disponible" });
+  //   // return;
+  // }
 
   // El servidor pasa a encontrarse ocupado
   setStatus(ServerStates.busy);
@@ -104,15 +119,26 @@ const handleRenderingRequest = async (req, res) => {
   const parameters = JSON.parse(req.body.data);
   const model = req.files.model;
   const requestId = req.body.requestId;
-  fs.writeFileSync(`./temp/${requestId}.gltf`, Buffer.from(model.data));
 
-  // Renderizado
+  // Almacenar temporalmente el modelo
+  try {
+    fs.writeFileSync(`./temp/${requestId}.gltf`, Buffer.from(model.data));
+  } catch (error) {
+    console.error(`Error en la escritura del archivo temporal ${requestId}.gltf. ${error}`.red);
+    res.status(500).send({ error: `Error en la escritura del archivo temporal ${requestId}.gltf` });
+    return;
+  }
+
+  // Comenzar proceso de renderizado
   try {
     await render(parameters, requestId);
     setEstimatedRemainingProcessingTime(null);
   } catch (error) {
-    console.error(error);
+    performCleanup();
+    console.error(`Error en el proceso de renderizado. ${error}`.red);
     res.status(500).send({ error: "Error en el proceso de renderizado" });
+    setStatus(ServerStates.idle);
+    return;
   }
 
   // El servidor vuelve a encontrarse disponible
@@ -121,13 +147,11 @@ const handleRenderingRequest = async (req, res) => {
   // Devolver archivo .png generado
   res.status(200).sendFile(`${requestId}.png`, options, (error) => {
     if (error) {
-      console.error("Error al devolver la imagen renderizada");
+      console.error("Error al devolver la imagen renderizada".red);
     } else {
       console.log("Imagen renderizada devuelta correctamente".magenta);
       // Borrar archivo .png temporal
-      console.log(`Eliminando archivo ${requestId}.png`.magenta);
-      fs.unlinkSync(`./temp/${requestId}.png`);
-      console.log(`Archivo ${requestId}.png eliminado correctamente`.magenta);
+      performCleanup();
     }
   });
 };
@@ -138,7 +162,7 @@ const render = (parameters, filename) => {
     const worker = new Worker("./logic/renderLogic.js", {
       workerData: {
         parameters: parameters,
-        filename: filename,
+        filename: filename
       },
     });
 

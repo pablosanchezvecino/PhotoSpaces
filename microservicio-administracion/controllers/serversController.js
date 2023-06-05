@@ -7,7 +7,7 @@ const getServers = async (req, res) => {
     const servers = await Server.find({});
     res.status(200).send(servers);
   } catch (error) {
-    console.error(error);
+    console.error(`Error en la consulta a la base de datos. ${error}`.red);
     res.status(500).send({ error: "Error en la consulta a la base de datos" });
   }
 };
@@ -36,7 +36,18 @@ const addServer = async (req, res) => {
   }
 
   // Comprobar que no hay servidor registrado con la misma IP
-  const sameIPServer = await Server.findOne({ ip: renderingServerIP }).exec();
+  let sameIPServer = null;
+  let sameNameServer = null;
+  try {
+    sameIPServer = await Server.findOne({ ip: renderingServerIP }).exec();
+    sameNameServer = await Server.findOne({
+      name: renderingServerName
+    }).exec();
+  } catch (error) {
+    console.error(`Error en las consultas a la base de datos previas a añadir el servidor. ${error}`.red);
+    res.status(500).send({ error: "Error en las consultas a la base de datos previas a añadir el servidor" });
+    return;
+  }
 
   if (sameIPServer) {
     res.status(400).send({
@@ -44,11 +55,6 @@ const addServer = async (req, res) => {
     });
     return;
   }
-
-  // Comprobar que no hay servidor registrado con el mismo nombre
-  const sameNameServer = await Server.findOne({
-    name: renderingServerName
-  }).exec();
 
   if (sameNameServer) {
     res.status(400).send({
@@ -86,7 +92,7 @@ const addServer = async (req, res) => {
           `http://${process.env.REQUEST_MANAGEMENT_MICROSERVICE_IP}:${process.env.REQUEST_MANAGEMENT_MICROSERVICE_PORT}/new-server-available`
         );
       } catch (error) {
-        console.error(error);
+        console.error(`Error al intentar contactar con el microservicio de gestión de peticiones. ${error}`.red);
       }
 
       // Informar del éxito de la operación al cliente
@@ -95,20 +101,27 @@ const addServer = async (req, res) => {
       // Servidor no es capaz de renderizar
       res.status(500).send({
         error:
-          "No se pudo añadir el servidor porque este no tiene instalado el software necesario",
+          "No se pudo añadir el servidor porque este no tiene instalado el software necesario o no está configurado correctamente",
       });
     }
-  } catch (err) {
-    console.error(err);
+  } catch (error) {
+    console.error(`Error en la conexión con el servidor de renderizado. ${error}`.red);
     res.status(400).send({
-      error: "No fue posible establecer una conexión con el servidor",
+      error: "Error en la conexión con el servidor de renderizado",
     });
   }
 };
 
 const disableServer = async (req, res) => {
   // Consultar dirección IP y estado del servidor
-  const serverInfo = await Server.findById(req.params.id, "status ip").exec();
+  let serverInfo = null;
+  try {
+    serverInfo = await Server.findById(req.params.id, "status ip").exec();
+  } catch (error) {
+    console.error(`Error en las consultas a la base de datos previas a deshabilitar el servidor. ${error}`.red);
+    res.status(500).send({ error: "Error en las consultas a la base de datos previas a deshabilitar el servidor" });
+    return;
+  }
 
   // Solo se puede deshabilitar el servidor si este se encuentra en estado "idle"
   if (serverInfo.status === "busy") {
@@ -147,16 +160,23 @@ const disableServer = async (req, res) => {
       }
     })
     .catch((error) => {
-      console.error(error);
+      console.error(`Error en la conexión con el servidor de renderizado. ${error}`.red);
       res.status(500).send({
-        error: "Error al contactar con el servidor de renderizado",
+        error: "Error en la conexión con el servidor de renderizado",
       });
     });
 };
 
 const enableServer = async (req, res) => {
   // Consultar dirección IP y estado del servidor
-  const serverInfo = await Server.findById(req.params.id, "status ip").exec();
+  let serverInfo = null;
+  try {
+    serverInfo = await Server.findById(req.params.id, "status ip").exec();
+  } catch (error) {
+    console.error(`Error en las consultas a la base de datos previas a habilitar el servidor. ${error}`.red);
+    res.status(500).send({ error: "Error en las consultas a la base de datos previas a habilitar el servidor" });
+    return;
+  }
 
   // Solo se puede deshabilitar el servidor si este se necuentra en estado "idle"
   if (serverInfo.status === "busy") {
@@ -180,8 +200,8 @@ const enableServer = async (req, res) => {
     },
   })
     .then(async (response) => {
+      // Si todo fue bien
       if (response.status === 200) {
-        // Si todo fue bien
         // Actualizar estado en BD
         await Server.findByIdAndUpdate(req.params.id, { status: "idle" });
 
@@ -191,13 +211,13 @@ const enableServer = async (req, res) => {
         });
 
         // Avisar al microservicio de gestión de peticiones de que hay un nuevo servidor disponible
-        // try {
-        //   await fetch(
-        //     `http://${process.env.REQUEST_MANAGEMENT_MICROSERVICE_IP}:${process.env.REQUEST_MANAGEMENT_MICROSERVICE_PORT}/new-server-available`
-        //   );
-        // } catch (error) {
-        //   console.error(error);
-        // }
+        try {
+          await fetch(
+            `http://${process.env.REQUEST_MANAGEMENT_MICROSERVICE_IP}:${process.env.REQUEST_MANAGEMENT_MICROSERVICE_PORT}/new-server-available`
+          );
+        } catch (error) {
+          console.error(`Error al intentar contactar con el microservicio de gestión de peticiones. ${error}`.red);
+        }
 
       } else {
         res.status(400).send({
@@ -206,90 +226,86 @@ const enableServer = async (req, res) => {
       }
     })
     .catch((error) => {
-      console.error(error);
+      console.error(`Error en la conexión con el servidor de renderizado. ${error}`.red);
       res.status(500).send({
-        error: "Error al contactar con el servidor de renderizado",
+        error: "Error en la conexión con el servidor de renderizado",
       });
     });
 };
 
 const deleteServer = async (req, res) => {
   // Consultar dirección IP y estado del servidor
-  Server.findById(req.params.id, "status ip", async (error, serverInfo) => {
-    if (error) {
-      // Parámetro id no válido
+  let serverInfo = null;
+  try {
+    serverInfo = await Server.findById(req.params.id, "status ip");
+  } catch (error) {
+    res.status(400).send({ error: "El parámetro no es válido" });
+    return;
+  }
 
-      res.status(400).send({
-        error: "El parámetro no es válido",
+  // No existe servidor asociado al id especificado
+  if (!serverInfo) {
+    console.error(`Petición asociada al id ${req.params.id} no encontrada`.red);
+    res.status(404).send({
+      error:
+        "El parámetro id no se corresponde con ningún servidor de renderizado registrado en el sistema",
+    });
+    return;
+  }
+
+  // Existe servidor
+  // Solo se puede eliminar si este no se encuentra en estado "busy"
+  if (serverInfo.status === "busy") {
+    res.status(400).send({
+      error: "El servidor se encuentra procesando una petición",
+    });
+    return;
+  }
+
+  // Informar a servidor para que quede desvinculado
+  try {
+    const serverResponse = await fetch(
+      `http://${serverInfo.ip}:${process.env.RENDER_SERVER_PORT}/unbind`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (serverResponse.status !== 200) {
+      res.status(500).send({
+        error: "Conflicto entre el contenido de la base de datos y el estado local del servidor",
       });
       return;
-    } else {
-      if (serverInfo === null) {
-        // No existe servidor asociado al id
-
-        console.error(`Petición asociada al id ${req.params.id} no encontrada`);
-        res.status(404).send({
-          error:
-            "El parámetro id no se corresponde con ningún servidor de renderizado registrado en el sistema",
-        });
-        return;
-      } else {
-        // Existe servidor
-
-        // Solo se puede eliminar si este no se encuentra en estado "busy"
-        if (serverInfo.status === "busy") {
-          res.status(400).send({
-            error: "El servidor se encuentra procesando una petición",
-          });
-          return;
-        }
-
-        // Informar a servidor para que quede desvinculado
-        try {
-          
-          const serverResponse = await fetch(
-            `http://${serverInfo.ip}:${process.env.RENDER_SERVER_PORT}/unbind`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-            }
-          );
-
-          if (serverResponse.status !== 200) {
-            res.status(500).send({
-              error: "Conflicto con el estado local del servidor",
-            });
-            return;
-          }
-        } catch (error) {
-          res.status(500).send({
-            error: "Error interno al intentar contactar con el servidor",
-          });
-        }
-
-        // Borrar info del servidor de la BD
-        Server.findByIdAndRemove(req.params.id, (error, deletedServer) => {
-          if (error) {
-            // Algo falla a la hora de borrar
-            res.status(500).send({
-              error:
-                "Error interno al intentar borrar el servidor de la base de datos",
-            });
-          } else {
-            // todo bien
-            console.log("Servidor eliminado:", deletedServer);
-            res.status(200).send({
-              message: "Servidor eliminado con éxito",
-              deletedServer,
-            });
-            return;
-          }
-        });
-      }
     }
+  } catch (error) {
+    res.status(500).send({
+      error: "Error en la conexión con el servidor",
+    });
+    return;
+  }
+
+  // Borrar info del servidor de la BD
+  let deletedServer = null;
+  try {
+    deletedServer =  await Server.findByIdAndRemove(req.params.id);
+  } catch {
+    res.status(500).send({
+      error:
+        "Error interno al intentar borrar el servidor de la base de datos",
+    });
+    return;
+  }
+
+  // Todo bien
+  console.log(`Servidor eliminado: ${deletedServer}`.magenta);
+  res.status(200).send({
+    message: "Servidor eliminado con éxito",
+    deletedServer,
   });
+
 };
 
 export { getServers, addServer, disableServer, enableServer, deleteServer };

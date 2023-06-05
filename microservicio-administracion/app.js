@@ -8,20 +8,22 @@ import serversRouter from "./routes/serversRouter.js";
 import requestsRouter from "./routes/requestsRouter.js";
 import { ipCheckMiddleware } from "./middleware/ipCheckMiddleware.js";
 
-
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT;
 
+// Conexión MongoDB
 dbConnection();
 
+// Middleware
 app.use(cors());
 app.use(morgan("dev"));
 app.use(express.json());
-
+// Utilizar comprobación de direcciones IP
 app.use(ipCheckMiddleware);
 
+// Routers
 app.use("/servers", serversRouter);
 app.use("/requests", requestsRouter);
 

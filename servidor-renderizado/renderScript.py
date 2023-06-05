@@ -98,6 +98,32 @@ else:
     # Motor cycles y procesamiento GPU
     bpy.context.scene.cycles.device = "GPU"
 
+
+
+    # Establece el motor de renderizado en Cycles
+    # bpy.context.scene.render.engine = 'CYCLES'
+
+    # Habilita el uso de la GPU
+    bpy.context.preferences.addons['cycles'].preferences.compute_device_type = 'CUDA'
+
+    # Configura la GPU que deseas utilizar
+    bpy.context.preferences.addons['cycles'].preferences.get_devices()
+
+    # Selecciona la GPU deseada por su índice
+    bpy.context.preferences.addons['cycles'].preferences.compute_device = 0
+
+    # Guarda las preferencias
+    bpy.ops.wm.save_userpref()
+
+    print("111111111111111")
+    deviceList = bpy.context.preferences.addons["cycles"].preferences.get_devices()
+    for deviceTuple in deviceList:
+        print("Devices:")
+        for device in deviceTuple:
+            print(f"\t{device.name} ({device.type}) {device.use}")
+    print("22222222222222")
+
+
     # Muestreo adaptativo
     bpy.context.scene.cycles.use_adaptive_sampling = True
 

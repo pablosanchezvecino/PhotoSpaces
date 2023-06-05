@@ -2,7 +2,7 @@ let currentStatus;
 let estimatedRemainingProcessingTime;
 
 // Para debugging
-setInterval(() => console.log(currentStatus.description.cyan), 500);
+setInterval(() => console.log(currentStatus.description.cyan), 5000);
 
 const getStatus = () => currentStatus;
 

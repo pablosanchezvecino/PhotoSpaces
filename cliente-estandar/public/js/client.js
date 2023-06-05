@@ -517,32 +517,43 @@ const msToTime = (duration) => {
 };
 
 function wait(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 const requestPolling = async (requestId, requestStatus) => {
-  let requestMonitoringPolling = null;
-
   const currentRequestStatus = document.getElementById("currentRequestStatus");
   const currentQueuePosition = document.getElementById("currentQueuePosition");
   const oldestProcessingRequestEstimatedTime = document.getElementById(
     "oldestProcessingRequestEstimatedTime"
   );
   const estimatedTimeTitle = document.getElementById("estimated-time-title");
+  const queuePositionParagraph = document.getElementById(
+    "queue-position-paragraph"
+  );
 
-  currentRequestStatus.textContent = "";
+  let wasEnqueuedBefore = requestStatus === "enqueued";
+
+  // Mostrar estado inicial de la petición
+  currentRequestStatus.textContent =
+    requestStatus === "enqueued" ? "En cola" : "Enviada a servidor";
+
+  currentQueuePosition.textContent = "";
+  oldestProcessingRequestEstimatedTime.textContent = "";
 
   $("#renderInfoModal").modal("show");
 
+  // Mostrar posición en la cola solo si la petición se encuentra encolada
+  queuePositionParagraph.style.display =
+    requestStatus === "enqueued" ? "block" : "none";
+  estimatedTimeTitle.textContent =
+    requestStatus === "enqueued"
+      ? "Tiempo de espera estimado para avance en la cola: "
+      : "Tiempo de espera estimado: ";
+
+  // Esperar un poco antes de comenzar el polling
+  await wait(5000);
+
   while (requestStatus !== "fulfilled") {
-    wait(2000);
-
-    currentRequestStatus.textContent =
-      requestStatus === "enqueued" ? "En cola" : "Enviada a servidor";
-
-    if (requestStatus === "processing") {
-      estimatedTimeTitle.textContent = "Tiempo de espera estimado: ";
-    }
 
     const response = await fetch(
       `http://${requestHandlingMicroserviceIp}:${requestHandlingMicroservicePort}/requests/${requestId}/info`,
@@ -551,15 +562,27 @@ const requestPolling = async (requestId, requestStatus) => {
 
     const jsonContent = await response.json();
 
-    console.log(jsonContent);
-    oldestProcessingRequestEstimatedTime.textContent = msToTime(
-      jsonContent.processingRequestEstimatedRemainingProcessingTime
-    );
-    currentQueuePosition.textContent = jsonContent.requestQueuePosition;
     requestStatus = jsonContent.requestStatus;
+
+    // Petición pasa de "enqueued" a "processing"
+    if (requestStatus === "processing" && wasEnqueuedBefore) {
+      wasEnqueuedBefore = false;
+      queuePositionParagraph.style.display = "none";
+      currentRequestStatus.textContent = "Enviada a servidor";
+      estimatedTimeTitle.textContent = "Tiempo de espera estimado: ";
+      await wait(5000);
+    }
+
+    console.log(jsonContent);
+    if (jsonContent.processingRequestEstimatedRemainingProcessingTime) {
+      oldestProcessingRequestEstimatedTime.textContent = msToTime(jsonContent.processingRequestEstimatedRemainingProcessingTime);
+    }
+    currentQueuePosition.textContent = jsonContent.requestQueuePosition;
+
+    await wait(2000);
   }
 
-  currentRequestStatus.textContent = "Finalizada"
+  currentRequestStatus.textContent = "Finalizada";
   oldestProcessingRequestEstimatedTime.textContent = "";
   currentQueuePosition.textContent = "";
 
@@ -570,59 +593,10 @@ const requestPolling = async (requestId, requestStatus) => {
     );
 
     downloadImage(response.body);
-
   } catch (error) {
     console.error(error);
     alert("Error en la obtención de la imagen renderizada");
   }
-
-  // requestMonitoringPolling = setInterval(async () => {
-  //   currentRequestStatus.textContent =
-  //     requestStatus === "enqueued"
-  //       ? "En cola"
-  //       : requestStatus === "processing"
-  //       ? "Enviada a servidor"
-  //       : "Finalizada";
-
-  //   if (requestStatus === "enqueued" || requestStatus === "processing") {
-  //     if (requestStatus === "processing") {
-  //       estimatedTimeTitle.textContent = "Tiempo de espera estimado: ";
-  //     }
-
-  //     fetch(
-  //       `http://${requestHandlingMicroserviceIp}:${requestHandlingMicroservicePort}/requests/${requestId}/info`,
-  //       { method: "GET" }
-  //     )
-  //       .then((res) => res.json())
-  //       .then((jsonContent) => {
-  //         console.log(jsonContent);
-  //         oldestProcessingRequestEstimatedTime.textContent = msToTime(
-  //           jsonContent.processingRequestEstimatedRemainingProcessingTime
-  //         );
-  //         currentQueuePosition.textContent = jsonContent.requestQueuePosition;
-  //         requestStatus = jsonContent.requestStatus;
-  //       });
-  //   } else if (requestStatus === "fulfilled") {
-  //     requestStatus = null;
-
-  //     oldestProcessingRequestEstimatedTime.textContent = "";
-  //     currentQueuePosition.textContent = "";
-
-  //     try {
-  //       const response = await fetch(
-  //         `http://${requestHandlingMicroserviceIp}:${requestHandlingMicroservicePort}/requests/${requestId}`,
-  //         { method: "GET" }
-  //       );
-
-  //       downloadImage(response.body);
-
-  //       clearInterval(requestMonitoringPolling);
-  //     } catch (error) {
-  //       console.error(error);
-  //       alert("Error en la obtención de la imagen renderizada");
-  //     }
-  //   }
-  // }, 2000);
 };
 
 // Proceso de descarga de la imagen en respuesta

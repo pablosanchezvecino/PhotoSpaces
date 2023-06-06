@@ -1,6 +1,6 @@
 // Funciones asociadas a los endpoints relacionados con la administración de las peticiones de renderizado
 
-import { existsSync, readFileSync, writeFileSync, unlinkSync } from "fs";
+import { existsSync, readFileSync, writeFileSync, unlinkSync, renameSync } from "fs";
 import Request from "../models/Request.js";
 import Server from "../models/Server.js";
 import { sendMail } from "../logic/mailLogic.js";
@@ -11,7 +11,8 @@ const handleNewRequest = async (req, res) => {
   const parameters = JSON.parse(req.body.data);
 
   // Obtener contenido archivo
-  const model = req.files.model;
+  // const model = req.files.model;
+  const model = req.file;
 
   // Si se especificó envío de email, obtener email
   const email = req.body.email ?? null;
@@ -48,8 +49,15 @@ const handleNewRequest = async (req, res) => {
 
   const request = new Request({
     clientIp: ip,
-    parameters: parameters,
+    parameters: parameters
   });
+
+  // Renombrar archivo temporal generado por multer utilizando el oid de MongoDB
+  try {
+    renameSync(`./temp/${model.filename}`, `./temp/${request._id}.gltf`);
+  } catch (error) {
+    console.error(`Error al renombrar el archivo. ${error}`.red);
+  }
 
   if (email) {
     request.email = email;
@@ -57,12 +65,9 @@ const handleNewRequest = async (req, res) => {
 
   if (queue.length === 0 && bestIdleServer) {
     // La cola está vacía y hay al menos un servidor en estado "idle"
-
     try {
-      res
-        .status(200)
-        .send({ requestId: request._id, requestStatus: "processing" });
-      await forwardRequest(request, bestIdleServer, model);
+      res.status(200).send({ requestId: request._id, requestStatus: "processing" });
+      await forwardRequest(request, bestIdleServer);
     } catch (error) {
       console.error(error);
       // res.status(500).send("Error durante el reenvío de la petición");
@@ -72,55 +77,39 @@ const handleNewRequest = async (req, res) => {
     processQueue();
   } else {
     // Hay peticiones por delante en la cola o la cola está vacía pero todos los servidores están ocupados
-
     // Encolar la petición
-    enqueueRequest(request, model);
-
-    if (!email) {
-      res
-        .status(200)
-        .send({ requestId: request._id, requestStatus: "enqueued" });
-    }
+    await enqueueRequest(request);
+    res.status(200).send({ requestId: request._id, requestStatus: "enqueued" });
   }
 };
 
-const forwardRequest = async (request, bestIdleServer, model) => {
+const forwardRequest = async (request, bestIdleServer) => {
   bestIdleServer.status = "busy";
   await bestIdleServer.save();
   
+  console.log(`Reenviando petición a ${bestIdleServer.name}...`.magenta);
+
+  request.status = "processing";
+  request.assignedServer = bestIdleServer.name;
+
+  request.processingStartTime = new Date();
+  await request.save();
+
+  // Enviar petición al servidor disponible más adecuado
   return new Promise((resolve, reject) => {
-    // Enviar petición al servidor disponible más adecuado
-    console.log(`Reenviando petición a ${bestIdleServer.name}...`.magenta);
-
-
-    request.status = "processing";
-    request.assignedServer = bestIdleServer.name;
-
     // Enviar petición a servidor de renderizado
     const formData = new FormData();
     formData.append("requestId", request._id);
 
-    if (model) {
-      // La petición no ha pasado por la cola y tenemos el modelo en la variable model
-      formData.append(
-        "model",
-        new Blob([Buffer.from(model.data)], { type: "text/plain" })
-      );
-    } else {
-      // La petición estaba ancolada y tenemos el modelo en un archivo temporal
-      try {
-        const data = readFileSync(`./temp/${request._id}.gltf`);
-        formData.append("model", new Blob([data], { type: "text/plain" }));
-      } catch (error) {
-        console.error(error);
-        reject();
-      }
+    try {
+      const data = readFileSync(`./temp/${request._id}.gltf`);
+      formData.append("model", new Blob([data], { type: "text/plain" }));
+    } catch (error) {
+      console.error(error);
+      reject();
     }
 
     formData.append("data", JSON.stringify(request.parameters));
-
-    request.processingStartTime = new Date();
-    request.save();
 
     let monitorRemainingTimeInterval = null;
 
@@ -166,34 +155,59 @@ const forwardRequest = async (request, bestIdleServer, model) => {
         reject();
       });
 
+    function wait(ms) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
     // Solo tenemos acceso al tiempo restante estimado si estamos utilizando el motor Cycles
     if (request.parameters.motor === "CYCLES") {
-      monitorRemainingTimeInterval = setInterval(async () => {
-        console.log("Consultando tiempo a servidor:");
-        const estimatedRemainingProcessingTimeResponse = await fetch(
-          `http://${bestIdleServer.ip}:${process.env.RENDER_SERVER_PORT}/time`
-        );
-        const estimatedRemainingProcessingTimeMs = (
-          await estimatedRemainingProcessingTimeResponse.json()
-        ).estimatedRemainingProcessingTime;
-        console.log("Obtenido", estimatedRemainingProcessingTimeMs);
-        request.estimatedRemainingProcessingTime =
-          estimatedRemainingProcessingTimeMs;
-        await request.save();
-      }, 2000);
+
+
+      const polling = async () => {
+
+        while (request.status !== "fulfilled") {
+          await wait(2000);
+          console.log("Consultando tiempo a servidor:");
+          const estimatedRemainingProcessingTimeResponse = await fetch(`http://${bestIdleServer.ip}:${process.env.RENDER_SERVER_PORT}/time`);
+          const estimatedRemainingProcessingTimeMs = (await estimatedRemainingProcessingTimeResponse.json()).estimatedRemainingProcessingTime;
+          console.log("Obtenido", estimatedRemainingProcessingTimeMs);
+          request.estimatedRemainingProcessingTime = estimatedRemainingProcessingTimeMs;
+          await request.save();
+        }
+
+      };
+      polling();
+     
+     
+      // monitorRemainingTimeInterval = setInterval(async () => {
+      //   console.log("Consultando tiempo a servidor:");
+      //   const estimatedRemainingProcessingTimeResponse = await fetch(
+      //     `http://${bestIdleServer.ip}:${process.env.RENDER_SERVER_PORT}/time`
+      //   );
+      //   const estimatedRemainingProcessingTimeMs = (
+      //     await estimatedRemainingProcessingTimeResponse.json()
+      //   ).estimatedRemainingProcessingTime;
+      //   console.log("Obtenido", estimatedRemainingProcessingTimeMs);
+      //   request.estimatedRemainingProcessingTime =
+      //     estimatedRemainingProcessingTimeMs;
+      //   await request.save();
+      // }, 2000);
+
+
+
+
+
     }
   });
 };
 
-const enqueueRequest = async (request, model) => {
+const enqueueRequest = async (request) => {
   console.log("Encolando petición...".magenta);
 
   request.status = "enqueued";
   request.queueStartTime = new Date();
-  await request.save();
 
-  // Guardar escena temporalmente
-  writeFileSync(`./temp/${request._id}.gltf`, Buffer.from(model.data));
+  await request.save();
 };
 
 const processQueue = async () => {

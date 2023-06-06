@@ -2,6 +2,7 @@
 
 import { Router } from "express";
 import { handleNewRequest, getWaitingInfo, transferRenderedImage } from "../controllers/requestsController.js";
+import { upload } from "../constants/multerConfig.js";
 
 const router = Router();
 
@@ -9,7 +10,7 @@ const router = Router();
 router.get("/:requestId", transferRenderedImage);
 
 // POST /requests
-router.post("", handleNewRequest);
+router.post("", upload.single("model"), handleNewRequest);
 
 // GET /requests/:requestId/time
 router.get("/:requestId/info", getWaitingInfo);

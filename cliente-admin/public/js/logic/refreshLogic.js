@@ -30,6 +30,7 @@ const refresh = async () => {
   let totalProcessingTime = 0;
   let totalQueueTime = 0;
   
+  // Obtener servidores y peticiones
   try {
     const serversResponse = await fetch(`http://${serverAdministrationMicroserviceIp}:${serverAdministrationMicroservicePort}/servers`);
     servers = await serversResponse.json();
@@ -43,10 +44,12 @@ const refresh = async () => {
     return;
   }
 
+  // Borrar todas las tarjetas y textos informativos que se muestran si algún contenedor está vacío
   document.querySelectorAll(".server").forEach((e) => e.remove());
   document.querySelectorAll(".request").forEach((e) => e.remove());
   document.querySelectorAll(".empty-info").forEach((e) => e.remove());
 
+  // Generar tarjetas servidores
   servers.forEach((server) => addServerCard(server));
 
   // Obtener número total de servidores y cuántos hay de cada tipo
@@ -83,11 +86,10 @@ const refresh = async () => {
     disabledServerContainer.appendChild(emptyDisabledServerContainerInfo);
   }
 
+  // Generar tarjetas peticiones
   // Utilizamos objeto para poder pasar por referencia e ir incrementando el valor
   let queuePosition = { position: 1 };
-  
   requests.forEach((request) => {
-    // Generar tarjeta
     addRequestCard(request, queuePosition);
     
     // Acumular el tiempo que han pasado encoladas las peticiones en proceso y las finalizadas

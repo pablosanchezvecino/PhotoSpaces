@@ -16,7 +16,7 @@ dbConnection();
 const app = express();
 const port = process.env.PORT;
 
-app.use(fileUpload());
+// app.use(fileUpload());
 app.use(cors());
 app.use(morgan("dev"));
 

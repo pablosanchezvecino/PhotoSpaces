@@ -305,7 +305,7 @@ const initializeControls = (camera) => {
   document.addEventListener("keyup", onKeyUp);
 };
 
-// Reestablecer tamañor del renderizador si se modifica el tamaño
+// Reestablecer tamaño del renderizador si se modifica el tamaño
 // de la ventana
 const resizeRendererToDisplaySize = (renderer) => {
   const canvas = renderer.domElement;
@@ -425,7 +425,7 @@ const addLightToDiv = (type, name, gui) => {
   lightsList.appendChild(node);
 };
 
-function isEmail(email) {
+const isEmail = (email) => {
   const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return regex.test(email);
 }
@@ -458,8 +458,10 @@ const sendModel = async (cam) => {
     exporter.parse(scene, async (gltf) => {
       formData.append(
         "model",
-        new Blob([JSON.stringify(gltf, null, 2)], { type: "text/plain" })
+        new Blob([JSON.stringify(gltf, null)], { type: "text/plain" })
       );
+// console.log( gltf)
+//       formData.append('model', gltf, "model.gltf");
 
       formData.append("data", JSON.stringify(camData));
 

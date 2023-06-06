@@ -38,7 +38,13 @@ const handleNewRequest = async (req, res) => {
   }
 
   // Obtener dirección IP del cliente
-  const ip = req.headers["x-forwarded-for"] || req.ip;
+  let ip = req.headers["x-forwarded-for"] || req.ip;
+
+  // Si se recibe una dirección IPv4 embebida en una dirección IPv6
+  if (ip.toString().startsWith("::ffff:")) {
+    // Extraer IPv4
+    ip = ip.toString().slice(7);
+  }
 
   const request = new Request({
     clientIp: ip,
@@ -179,12 +185,12 @@ const forwardRequest = async (request, bestIdleServer, model) => {
   });
 };
 
-const enqueueRequest = (request, model) => {
+const enqueueRequest = async (request, model) => {
   console.log("Encolando petición...".magenta);
 
   request.status = "enqueued";
   request.queueStartTime = new Date();
-  request.save();
+  await request.save();
 
   // Guardar escena temporalmente
   writeFileSync(`./temp/${request._id}.gltf`, Buffer.from(model.data));
@@ -277,9 +283,9 @@ const transferRenderedImage = (req, res) => {
   try {
     const fileRoute = `./temp/${req.params.requestId}`;
 
-    if (existsSync(fileRoute)) {
+    if (existsSync(`${fileRoute}.png`)) {
       // Enviar imagen renderizada para que el navegador pueda descargarla
-      res.status(200).sendFile(fileRoute, options);
+      res.status(200).sendFile(`${fileRoute}.png`, options);
 
       // Hasta que no termine la transferencia no podemos borrar los archivos temporales
       res.on("finish", () => {

@@ -153,7 +153,7 @@ const addServerCard = (serverData) => {
   container.appendChild(col);
 };
 
-const addRequestCard = (requestData) => {
+const addRequestCard = (requestData, queuePosition) => {
   const containerId =
     requestData.status === "processing"
       ? "processing-request-container"
@@ -195,8 +195,9 @@ const addRequestCard = (requestData) => {
     positionImage.title = "Posición en la cola";
     cardTextPosition.appendChild(positionImage);
     positionImage.after(
-      document.createTextNode(" " + requestData.queuePosition)
+      document.createTextNode(" " + queuePosition.position)
     );
+    queuePosition.position++;
     cardBody.appendChild(cardTextPosition);
   }
 

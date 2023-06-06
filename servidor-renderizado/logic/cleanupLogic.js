@@ -4,7 +4,7 @@ const tempDir = "./temp";
 
 // Elimina todos los archivos del directorio temp excepto renderTest.gltf
 const performCleanup = () => {
-  console.log("eliminando archivos temporales...".yellow);
+  console.log("Eliminando archivos temporales...".yellow);
 
   let files = null;
   try {

@@ -13,7 +13,7 @@ const ipCheckMiddleware = (req, res, next) => {
   let requestIp = req.ip;
 
   // Si se recibe una dirección IPv4 embebida en una dirección IPv6
-  if (req.ip.toString().startsWith("::ffff:")) {
+  if (requestIp.toString().startsWith("::ffff:")) {
     // Extraer IPv4
     requestIp = requestIp.toString().slice(7);
   }

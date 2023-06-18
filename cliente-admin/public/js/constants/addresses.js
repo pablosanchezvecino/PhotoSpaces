@@ -1,21 +1,22 @@
 /* Obtener las direcciones de los microservicios, que habrán sido establecidas por el 
 servidor express a través de las variables de entorno antes de servir la carpeta public */
 
-let serverAdministrationMicroserviceIp;
-let serverAdministrationMicroservicePort;
+let administrationMicroserviceIp;
+let administrationMicroservicePort;
 
 try {
+
   const response = await fetch("./addresses.json");
   const addresses = await response.json();
-  serverAdministrationMicroserviceIp =
-    addresses.serverAdministrationMicroserviceIp;
-  serverAdministrationMicroservicePort =
-    addresses.serverAdministrationMicroservicePort;
+
+  administrationMicroserviceIp = addresses.administrationMicroserviceIp;
+  administrationMicroservicePort = addresses.administrationMicroservicePort;
+
 } catch (error) {
-  console.error(error);
+  console.error(`Error al intentar leer las direcciones del archivo addresses.json. ${error}`);
 }
 
 export {
-  serverAdministrationMicroserviceIp,
-  serverAdministrationMicroservicePort,
+  administrationMicroserviceIp,
+  administrationMicroservicePort
 };

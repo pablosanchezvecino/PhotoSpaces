@@ -14,7 +14,7 @@ const settingsString = JSON.stringify({
     _z: -0.7539108803996845,
     _w: 0.07960810669631752,
   },
-  motor: "BLENDER_EEVEE",
+  engine: "CYCLES",
   gtao: true,
   bloom: true,
   ssr: true,

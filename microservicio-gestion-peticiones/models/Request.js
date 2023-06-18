@@ -1,5 +1,7 @@
 import { Schema, model } from "mongoose";
 
+// Esquemas para trabajar con la colección de peticiones de renderizado en MongoDB
+
 const QuaternionSchema = new Schema({
   _id: false,
   _x: {
@@ -58,8 +60,9 @@ const ParametersSchema = new Schema({
     type: QuaternionSchema,
     required: true,
   },
-  motor: {
+  engine: {
     type: String,
+    enum: ["CYCLES", "BLENDER_EEVEE"],
     required: true,
   },
   gtao: {
@@ -76,43 +79,47 @@ const ParametersSchema = new Schema({
   },
 });
 
-const RequestSchema = Schema({
-  status: {
-    type: String,
-    require: true,
+const RequestSchema = Schema(
+  {
+    status: {
+      type: String,
+      enum: ["enqueued", "processing", "fulfilled"],
+      require: true,
+    },
+    queueStartTime: {
+      type: Date,
+      require: false,
+    },
+    processingStartTime: {
+      type: Date,
+      require: false,
+    },
+    processingEndTime: {
+      type: Date,
+      require: false,
+    },
+    estimatedRemainingProcessingTime: {
+      type: Number,
+      require: false,
+    },
+    assignedServer: {
+      type: String,
+      require: false,
+    },
+    clientIp: {
+      type: String,
+      require: true,
+    },
+    parameters: {
+      type: ParametersSchema,
+      require: true,
+    },
+    email: {
+      type: String,
+      require: false,
+    },
   },
-  queueStartTime: {
-    type: Date,
-    require: false,
-  },
-  processingStartTime: {
-    type: Date,
-    require: false,
-  },
-  processingEndTime: {
-    type: Date,
-    require: false,
-  },
-  estimatedRemainingProcessingTime: {
-    type: Number,
-    require: false,
-  },
-  assignedServer: {
-    type: String,
-    require: false,
-  },
-  clientIp: {
-    type: String,
-    require: true,
-  },
-  parameters: {
-    type: ParametersSchema,
-    require: true,
-  },
-  email: {
-    type: String,
-    require: false,
-  },
-});
+  { optimisticConcurrency: true }
+);
 
 export default model("Request", RequestSchema);

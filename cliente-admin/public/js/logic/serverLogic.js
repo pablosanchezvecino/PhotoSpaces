@@ -1,127 +1,155 @@
+import { spinnerHtml } from "../constants/spinnerHtml.js";
 import { showAddModal } from "./modalLogic.js";
 import {
   confirmationModal,
   confirmationModalConfirmationButton,
   confirmationModalReturnButton,
-  confirmationModalBody,
+  confirmationModalBody
 } from "./DOMElements.js";
+import {
+  administrationMicroserviceIp,
+  administrationMicroservicePort
+} from "../constants/addresses.js";
 
 // Intenta añadir el servidor correspondiente a la IP introducida en el formulario
-const addServer = (serverIP, serverName) => {
+const addServer = async (serverIP, serverName) => {
   showAddModal();
 
   // Contactar con el microservicio de administración para que se encargue de añadir el nuevo servidor al sistema
-  fetch("http://127.0.0.1:9000/servers", {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ ip: serverIP, name: serverName }),
-  })
-    .then((response) => response.json())
-    .then((jsonContent) => {
-      // Espera adicional para que funcione bien modal
-      setTimeout(() => {
-        confirmationModal.hide();
-
-        setTimeout(() => {
-          if (jsonContent.error) {
-            alert(jsonContent.error);
-          } else {
-            alert("Servidor añadido correctamente");
-          }
-        }, 200);
-      }, 1000);
-
-    })
-    .catch((error) => {
-      console.error(error);
+  try {
+    const response = await fetch(`http://${administrationMicroserviceIp}:${administrationMicroservicePort}/servers`, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ ip: serverIP, name: serverName }),
     });
+
+    const jsonContent = await response.json();
+    let alertContent = null;
+
+    if (response.ok) {
+      alertContent = "Servidor añadido correctamente";
+    } else {
+      alertContent = jsonContent.error;
+    }
+    // Espera adicional para que funcione bien modal
+    setTimeout(() => {
+      confirmationModal.hide();
+      setTimeout(() => alert(alertContent), 200);
+    }, 1000);
+
+  } catch (error) {
+    console.error(`Error en la conexión con el microservicio de administración. ${error}`);
+    setTimeout(() => {
+      confirmationModal.hide();
+      setTimeout(() => alert("Error en la conexión con el microservicio de administración"), 200);
+    }, 1000);
+  }
+
 };
 
-const enableServer = (serverId) => {
+const enableServer = async (serverId) => {
   confirmationModalReturnButton.style.display = "none";
   confirmationModalConfirmationButton.style.display = "none";
-  confirmationModalBody.innerHTML =
-    "<div class=\"d-flex justify-content-center\"><div class=\"spinner-border text-secondary\" role=\"status\"><span class=\"visually-hidden\">Loading...</span></div></div>";
+  confirmationModalBody.innerHTML = spinnerHtml;
+    
+  // Contactar con el microservicio de administración para que se encargue de habilitar el servidor
+  try {
+    const response = await fetch(`http://${administrationMicroserviceIp}:${administrationMicroservicePort}/servers/${serverId}/enable`, { method: "POST" });
 
-  fetch(`http://127.0.0.1:9000/servers/${serverId}/enable`, {
-    method: "POST",
-  })
-    .then(async (response) => {
+    const jsonContent = await response.json();
+    let alertContent = null;
+
+    if (response.ok) {
+      alertContent = jsonContent.message;
+    } else {
+      alertContent = jsonContent.error;
+    }
+
+    // Espera adicional para que funcione bien modal
+    setTimeout(() => {
       confirmationModal.hide();
-      setTimeout(async () => {
-        if (response.status === 200) {
-          alert((await response.json()).message);
-        } else {
-          alert((await response.json()).error);
-        }
-      }, 200);
-    })
-    .catch((error) => {
-      console.error(error);
-      setTimeout(() => {
-        alert("Error: No se ha obtenido respuesta del servidor");
-      }, 200);
-    });
+      setTimeout(() => alert(alertContent), 200);
+    }, 1000);
+
+  } catch (error) {
+    console.error(`Error en la conexión con el microservicio de administración. ${error}`);
+    setTimeout(() => {
+      confirmationModal.hide();
+      setTimeout(() => alert("Error en la conexión con el microservicio de administración"), 200);
+    }, 1000);
+  }
+
 };
 
-const disableServer = (serverId) => {
+const disableServer = async (serverId) => {
   confirmationModalReturnButton.style.display = "none";
   confirmationModalConfirmationButton.style.display = "none";
-  confirmationModalBody.innerHTML =
-    "<div class=\"d-flex justify-content-center\"><div class=\"spinner-border text-secondary\" role=\"status\"><span class=\"visually-hidden\">Loading...</span></div></div>";
+  confirmationModalBody.innerHTML = spinnerHtml;
 
-  fetch(`http://127.0.0.1:9000/servers/${serverId}/disable`, {
-    method: "POST",
-  })
-    .then(async (response) => {
+  try {
+    const response = await fetch(`http://${administrationMicroserviceIp}:${administrationMicroservicePort}/servers/${serverId}/disable`, { method: "POST" });
+
+    const jsonContent = await response.json();
+    let alertContent = null;
+
+    if (response.ok) {
+      alertContent = jsonContent.message;
+    } else {
+      alertContent = jsonContent.error;
+    }
+
+    // Espera adicional para que funcione bien modal
+    setTimeout(() => {
       confirmationModal.hide();
-      setTimeout(async () => {
-        if (response.status === 200) {
-          alert((await response.json()).message);
-        } else {
-          alert((await response.json()).error);
-        }
-      }, 200);
-    })
-    .catch((error) => {
-      console.error(error);
-      setTimeout(() => {
-        alert("Error: No se ha obtenido respuesta del servidor");
-      }, 200);
-    });
+      setTimeout(() => alert(alertContent), 200);
+    }, 1000);
+
+  } catch (error) {
+    console.error(`Error en la conexión con el microservicio de administración. ${error}`);
+    setTimeout(() => {
+      confirmationModal.hide();
+      setTimeout(() => alert("Error en la conexión con el microservicio de administración"), 200);
+    }, 1000);
+  }
+
 };
 
 const abortServer = (serverId) => alert("Abortar " + serverId);
 
-const deleteServer = (serverId) => {
+const deleteServer = async (serverId) => {
   confirmationModalReturnButton.style.display = "none";
   confirmationModalConfirmationButton.style.display = "none";
-  confirmationModalBody.innerHTML =
-    "<div class=\"d-flex justify-content-center\"><div class=\"spinner-border text-secondary\" role=\"status\"><span class=\"visually-hidden\">Loading...</span></div></div>";
+  confirmationModalBody.innerHTML = spinnerHtml;
 
-  fetch(`http://127.0.0.1:9000/servers/${serverId}`, {
-    method: "DELETE",
-  })
-    .then(async (response) => {
+  try {
+    const response = await fetch(`http://${administrationMicroserviceIp}:${administrationMicroservicePort}/servers/${serverId}`, { method: "DELETE" });
+
+    const jsonContent = await response.json();
+    let alertContent = null;
+
+    if (response.ok) {
+      alertContent = "Servidor eliminado con éxito";
+    } else {
+      alertContent = jsonContent.error;
+    }
+
+    // Espera adicional para que funcione bien modal
+    setTimeout(() => {
       confirmationModal.hide();
-      setTimeout(async () => {
-        if (response.status === 200) {
-          alert((await response.json()).message);
-        } else {
-          alert((await response.json()).error);
-        }
-      }, 200);
-    })
-    .catch((error) => {
+      setTimeout(() => alert(alertContent), 200);
+    }, 1000);
+
+  } catch (error) {
+    console.error(`Error en la conexión con el microservicio de administración. ${error}`);
+    setTimeout(() => {
       confirmationModal.hide();
-      console.error(error);
-      setTimeout(() => {
-        alert("Error: No se ha obtenido respuesta del servidor");
-      }, 200);
-    });
+      setTimeout(() => alert("Error en la conexión con el microservicio de administración"), 200);
+    }, 1000);
+  }
+
 };
 
 export { addServer, enableServer, disableServer, abortServer, deleteServer };

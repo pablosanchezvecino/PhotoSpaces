@@ -3,6 +3,7 @@
 import { Router } from "express";
 import {
   getServers,
+  getServerById,
   addServer,
   disableServer,
   enableServer,
@@ -13,6 +14,9 @@ const router = Router();
 
 // GET /servers
 router.get("", getServers);
+
+// GET /servers/:id
+router.get("/:id", getServerById);
 
 // POST /servers
 router.post("", addServer);

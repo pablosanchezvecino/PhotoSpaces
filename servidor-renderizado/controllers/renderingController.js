@@ -1,7 +1,6 @@
 // Funciones asociadas a los endpoints que llevan a cabo el renderizado
 
 import { spawn } from "child_process";
-import fs from "fs";
 import si from "systeminformation";
 import { setStatus, getStatus } from "../serverStatus.js";
 import ServerStates from "../constants/serverStatesEnum.js";
@@ -9,6 +8,7 @@ import { Worker } from "worker_threads";
 import dataString from "../constants/renderTestSettings.js";
 import { setEstimatedRemainingProcessingTime } from "../serverStatus.js";
 import { performCleanup } from "../logic/cleanupLogic.js";
+import { options } from "../constants/sendRenderedImageOptions.js";
 
 const test = async (req, res) => {
   // Comprobar que el servidor se encuentra disponible
@@ -105,37 +105,18 @@ const handleRenderingRequest = async (req, res) => {
   // El servidor pasa a encontrarse ocupado
   setStatus(ServerStates.busy);
 
-  // Opciones para la respuesta a la petición
-  const options = {
-    root: "./temp/",
-    dotfiles: "deny",
-    headers: {
-      "x-timestamp": Date.now(),
-      "x-sent": true,
-    },
-  };
-
   // Obtener de la petición la información necesaria para el renderizado
   const parameters = JSON.parse(req.body.data);
-  const model = req.files.model;
+  // const model = req.files.model;
   const requestId = req.body.requestId;
-
-  // Almacenar temporalmente el modelo
-  try {
-    fs.writeFileSync(`./temp/${requestId}.gltf`, Buffer.from(model.data));
-  } catch (error) {
-    console.error(`Error en la escritura del archivo temporal ${requestId}.gltf. ${error}`.red);
-    res.status(500).send({ error: `Error en la escritura del archivo temporal ${requestId}.gltf` });
-    return;
-  }
 
   // Comenzar proceso de renderizado
   try {
     await render(parameters, requestId);
     setEstimatedRemainingProcessingTime(null);
   } catch (error) {
-    performCleanup();
     console.error(`Error en el proceso de renderizado. ${error}`.red);
+    performCleanup();
     res.status(500).send({ error: "Error en el proceso de renderizado" });
     setStatus(ServerStates.idle);
     return;
@@ -158,7 +139,7 @@ const handleRenderingRequest = async (req, res) => {
 
 const render = (parameters, filename) => {
   return new Promise((resolve) => {
-    // Creamos el worker (thread) para la ejecución de el renderizado
+    // Creamos el worker (thread) para la ejecución del renderizado
     const worker = new Worker("./logic/renderLogic.js", {
       workerData: {
         parameters: parameters,

@@ -1,8 +1,8 @@
 import { addServerCard, addRequestCard } from "./cardLogic.js";
 import { msToTime } from "./timeLogic.js";
 import {
-  serverAdministrationMicroserviceIp,
-  serverAdministrationMicroservicePort,
+  administrationMicroserviceIp,
+  administrationMicroservicePort
 } from "../constants/addresses.js";
 import {
   idleServerContainer,
@@ -32,10 +32,10 @@ const refresh = async () => {
   
   // Obtener servidores y peticiones
   try {
-    const serversResponse = await fetch(`http://${serverAdministrationMicroserviceIp}:${serverAdministrationMicroservicePort}/servers`);
+    const serversResponse = await fetch(`http://${administrationMicroserviceIp}:${administrationMicroservicePort}/servers`);
     servers = await serversResponse.json();
 
-    const requestsResponse = await fetch(`http://${serverAdministrationMicroserviceIp}:${serverAdministrationMicroservicePort}/requests`);
+    const requestsResponse = await fetch(`http://${administrationMicroserviceIp}:${administrationMicroservicePort}/requests`);
     requests = await requestsResponse.json();
 
   } catch (error) {

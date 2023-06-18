@@ -1,36 +1,41 @@
-const express = require("express");
-const path = require("path");
-const fs = require('fs');
-require('dotenv').config()
+import "colors"
+import fs from "fs";
+import path from "path";
+import dotenv from "dotenv";
+import express from "express";
+
+dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 8081;
+const port = process.env.PORT || 8081;
 
 const addresses = {
   requestHandlingMicroserviceIp: process.env.REQUEST_HANDLING_MICROSERVICE_IP,
-  requestHandlingMicroservicePort: process.env.REQUEST_HANDLING_MICROSERVICE_PORT
+  requestHandlingMicroservicePort: process.env.REQUEST_HANDLING_MICROSERVICE_PORT,
 };
 
 try {
   fs.writeFileSync("./public/addresses.json", JSON.stringify(addresses));
-  console.log("Archivo creado y contenido escrito correctamente");
-} catch (err) {
-  console.error(err);
+  console.log("Archivo creado y contenido escrito correctamente".bold.magenta);
+} catch (error) {
+  throw new Error(`Error al escribir el archivo addresses.json. ${error}`.red);
 }
 
 // Servir el directorio /public
-app.use(express.static(__dirname + "/public"));
+app.use(express.static(path.join("./public")));
 
 // Servir la librería three.js
 app.use(
   "/build/",
-  express.static(path.join(__dirname, "node_modules/three/build"))
+  express.static("./node_modules/three/build")
 );
 app.use(
   "/jsm/",
-  express.static(path.join(__dirname, "node_modules/three/examples/jsm"))
+  express.static("./node_modules/three/examples/jsm")
 );
 
-app.listen(PORT, () =>
-  console.log(`> Servidor desplegado en el puerto ${PORT}`)
-);
+app.listen(port, () => {
+  console.log(
+    `Cliente estándar escuchando en el puerto ${port}`.bold.magenta
+  );
+});

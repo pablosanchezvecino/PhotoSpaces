@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
 
+// Conexión con la base de datos MongoDB
+
 const dbConnection = async () => {
   try {
     mongoose.set("strictQuery", true);

@@ -17,11 +17,13 @@
     "cors": "^2.8.5",
     "express": "^4.18.2",
     "express-fileupload": "^1.4.0",
+    "gltf-validator": "^2.0.0-dev.3.9",
     "mongoose": "^7.0.0",
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
     "node-fetch": "^3.3.1",
-    "nodemailer": "^6.9.1"
+    "nodemailer": "^6.9.1",
+    "validator": "^13.9.0"
   },
   "devDependencies": {
     "dotenv": "^16.0.3",

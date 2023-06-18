@@ -4,29 +4,27 @@ import fs from "fs";
 import "colors";
 import { extractRemainingTimeMs } from "./timeLogic.js";
 
-// Introducir comando blender -b -P rutaDelScript rutaDelArchivoGLTF stringConLosParámetros
+// Introducir comando blender -b -P <ruta_del_script> -- <ruta_del_archivo_gltf> <string_con_los_parametros>
 const command = spawn(
   process.env.BLENDER_CMD || "blender",
   [
     "-b",
     "-P",
     process.env.BLENDER_SCRIPT || "./renderScript.py",
+    "--",
     `${workerData.filename}.gltf`,
     `${JSON.stringify(workerData.parameters)}`,
   ],
   { detached: true }
 );
 
-// setTimeout(() => {
-//   // command.kill();
-// }, 5000);
 
 command.stderr.on("data", (data) => {
   console.error(`stderr: ${data}`);
 });
 
 command.stdout.on("data", (data) => {
-  // console.log(data.toString().green);
+   console.log(data.toString().green);
   if (data.toString().includes("Remaining:")) {
     parentPort.postMessage(extractRemainingTimeMs(data));
   }
@@ -45,9 +43,7 @@ command.on("close", () => {
     if (workerData.filename !== "renderTest") {
       try {
         // Borrar el archivo temporal con la escena
-        console.log(
-          `Eliminando archivo ${workerData.filename}.gltf...`.magenta
-        );
+        console.log(`Eliminando archivo ${workerData.filename}.gltf...`.magenta);
         fs.unlinkSync(`./temp/${workerData.filename}.gltf`);
         console.log(`Archivo ${workerData.filename}.gltf eliminado`.magenta);
       } catch (err) {

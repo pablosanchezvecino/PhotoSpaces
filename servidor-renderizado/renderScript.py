@@ -15,25 +15,20 @@ filename = sys.argv[argv_length - 2]
 parametersString = sys.argv[argv_length - 1]
 parameters = json.loads(parametersString)
 
-# ---------- BASICO PARA CUALQUIER MOTOR  ---------- #
+# ---------- BÁSICO PARA CUALQUIER MOTOR  ---------- #
 
 # Borramos todos los objetos por defecto
 for obj in list(bpy.data.objects):
     bpy.data.objects.remove(obj)
 
 # Importamos el modelo .glb/.gltf 
-# publicFolder = os.path.abspath(os.getcwd()) + "/res/"
-# publicFolder = os.environ.get("RES_PATH")
 folder = os.path.abspath(os.getcwd()) + "/temp/"
-print(folder)
-print(folder)
-print(folder)
 bpy.ops.import_scene.gltf(filepath=(folder + filename))
 
-# Creamos un objeto de datos de camara
+# Creamos un objeto de datos de cámara
 camera_data = bpy.data.cameras.new(name="Camera")
 
-# Modificamos los atributos de la camara
+# Modificamos los atributos de la cámara
 # > FOV (lens en radianes)
 camera_data.lens_unit = "FOV"
 camera_data.lens = float(parameters["lens"])
@@ -49,41 +44,41 @@ camera_data.sensor_fit = "VERTICAL"
 camera_data.sensor_width = 36
 camera_data.sensor_height = 24
 
-# Creamos el objeto de camara con los datos
+# Creamos el objeto de cámara con los datos
 camera_object = bpy.data.objects.new("Camera", camera_data)
 
-# Cambiamos la camara activa
-# > Localizacion
+# Cambiamos la cámara activa
+# > Localización
 camera_object.location = mathutils.Vector(
     (float(parameters["location"]["x"]), float(parameters["location"]["y"]), float(parameters["location"]["z"])))
 
-# > Rotacion (cuaterniones)
+# > Rotación (cuaterniones)
 camera_object.rotation_mode = "QUATERNION"
 camera_object.rotation_quaternion = mathutils.Quaternion(
     (float(parameters["qua"]["_w"]), float(parameters["qua"]["_x"]), float(parameters["qua"]["_y"]), float(parameters["qua"]["_z"])))
 
-# Añadimos la camara a la escena
+# Añadimos la cámara a la escena
 bpy.context.scene.collection.objects.link(camera_object)
 
-# Ponemos la nueva camara como camara activa
+# Ponemos la nueva cámara como cámara activa
 bpy.context.scene.camera = camera_object
 
-# Parametros de renderizado
-# Transformacion del color filmica
+# Parámetros de renderizado
+# Transformación del color fílmica
 bpy.context.scene.view_settings.view_transform = "Filmic"
 bpy.context.scene.view_settings.look = "Medium Contrast"
 
 bpy.context.scene.render.threads = 2
 
-bpy.context.scene.render.engine = parameters["motor"]
+bpy.context.scene.render.engine = parameters["engine"]
 
-# ---------- PARAMETROS SEGUN MOTOR  ---------- #
-if parameters["motor"] == "BLENDER_EEVEE": 
+# ---------- PARAMETROS SEGÚN MOTOR  ---------- #
+if parameters["engine"] == "BLENDER_EEVEE": 
     # Muestras 
     bpy.context.scene.eevee.taa_render_samples = 128
     bpy.context.scene.eevee.taa_samples = 132
 
-    # Oclusion ambiental
+    # Oclusión ambiental
     bpy.context.scene.eevee.use_gtao = parameters["gtao"]
     bpy.context.scene.eevee.sss_jitter_threshold = 0.5
 
@@ -95,33 +90,20 @@ if parameters["motor"] == "BLENDER_EEVEE":
     bpy.context.scene.eevee.use_ssr_refraction = True
     bpy.context.scene.eevee.ssr_quality = 1
 else:
-    # Motor cycles y procesamiento GPU
+    # Motor Cycles y procesamiento GPU
     bpy.context.scene.cycles.device = "GPU"
+    bpy.context.preferences.addons['cycles'].preferences.compute_device_type = "CUDA"
 
 
+    # bpy.context.preferences.addons['cycles'].preferences.get_devices()
+    # bpy.context.preferences.addons['cycles'].preferences.compute_device = 0
+    # bpy.ops.wm.save_userpref()
 
-    # Establece el motor de renderizado en Cycles
-    # bpy.context.scene.render.engine = 'CYCLES'
-
-    # Habilita el uso de la GPU
-    bpy.context.preferences.addons['cycles'].preferences.compute_device_type = 'CUDA'
-
-    # Configura la GPU que deseas utilizar
-    bpy.context.preferences.addons['cycles'].preferences.get_devices()
-
-    # Selecciona la GPU deseada por su índice
-    bpy.context.preferences.addons['cycles'].preferences.compute_device = 0
-
-    # Guarda las preferencias
-    bpy.ops.wm.save_userpref()
-
-    print("111111111111111")
     deviceList = bpy.context.preferences.addons["cycles"].preferences.get_devices()
     for deviceTuple in deviceList:
         print("Devices:")
         for device in deviceTuple:
             print(f"\t{device.name} ({device.type}) {device.use}")
-    print("22222222222222")
 
 
     # Muestreo adaptativo

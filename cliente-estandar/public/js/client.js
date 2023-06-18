@@ -283,7 +283,7 @@ const initializeControls = (camera) => {
     controls.isLocked ? controls.unlock() : controls.lock();
   });
 
-  btnRender.addEventListener("click", () => sendModel(camera));
+  btnRender.addEventListener("click", async () => await sendModel(camera));
   btnClear.addEventListener("click", clear);
 
   optionsDiv.style.display = "block";
@@ -432,9 +432,16 @@ const isEmail = (email) => {
 
 // Exporta y envía el modelo al servidor
 const sendModel = async (cam) => {
-  const email = emailInput.value;
 
-  if (browserDownload.checked || isEmail(email)) {
+const email = emailInput.value;
+
+// Si se ha solicitado descarga en el navegador o envío por email con una dirección válida
+if (browserDownload.checked || isEmail(email)) {
+
+    btnRender.disabled = true;
+    btnRender.style.display = "none";
+    btnLoading.style.display = "block";
+
     const exporter = new GLTFExporter();
     const formData = new FormData();
     const quaternion = new THREE.Quaternion();
@@ -448,7 +455,7 @@ const sendModel = async (cam) => {
       clip_end: cam.far,
       location: { x: cam.position.x, y: -cam.position.z, z: cam.position.y },
       qua: newQ,
-      motor: eeveeEngine.checked ? "BLENDER_EEVEE" : "CYCLES",
+      engine: eeveeEngine.checked ? "BLENDER_EEVEE" : "CYCLES",
       gtao: gtao.checked,
       bloom: bloom.checked,
       ssr: ssr.checked,
@@ -456,12 +463,7 @@ const sendModel = async (cam) => {
 
     // Exportamos la escena y la convertimos en un Blob para enviarla
     exporter.parse(scene, async (gltf) => {
-      formData.append(
-        "model",
-        new Blob([JSON.stringify(gltf, null)], { type: "text/plain" })
-      );
-// console.log( gltf)
-//       formData.append('model', gltf, "model.gltf");
+      formData.append("model", new Blob([JSON.stringify(gltf, null)], { type: "model/gltf+json" }));
 
       formData.append("data", JSON.stringify(camData));
 
@@ -469,8 +471,6 @@ const sendModel = async (cam) => {
         formData.append("email", email);
       }
 
-      btnRender.style.display = "none";
-      btnLoading.style.display = "block";
 
       try {
         const response = await fetch(
@@ -486,11 +486,10 @@ const sendModel = async (cam) => {
 
         if (browserDownload.checked) {
           const jsonContent = await response.json();
-          requestPolling(jsonContent.requestId, jsonContent.requestStatus);
+          await requestPolling(jsonContent.requestId, jsonContent.requestStatus);
         } else {
-          alert(
-            `Petición recibida: Se enviará la imagen renderizada a ${email}`
-          );
+          btnRender.disabled = false;
+          alert(`Petición recibida: Se enviará la imagen renderizada a ${email}`);
         }
       } catch (error) {
         console.error(error);
@@ -502,7 +501,6 @@ const sendModel = async (cam) => {
 };
 
 const msToTime = (duration) => {
-  console.log(duration);
   if (!duration && duration !== 0) {
     return "N/A";
   } else {
@@ -518,7 +516,7 @@ const msToTime = (duration) => {
   }
 };
 
-function wait(ms) {
+const wait = (ms) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
@@ -529,9 +527,7 @@ const requestPolling = async (requestId, requestStatus) => {
     "oldestProcessingRequestEstimatedTime"
   );
   const estimatedTimeTitle = document.getElementById("estimated-time-title");
-  const queuePositionParagraph = document.getElementById(
-    "queue-position-paragraph"
-  );
+  const queuePositionParagraph = document.getElementById("queue-position-paragraph");
 
   let wasEnqueuedBefore = requestStatus === "enqueued";
 
@@ -547,13 +543,14 @@ const requestPolling = async (requestId, requestStatus) => {
   // Mostrar posición en la cola solo si la petición se encuentra encolada
   queuePositionParagraph.style.display =
     requestStatus === "enqueued" ? "block" : "none";
-  estimatedTimeTitle.textContent =
+  
+    estimatedTimeTitle.textContent =
     requestStatus === "enqueued"
       ? "Tiempo de espera estimado para avance en la cola: "
       : "Tiempo de espera estimado: ";
 
   // Esperar un poco antes de comenzar el polling
-  await wait(5000);
+  await wait(2000);
 
   while (requestStatus !== "fulfilled") {
 
@@ -576,9 +573,9 @@ const requestPolling = async (requestId, requestStatus) => {
     }
 
     console.log(jsonContent);
-    if (jsonContent.processingRequestEstimatedRemainingProcessingTime) {
+    // if (jsonContent.processingRequestEstimatedRemainingProcessingTime) {
       oldestProcessingRequestEstimatedTime.textContent = msToTime(jsonContent.processingRequestEstimatedRemainingProcessingTime);
-    }
+    // }
     currentQueuePosition.textContent = jsonContent.requestQueuePosition;
 
     await wait(2000);
@@ -593,6 +590,9 @@ const requestPolling = async (requestId, requestStatus) => {
       `http://${requestHandlingMicroserviceIp}:${requestHandlingMicroservicePort}/requests/${requestId}`,
       { method: "GET" }
     );
+
+    btnRender.disabled = false;
+
 
     downloadImage(response.body);
   } catch (error) {

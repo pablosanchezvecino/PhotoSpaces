@@ -1,8 +1,9 @@
-// Router para los endpoints servidos al cliente estándar
 
-import { Router } from "express";
 import { handleNewRequest, getWaitingInfo, transferRenderedImage } from "../controllers/requestsController.js";
 import { upload } from "../constants/multerConfig.js";
+import { Router } from "express";
+
+// Router para los endpoints servidos al cliente estándar
 
 const router = Router();
 

@@ -120,4 +120,6 @@ const RequestSchema = Schema(
   { optimisticConcurrency: true }
 );
 
+RequestSchema.index({ queueStartTime: 1 });
+
 export default model("Request", RequestSchema);

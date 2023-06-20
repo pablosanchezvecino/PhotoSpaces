@@ -2,16 +2,23 @@ import PendingEmail from "../models/PendingEmail.js";
 import { readdirSync, unlinkSync } from "fs";
 import Request from "../models/Request.js";
 import { parse, extname } from "path";
+import { wait } from "./timeLogic.js";
 
 // Funciones relacionadas con la limpieza periódica de archivos temporales
 
 const tempDir = "./temp";
 
 // Iniciar ejecución periódica de la limpieza
-const setUpCleanupInterval = () => setInterval(performCleanup, process.env.CLEANUP_INTERVAL_MS);
+const setUpCleanupInterval = async () => {
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    await wait(process.env.CLEANUP_INTERVAL_MS);
+    await performCleanup();
+  }
+};
 
 // Eliminar todos los archivos de la carpeta /temp que ya no sean necesarios
-const performCleanup = () => {
+const performCleanup = async () => {
   console.log("Comprobando archivos temporales innecesarios...".bold.yellow);
 
   let files = null;

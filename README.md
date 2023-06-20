@@ -4,7 +4,7 @@
 <img src="./img/logo.png""/>
 </p>
 
-![Imagen de la interfaz de PhotoSpaces](./img/user-interface.png)
+![Imagen de la interfaz de PhotoSpaces](./img/user-interface.webp)
 
 ## Descripción
 // TODO: Breve descripción del proyecto y su contexto.

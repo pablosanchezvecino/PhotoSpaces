@@ -1,6 +1,10 @@
 # Ubuntu 22.04 LTS Jammy Jellyfish
 FROM ubuntu:jammy
 
+# ENV PORT=3000
+# ENV ALLOWED_IPS="::1,127.0.0.1"
+# ENV SHOW_PYTHON_LOGS=true
+
 # Update
 RUN apt-get update 
 

@@ -37,8 +37,9 @@ Pasos a seguir:
 
 1. Descargar e instalar [Node.js](https://nodejs.org/en/download) en todos los entornos en los que se vaya a desplegar algún componente. Se recomienda una versión LTS.
 2. Descargar e instalar [Blender](https://www.blender.org/download/) en todos los entornos en los que se vaya a desplegar alguna instancia del servidor de renderizado.
-3. Comprobar que las rutas donde se encuentran los ejecutables están incluidas en la variable PATH decada entorno y añadirlas en el caso de que no lo estén.
-4. Instalación de dependencias npm. Por cada uno de los 5 directorios correspondientes a los componentes mencionados anteriormente, abrir una consola en esta y ejecutar el siguiente comando:
+3. Descargar e instalar [Python](https://nodejs.org/en/download) en todos los entornos en los que se vaya a desplegar alguna instancia del servidor de renderizado.
+4. Comprobar que las rutas donde se encuentran los ejecutables están incluidas en la variable PATH de cada entorno y añadirlas en el caso de que no lo estén.
+5. Instalación de dependencias npm. Por cada uno de los 5 directorios correspondientes a los componentes mencionados anteriormente, abrir una consola en esta y ejecutar el siguiente comando:
 
     ```bash
     npm install

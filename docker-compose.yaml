@@ -8,7 +8,8 @@ services:
     ports:
       - 8081:8081
     environment:  
-      - REQUEST_HANDLING_MICROSERVICE_IP=127.0.0.1
+      - PORT=8081
+      - REQUEST_HANDLING_MICROSERVICE_IP="127.0.0.1"
       - REQUEST_HANDLING_MICROSERVICE_PORT=9001
     depends_on:  
       - microservicio-gestion-peticiones 
@@ -21,10 +22,10 @@ services:
       - 8080:8080
     environment:  
       - PORT=8080
-      - SERVER_ADMINISTRATION_MICROSERVICE_IP=127.0.0.1
-      - SERVER_ADMINISTRATION_MICROSERVICE_PORT=9000
+      - ADMINISTRATION_MICROSERVICE_IP="127.0.0.1"
+      - ADMINISTRATION_MICROSERVICE_PORT=9000
       - REFRESH_PERIOD_MS=5000
-      - ALLOWED_IPS=::1,127.0.0.1,192.168.1.36,172.17.0.1,172.21.0.1
+      - ALLOWED_IPS="::1,127.0.0.1,192.168.1.35,192.168.1.42"
     depends_on:  
       - microservicio-administracion 
 
@@ -38,9 +39,9 @@ services:
       - MONGODB_CONNECTION_STRING=${ADMINISTRATION_MICROSERVICE_MONGODB_CONNECTION_STRING}
       - PORT=9000
       - RENDER_SERVER_PORT=3000
-      - REQUEST_MANAGEMENT_MICROSERVICE_IP=127.0.0.1
+      - REQUEST_MANAGEMENT_MICROSERVICE_IP="127.0.0.1"
       - REQUEST_MANAGEMENT_MICROSERVICE_PORT=9001
-      - ALLOWED_IPS=::1,127.0.0.1,192.168.1.36,172.17.0.1,172.21.0.1
+      - ALLOWED_IPS="::1,127.0.0.1,192.168.1.35,172.17.0.1,192.168.1.33"
 
   microservicio-gestion-peticiones:
     build:
@@ -53,13 +54,7 @@ services:
       - PORT=9001
       - RENDER_SERVER_PORT=3000
       - EMAIL_PASSWORD=${EMAIL_PASSWORD}
-      - DB_CHECK_PERIOD_MS=60000
-
-  # servidor-renderizado:
-  #   build:
-  #     context: ./servidor-renderizado
-  #   container_name: servidor-renderizado
-  #   ports:
-  #     - 3000:3000
-  #   environment:  
-  #     - VARIABLE2=valor2
+      - DB_CHECK_PERIOD_MS=5000
+      - CLEANUP_INTERVAL_MS=1000
+      - EMAIL_SENDING_BACKUP_INTERVAL_MS=25000
+      - RENDERING_SERVER_POLLING_INTERVAL_MS=1000

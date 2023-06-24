@@ -9,7 +9,7 @@ import {
 import {
   administrationMicroserviceIp,
   administrationMicroservicePort
-} from "../constants/addresses.js";
+} from "../constants/parameters.js";
 
 // Intenta añadir el servidor correspondiente a la IP introducida en el formulario
 const addServer = async (serverIP, serverName) => {

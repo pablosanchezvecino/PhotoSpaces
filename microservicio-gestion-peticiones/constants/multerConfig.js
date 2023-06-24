@@ -1,3 +1,4 @@
+import { mimeTypeToExtension } from "../logic/fileLogic.js";
 import multer from "multer";
 
 // Configuración de multer para la recepción de archivos
@@ -9,7 +10,7 @@ const storage = multer.diskStorage({
     cb(null, "./temp");
   },
   filename: function (req, file, cb) {
-    cb(null, file.fieldname + "-" + Date.now() + ".gltf");
+    cb(null, file.fieldname + "-" + Date.now() + mimeTypeToExtension(file.mimetype));
   }
 });
     

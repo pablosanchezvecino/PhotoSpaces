@@ -1,7 +1,7 @@
 import { addServer } from "./logic/serverLogic.js";
 import { refresh } from "./logic/refreshLogic.js";
 import { ipInput, nameInput } from "./logic/DOMElements.js";
-
+import { refreshPeriodMs } from "./constants/parameters.js";
 
 
 window.handleSubmit = (event) => {
@@ -10,4 +10,6 @@ window.handleSubmit = (event) => {
   addServer(ipInput.value, nameInput.value);
 };
 
-setInterval(refresh, 2000);
+await refresh();
+
+setInterval(refresh, refreshPeriodMs || 2000);

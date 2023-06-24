@@ -1,9 +1,6 @@
+import { administrationMicroserviceIp, administrationMicroservicePort } from "../constants/parameters.js";
 import { addServerCard, addRequestCard } from "./cardLogic.js";
 import { msToTime } from "./timeLogic.js";
-import {
-  administrationMicroserviceIp,
-  administrationMicroservicePort
-} from "../constants/addresses.js";
 import {
   idleServerContainer,
   busyServerContainer,

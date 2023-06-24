@@ -27,7 +27,7 @@ const getServerById = async (req, res) => {
     server = await Server.findById(req.params.id);
   } catch (error) {
     console.error(`Error en la consulta en la base de datos. ${error}`.red);
-    res.status(400).send({ error: "Error en en la consulta en la base de datos" });
+    res.status(500).send({ error: "Error en en la consulta en la base de datos" });
     return;
   }
 

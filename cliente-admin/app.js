@@ -1,25 +1,26 @@
-import dotenv from "dotenv";
-import express from "express";
-import path from "path";
-import { writeFileSync } from "fs";
-import "colors";
 import { ipCheckMiddleware } from "./middleware/ipCheckMiddleware.js";
+import { writeFileSync } from "fs";
+import express from "express";
+import dotenv from "dotenv";
+import path from "path";
+import "colors";
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-// Generar archivo addresses.json con las dirección IP y puerto a los que debe dirigirse el navegador
+// Generar archivo parameters.json con las dirección IP y puerto a los que debe dirigirse el navegador
 try {
-  const addresses = {
+  const parameters = {
     administrationMicroserviceIp: process.env.ADMINISTRATION_MICROSERVICE_IP,
-    administrationMicroservicePort: process.env.ADMINISTRATION_MICROSERVICE_PORT
+    administrationMicroservicePort: process.env.ADMINISTRATION_MICROSERVICE_PORT,
+    refreshPeriodMs: process.env.REFRESH_PERIOD_MS
   };
-  writeFileSync("./public/addresses.json", JSON.stringify(addresses));
-  console.log("Archivo creado y contenido escrito correctamente".bold.magenta);
+  writeFileSync("./public/parameters.json", JSON.stringify(parameters));
+  console.log("Archivo parameters.json creado y contenido escrito correctamente".bold.magenta);
 } catch (error) {
-  console.error(`Error en la escritura del archivo addresses.json. ${error}`.red);
+  console.error(`Error en la escritura del archivo parameters.json. ${error}`.red);
 }
 
 // Utilizar comprobación de direcciones IP

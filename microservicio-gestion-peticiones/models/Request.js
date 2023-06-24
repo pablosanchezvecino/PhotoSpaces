@@ -6,19 +6,19 @@ const QuaternionSchema = new Schema({
   _id: false,
   _x: {
     type: Number,
-    required: true,
+    required: true
   },
   _y: {
     type: Number,
-    required: true,
+    required: true
   },
   _z: {
     type: Number,
-    required: true,
+    required: true
   },
   _w: {
     type: Number,
-    required: true,
+    required: true
   },
 });
 
@@ -26,15 +26,15 @@ const LocationSchema = new Schema({
   _id: false,
   x: {
     type: Number,
-    required: true,
+    required: true
   },
   y: {
     type: Number,
-    required: true,
+    required: true
   },
   z: {
     type: Number,
-    required: true,
+    required: true
   },
 });
 
@@ -42,40 +42,40 @@ const ParametersSchema = new Schema({
   _id: false,
   lens: {
     type: Number,
-    required: true,
+    required: true
   },
   clip_start: {
     type: Number,
-    required: true,
+    required: true
   },
   clip_end: {
     type: Number,
-    required: true,
+    required: true
   },
   location: {
     type: LocationSchema,
-    required: true,
+    required: true
   },
   qua: {
     type: QuaternionSchema,
-    required: true,
+    required: true
   },
   engine: {
     type: String,
     enum: ["CYCLES", "BLENDER_EEVEE"],
-    required: true,
+    required: true
   },
   gtao: {
     type: Boolean,
-    required: true,
+    required: true
   },
   bloom: {
     type: Boolean,
-    required: true,
+    required: true
   },
   ssr: {
     type: Boolean,
-    required: true,
+    required: true
   },
 });
 
@@ -84,40 +84,49 @@ const RequestSchema = Schema(
     status: {
       type: String,
       enum: ["enqueued", "processing", "fulfilled"],
-      require: true,
+      require: true
+    },
+    fileExtension: {
+      type: String,
+      enum: [".gltf", ".glb"],
+      require: true
     },
     queueStartTime: {
       type: Date,
-      require: false,
+      require: false
     },
     processingStartTime: {
       type: Date,
-      require: false,
+      require: false
     },
     processingEndTime: {
       type: Date,
-      require: false,
+      require: false
     },
     estimatedRemainingProcessingTime: {
       type: Number,
-      require: false,
+      require: false
     },
     assignedServer: {
       type: String,
-      require: false,
+      require: false
     },
     clientIp: {
       type: String,
-      require: true,
+      require: true
     },
     parameters: {
       type: ParametersSchema,
-      require: true,
+      require: true
     },
     email: {
       type: String,
-      require: false,
+      require: false
     },
+    nonDeletableFile: {
+      type: Boolean,
+      require: false
+    }
   },
   { optimisticConcurrency: true }
 );

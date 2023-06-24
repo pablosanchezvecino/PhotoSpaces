@@ -7,8 +7,8 @@ import { Router } from "express";
 
 const router = Router();
 
-// GET /requests/:requestId
-router.get("/:requestId", transferRenderedImage);
+// GET /requests/:id
+router.get("/:id", transferRenderedImage);
 
 // POST /requests
 router.post("", upload.single("model"), handleNewRequest);

@@ -1,13 +1,16 @@
 
 import { existsSync, readFileSync, writeFileSync, unlinkSync, renameSync } from "fs";
+import { extensionFromFilename, extensionToMimeType } from "../logic/fileLogic.js";
 import { isValidEmail, isValidModel } from "../logic/validationLogic.js";
 import { options } from "../constants/sendRenderedImageOptions.js";
+import { processIpAddress } from "../logic/ipAddressLogic.js";
 import PendingEmail from "../models/PendingEmail.js";
 import { sendMail } from "../logic/emailLogic.js";
 import { wait } from "../logic/timeLogic.js";
 import Request from "../models/Request.js";
 import Server from "../models/Server.js";
 import mongoose from "mongoose";
+
 // Funciones asociadas a los endpoints relacionados con la administración de las peticiones de renderizado
 
 const handleNewRequest = async (req, res) => {
@@ -17,6 +20,14 @@ const handleNewRequest = async (req, res) => {
     parameters = JSON.parse(req.body.data);
   } catch (error) {
     console.error(`Error al intentar obtener parámetros de la petición. ${error}`.red);
+    // Si se recibió archivo también, eliminarlo
+    if (req.file) {
+      try {
+        unlinkSync(`./temp/${req.file.filename}`);
+      } catch (error) {
+        console.error(`Error al eliminar archivo ${req.file.filename}. ${error}`.red);
+      }
+    }
     res.status(400).send({ error: "Parámetros especificados no válidos" });
     return;
   }
@@ -42,17 +53,13 @@ const handleNewRequest = async (req, res) => {
   }
   
   // Obtener dirección IP del cliente
-  let ip = req.headers["x-forwarded-for"] || req.ip;
-  // Si se recibe una dirección IPv4 embebida en una dirección IPv6
-  if (ip.toString().startsWith("::ffff:")) {
-    // Extraer IPv4
-    ip = ip.toString().slice(7);
-  }
-  
+  let ip = processIpAddress(req.headers["x-forwarded-for"] || req.ip);
+
   // Documento para la petición
   const request = new Request({
     clientIp: ip,
-    parameters: parameters
+    parameters: parameters,
+    fileExtension: extensionFromFilename(model.filename)
   });
   
   // Si se especificó envío de email, obtener email y validarlo
@@ -72,12 +79,7 @@ const handleNewRequest = async (req, res) => {
     }
   }
 
-  // Renombrar archivo temporal generado por multer utilizando el oid de MongoDB
-  try {
-    renameSync(`./temp/${model.filename}`, `./temp/${request._id}.gltf`);
-  } catch (error) {
-    console.error(`Error al renombrar el archivo ${model.filename} a ${request._id}.gltf. ${error}`.red);
-  }
+  
   
 
 
@@ -95,7 +97,7 @@ const handleNewRequest = async (req, res) => {
       bestIdleServer = (await Server.findOneAndUpdate(
         { status: "idle" }, 
         { $set: { status: "busy" } }, 
-        { timeSpentOnRenderTest: "asc" },
+        { sort: { timeSpentOnRenderTest: 1 } },
         { new: true } 
       ));
     }
@@ -114,11 +116,20 @@ const handleNewRequest = async (req, res) => {
         request.assignedServer = bestIdleServer.name;
         request.processingStartTime = new Date();
         await request.save();
+
+        // Renombrar archivo temporal generado por multer utilizando el oid de MongoDB
+        try {
+          renameSync(`./temp/${model.filename}`, `./temp/${request._id}${request.fileExtension}`);
+        } catch (error) {
+          console.error(`Error al renombrar el archivo ${model.filename} a ${request._id}${request.fileExtension}. ${error}`.red);
+        }
+
       } catch (error) {
         console.error(`Error al intentar persistir el estado de la petición ${request._id} antes del reenvío. ${error}`.red);
         res.status(500).send("Error al intentar persistir el estado de la petición antes del reenvío");
         return;
       }
+
 
       await forwardRequest(res, request, bestIdleServer);
 
@@ -131,6 +142,14 @@ const handleNewRequest = async (req, res) => {
     try {
       // Encolar la petición
       await enqueueRequest(request);
+
+      // Renombrar archivo temporal generado por multer utilizando el oid de MongoDB
+      try {
+        renameSync(`./temp/${model.filename}`, `./temp/${request._id}${request.fileExtension}`);
+      } catch (error) {
+        console.error(`Error al renombrar el archivo ${model.filename} a ${request._id}${request.fileExtension}. ${error}`.red);
+      }
+
       res.status(200).send({ requestId: request._id, requestStatus: "enqueued" });
     } catch (error) {
       console.error(`Error interno al intentar encolar la petición ${request._id}. ${error}`.red);
@@ -141,6 +160,7 @@ const handleNewRequest = async (req, res) => {
 };
 
 const forwardRequest = async (res, request, bestIdleServer) => {
+
   console.log(`Reenviando petición ${request._id} a ${bestIdleServer.name}...`.magenta);
   
   // Enviar petición al servidor disponible más adecuado
@@ -149,12 +169,14 @@ const forwardRequest = async (res, request, bestIdleServer) => {
     const formData = new FormData();
     formData.append("requestId", request._id);
     try {
-      const data = readFileSync(`./temp/${request._id}.gltf`);
+      const data = readFileSync(`./temp/${request._id}${request.fileExtension}`);
       formData.append("data", JSON.stringify(request.parameters));
-      formData.append("model", new Blob([data], { type: "model/gltf+json" }));
+      formData.append("model", new Blob([data], { type: extensionToMimeType(request.fileExtension) }));
     } catch (error) {
-      console.error(`Error en la lectura del fichero ${request._id}.gltf para su envío al servidor de renderizado`);
-      res.status(500).send("Error durante el reenvío de la petición");
+      console.error(`Error en la lectura del fichero ${request._id}${request.fileExtension} para su envío al servidor de renderizado. ${error}`.red);
+      if (res) {
+        res.status(500).send("Error durante el reenvío de la petición");
+      }
       reject();
     }
     
@@ -192,17 +214,22 @@ const forwardRequest = async (res, request, bestIdleServer) => {
             .then(async () => {
               console.log(`Correo enviado (Petición ${request._id})`.magenta);
               try {
-                console.log(`Archivo ${request._id}.png enviado`.magenta);
-                // Eliminar archivos .gltf y .png temporales
+                try {
+                  request.nonDeletableFile = false;
+                  await request.save();
+                } catch (error) {
+                  console.error(`Error al desactivar flag nonDeletableFile en la base de datos (Petición ${request._id}). ${error}`.red);
+                }
+                // Eliminar archivos de escena y .png temporales
                 unlinkSync(`./temp/${request._id}.png`);
-                unlinkSync(`./temp/${request._id}.gltf`);
+                unlinkSync(`./temp/${request._id}${request.fileExtension}`);
               } catch (error) {
                 console.error(`Error al eliminar los archivos temporales tras el envío por email (Petición ${request._id}). ${error}`.red);
               }
             })
             .catch(async (error) => { 
               console.error(`Error en el envío del correo con la imagen renderizada (Petición ${request._id}). ${error}`.red);
-              // Persistimos archivo png y dirección de correo electrónico para que se intente el reenvío más tarde
+              // Persistir archivo .png y dirección de correo electrónico para que se intente el reenvío más tarde
               try {
                 const newPendingEmail = new PendingEmail({
                   _id: request._id,
@@ -225,6 +252,7 @@ const forwardRequest = async (res, request, bestIdleServer) => {
         console.log(`Completando petición ${request._id} en BD...`.magenta);
         try {
           request.status = "fulfilled";
+          request.nonDeletableFile = true;
           await request.save();
           console.log(`Petición ${request._id} completada en BD`.magenta);
         } catch (error) {
@@ -264,20 +292,19 @@ const forwardRequest = async (res, request, bestIdleServer) => {
           await wait(process.env.RENDERING_SERVER_POLLING_INTERVAL_MS || 1000);
           console.log(`Consultando tiempo a servidor (Petición ${request._id}):`.green);
           try {
-            const estimatedRemainingProcessingTimeResponse = await fetch(`http://${bestIdleServer.ip}:${process.env.RENDER_SERVER_PORT}/time`);
-            if (estimatedRemainingProcessingTimeResponse.ok) {
-              const estimatedRemainingProcessingTimeMs = (await estimatedRemainingProcessingTimeResponse.json()).estimatedRemainingProcessingTime;
+            const response = await fetch(`http://${bestIdleServer.ip}:${process.env.RENDER_SERVER_PORT}/time`);
+            if (response.ok) {
+              const estimatedRemainingProcessingTimeMs = (await response.json()).estimatedRemainingProcessingTime;
               console.log(`Obtenido ${estimatedRemainingProcessingTimeMs}`.green);
               request.estimatedRemainingProcessingTime = estimatedRemainingProcessingTimeMs;
               await request.save();
             } else {
               console.error(
-                `Obtenido código de respuesta ${estimatedRemainingProcessingTimeResponse.status} al consultar el tiempo restante estimado del servidor de renderizado ${bestIdleServer.name}. 
-                ${(await estimatedRemainingProcessingTimeResponse.json()).error}`
+                `Obtenido código de respuesta ${response.status} al consultar el tiempo restante estimado del servidor de renderizado ${bestIdleServer.name}. ${(await response.json()).error}`.red
               );
             }
           } catch (error) {
-            console.error(`Error al intentar obtener tiempo restante estimado del servidor de renderizado ${bestIdleServer.name}. ${error}`);
+            console.error(`Error al intentar obtener tiempo restante estimado del servidor de renderizado ${bestIdleServer.name}. ${error}`.red);
           }
         }
 
@@ -294,7 +321,7 @@ const enqueueRequest = async (request) => {
     request.queueStartTime = new Date();
     await request.save();
   } catch (error) {
-    throw new Error(`Error interno al persistir la petición ${request._id} en la base de datos. ${error}`);
+    throw new Error(`Error interno al persistir la petición ${request._id} en la base de datos. ${error}`.red);
   }
 };
 
@@ -326,7 +353,7 @@ const processQueue = async () => {
 
       await session.commitTransaction();
 
-      forwardRequest(null, firstEnqueuedRequest, bestIdleServer);
+      await forwardRequest(null, firstEnqueuedRequest, bestIdleServer);
     } else {
       console.log("No es posible extraer peticiones de la cola en este momento".bold.green);
       await session.abortTransaction();
@@ -400,24 +427,65 @@ const getWaitingInfo = async (req, res) => {
   }
 };
 
-const transferRenderedImage = (req, res) => {
+const transferRenderedImage = async (req, res) => {
+  
+  // Oid no válido
+  if (!mongoose.isValidObjectId(req.params.id)) {
+    console.error(`Recibido parámetro id no válido (${req.params.id})`.red);
+    res.status(400).send({ error: "El parámetro id no es válido" });
+    return;
+  }
+  
+  // Buscar petición en BD
+  let request = null;
   try {
-    const fileRoute = `./temp/${req.params.requestId}`;
+    request = await Request.findById(req.params.id);
+  } catch (error) {
+    console.error(`Error en la consulta en la base de datos. ${error}`.red);
+    res.status(500).send({ error: "Error en en la consulta en la base de datos" });
+    return;
+  }
 
+  // No se encuentra el servidor
+  if (!request) {
+    console.error(`Petición de renderizado asociada al id ${req.params.id} no encontrada`.red);
+    res.status(404).send({error: "El parámetro id no se corresponde con ninguna petición de renderizado almacenada en el sistema" });
+    return;
+  }
+
+  // Se envará la imagen solo si la petición procede de la misma dirección IP que la solicitó
+  let ip = processIpAddress(req.headers["x-forwarded-for"] || req.ip);
+  
+  if (ip !== request.clientIp) {
+    res.status(403).send("Acceso denegado"); 
+    return;
+  }
+
+
+  try {
+
+    const fileRoute = `./temp/${req.params.id}`;
 
     if (existsSync(`${fileRoute}.png`)) {
+
       // Enviar imagen renderizada para que el navegador pueda descargarla
       res.status(200).sendFile(`${fileRoute}.png`, options);
 
       // Hasta que no termine la transferencia no podemos borrar los archivos temporales
-      res.on("finish", () => {
+      res.on("finish", async () => {
         try {
           console.log(`Archivo ${fileRoute}.png enviado`.magenta);
-          // Eliminar archivos .gltf y .png temporales
+          try {
+            request.nonDeletableFile = false;
+            await request.save();
+          } catch (error) {
+            console.error(`Error al desactivar flag nonDeletableFile en la base de datos (Petición ${req.params.id}). ${error}`.red);
+          }
+          // Eliminar archivos de escena y .png temporales
           unlinkSync(`${fileRoute}.png`);
-          unlinkSync(`${fileRoute}.gltf`);
+          unlinkSync(`${fileRoute}${request.fileExtension}`);
         } catch (error) {
-          console.error(`Error al eliminar los archivos temporales. ${error}`.red);
+          console.error(`Error al eliminar los archivos temporales (Petición ${request._id}). ${error}`.red);
         }
       });
 

@@ -4,7 +4,7 @@ import fs from "fs";
 import "colors";
 import { extractRemainingTimeMs } from "./timeLogic.js";
 
-// Introducir comando blender -b -P <ruta_del_script> -- <ruta_del_archivo_gltf> <string_con_los_parametros>
+// Introducir comando blender -b -P <ruta_del_script> -- <ruta_del_archivo_con_la_escena> <string_con_los_parametros>
 const command = spawn(
   process.env.BLENDER_CMD || "blender",
   [
@@ -12,7 +12,7 @@ const command = spawn(
     "-P",
     process.env.BLENDER_SCRIPT || "./renderScript.py",
     "--",
-    `${workerData.filename}.gltf`,
+    `${workerData.filename}`,
     `${JSON.stringify(workerData.parameters)}`,
   ],
   { detached: true }
@@ -24,7 +24,9 @@ command.stderr.on("data", (data) => {
 });
 
 command.stdout.on("data", (data) => {
-   console.log(data.toString().green);
+  if (process.env.SHOW_PYTHON_LOGS) {
+    console.log(data.toString().green);
+  }
   if (data.toString().includes("Remaining:")) {
     parentPort.postMessage(extractRemainingTimeMs(data));
   }

@@ -200,7 +200,7 @@ const addRequestCard = (requestData, queuePosition) => {
     queuePosition.position++;
     cardBody.appendChild(cardTextPosition);
   }
-
+  
   const cardTextClientIP = document.createElement("p");
   cardTextClientIP.className = "card-text";
   const clientIPImage = document.createElement("img");
@@ -210,6 +210,16 @@ const addRequestCard = (requestData, queuePosition) => {
   cardTextClientIP.appendChild(clientIPImage);
   clientIPImage.after(document.createTextNode(" " + requestData.clientIp));
   cardBody.appendChild(cardTextClientIP);
+
+  const cardTextFileExtension = document.createElement("p");
+  cardTextFileExtension.className = "card-text";
+  const fileExtensionImage = document.createElement("img");
+  fileExtensionImage.src = "./res/svg/file-extension.svg";
+  fileExtensionImage.width = "24";
+  fileExtensionImage.title = "Extensión del archivo";
+  cardTextFileExtension.appendChild(fileExtensionImage);
+  fileExtensionImage.after(document.createTextNode(" " + requestData.fileExtension));
+  cardBody.appendChild(cardTextFileExtension);
 
   if (requestData.status !== "enqueued") {
     const cardTextServer = document.createElement("p");

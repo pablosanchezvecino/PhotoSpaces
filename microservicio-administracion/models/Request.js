@@ -84,6 +84,11 @@ const RequestSchema = Schema(
       enum: ["enqueued", "processing", "fulfilled"],
       require: true,
     },
+    fileExtension: {
+      type: String,
+      enum: [".gltf", ".glb"],
+      require: true,
+    },
     queueStartTime: {
       type: Date,
       require: false,
@@ -116,6 +121,10 @@ const RequestSchema = Schema(
       type: String,
       require: false,
     },
+    nonDeletableFile: {
+      type: Boolean,
+      require: false
+    }
   },
   { optimisticConcurrency: true }
 );

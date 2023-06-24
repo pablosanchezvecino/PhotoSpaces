@@ -7,7 +7,7 @@ import { GUI } from "/jsm/libs/dat.gui.module.js";
 import {
   requestHandlingMicroserviceIp,
   requestHandlingMicroservicePort,
-} from "./constants/addresses.js";
+} from "./constants/parameters.js";
 
 // > Elementos HTML
 const inputField = document.getElementById("inputModel");
@@ -92,7 +92,7 @@ const handleNewFile = (file) => {
     // read the file as text using the reader
     reader.readAsArrayBuffer(file);
   } else {
-    alert("You need to choose a .glb or .gltf file!");
+    alert("Es necesario seleccionar un archivo .gltf or .glb");
   }
 };
 
@@ -463,8 +463,10 @@ if (browserDownload.checked || isEmail(email)) {
 
     // Exportamos la escena y la convertimos en un Blob para enviarla
     exporter.parse(scene, async (gltf) => {
-      formData.append("model", new Blob([JSON.stringify(gltf, null)], { type: "model/gltf+json" }));
+      console.log(fileCN)
+      const mimeType = fileCN.endsWith(".gltf") ? "model/gltf+json" : "model/gltf-binary"
 
+      formData.append("model", new Blob([JSON.stringify(gltf, null)], { type: mimeType }));
       formData.append("data", JSON.stringify(camData));
 
       if (sendEmail.checked) {
@@ -523,9 +525,7 @@ const wait = (ms) => {
 const requestPolling = async (requestId, requestStatus) => {
   const currentRequestStatus = document.getElementById("currentRequestStatus");
   const currentQueuePosition = document.getElementById("currentQueuePosition");
-  const oldestProcessingRequestEstimatedTime = document.getElementById(
-    "oldestProcessingRequestEstimatedTime"
-  );
+  const oldestProcessingRequestEstimatedTime = document.getElementById("oldestProcessingRequestEstimatedTime");
   const estimatedTimeTitle = document.getElementById("estimated-time-title");
   const queuePositionParagraph = document.getElementById("queue-position-paragraph");
 
@@ -593,8 +593,12 @@ const requestPolling = async (requestId, requestStatus) => {
 
     btnRender.disabled = false;
 
+    if (response.ok) {
+      downloadImage(response.body);
+    } else {
+      alert("Error en la obtención de la imagen renderizada");
+    }
 
-    downloadImage(response.body);
   } catch (error) {
     console.error(error);
     alert("Error en la obtención de la imagen renderizada");

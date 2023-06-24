@@ -1,7 +1,7 @@
 import {
   administrationMicroserviceIp,
   administrationMicroservicePort,
-} from "../constants/addresses.js";
+} from "../constants/parameters.js";
 import {
   confirmationModal,
   confirmationModalConfirmationButton,

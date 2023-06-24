@@ -1,14 +1,14 @@
 // Funciones asociadas a los endpoints que llevan a cabo el renderizado
 
+import { setEstimatedRemainingProcessingTime } from "../serverStatus.js";
+import { options } from "../constants/sendRenderedImageOptions.js";
+import dataString from "../constants/renderTestSettings.js";
+import ServerStates from "../constants/serverStatesEnum.js";
+import { performCleanup } from "../logic/cleanupLogic.js";
+import { setStatus, getStatus } from "../serverStatus.js";
+import { Worker } from "worker_threads";
 import { spawn } from "child_process";
 import si from "systeminformation";
-import { setStatus, getStatus } from "../serverStatus.js";
-import ServerStates from "../constants/serverStatesEnum.js";
-import { Worker } from "worker_threads";
-import dataString from "../constants/renderTestSettings.js";
-import { setEstimatedRemainingProcessingTime } from "../serverStatus.js";
-import { performCleanup } from "../logic/cleanupLogic.js";
-import { options } from "../constants/sendRenderedImageOptions.js";
 
 const test = async (req, res) => {
   // Comprobar que el servidor se encuentra disponible
@@ -107,12 +107,11 @@ const handleRenderingRequest = async (req, res) => {
 
   // Obtener de la petición la información necesaria para el renderizado
   const parameters = JSON.parse(req.body.data);
-  // const model = req.files.model;
   const requestId = req.body.requestId;
 
   // Comenzar proceso de renderizado
   try {
-    await render(parameters, requestId);
+    await render(parameters, req.file.filename);
     setEstimatedRemainingProcessingTime(null);
   } catch (error) {
     console.error(`Error en el proceso de renderizado. ${error}`.red);

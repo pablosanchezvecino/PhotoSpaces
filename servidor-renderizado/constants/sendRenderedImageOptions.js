@@ -1,4 +1,5 @@
-// Opciones para que dfuncione correctamente el
+
+// Opciones para que funcione correctamente el
 // envío de la imagen renderizada al microservicio
 
 const options = {

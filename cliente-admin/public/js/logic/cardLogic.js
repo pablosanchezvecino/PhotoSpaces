@@ -3,7 +3,8 @@ import {
   showDisableModal,
   showEnableModal,
   showDeleteModal,
-  showDeleteRequestModal
+  showDeleteRequestModal,
+  showAbortModal
 } from "./modalLogic.js";
 
 const addServerCard = (serverData) => {
@@ -124,7 +125,7 @@ const addServerCard = (serverData) => {
     serverData.status === "idle"
       ? () => showDisableModal(serverData._id)
       : serverData.status === "busy"
-        ? () => alert("Abortar procesamiento servidor")//abortServer(serverData._id)
+        ? () => showAbortModal(serverData._id)
         : () => showEnableModal(serverData._id);
 
   cardBody.appendChild(cardTitle);

@@ -1,8 +1,8 @@
-// Función asociada al endpoint que devuelve el tiempo restante estimado del proceso de renderizado
-
+import  { getEstimatedRemainingProcessingTime } from "../serverStatus.js";
 import ServerStates from "../constants/serverStatesEnum.js";
 import { getStatus } from "../serverStatus.js";
-import  { getEstimatedRemainingProcessingTime } from "../serverStatus.js";
+
+// Función asociada al endpoint que devuelve el tiempo restante estimado del proceso de renderizado
 
 const handleEstimatedRemainingProcessingTimeRequest = async (req, res) => {
   // Solo es posible deshabilitar el servidor si se encuentra en estado "busy"

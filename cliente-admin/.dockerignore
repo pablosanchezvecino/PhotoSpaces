@@ -1,0 +1,16 @@
+# Ignorar archivos y directorios generados por el entorno de desarrollo
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Ignorar archivos y directorios de construcción
+dist/
+build/
+out/
+
+# Ignorar archivos de configuración local
+.env
+
+# Ignorar archivos de respaldo de editor
+*~
+.vscode/

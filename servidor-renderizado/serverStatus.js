@@ -12,5 +12,4 @@ const getEstimatedRemainingProcessingTime = () => estimatedRemainingProcessingTi
 
 const setEstimatedRemainingProcessingTime = (newEstimatedRemainingProcessingTime) => (estimatedRemainingProcessingTime = newEstimatedRemainingProcessingTime);
 
-
 export { getStatus, setStatus, getEstimatedRemainingProcessingTime, setEstimatedRemainingProcessingTime };

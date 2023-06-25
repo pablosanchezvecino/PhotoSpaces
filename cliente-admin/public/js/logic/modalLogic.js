@@ -9,7 +9,7 @@ import {
 import {
   enableServer,
   disableServer,
-  // abortServer,
+  abortServer,
   deleteServer,
 } from "./serverLogic.js";
 
@@ -57,15 +57,27 @@ const showEnableModal = (serverId) => {
   confirmationModal.show();
 };
 
-const showDeleteRequestModal = (serverId) => {
+const showAbortModal = (serverId) => {
+  confirmationModalLabel.innerText = "Abortar procesamiento";
+  confirmationModalBody.innerText = "¿Abortar procesamiento en el servidor de renderizado?";
+  confirmationModalConfirmationButton.className = "btn btn-danger";
+  confirmationModalConfirmationButton.innerText = "Abortar";
+  confirmationModalReturnButton.style.display = "block";
+  confirmationModalConfirmationButton.style.display = "block";
+  confirmationModalConfirmationButton.onclick = () => abortServer(serverId);
+  confirmationModal.show();
+};
+
+const showDeleteRequestModal = (requestId) => {
   confirmationModalLabel.innerText = "Eliminar Petición";
   confirmationModalBody.innerText = "¿Eliminar petición del sistema?";
   confirmationModalConfirmationButton.className = "btn btn-danger";
   confirmationModalConfirmationButton.innerText = "Eliminar";
   confirmationModalReturnButton.style.display = "block";
   confirmationModalConfirmationButton.style.display = "block";
-  confirmationModalConfirmationButton.onclick = () => deleteRequest(serverId);
+  confirmationModalConfirmationButton.onclick = () => deleteRequest(requestId);
   confirmationModal.show();
 };
 
-export { showAddModal, showDeleteModal, showDisableModal, showEnableModal, showDeleteRequestModal };
+
+export { showAddModal, showDeleteModal, showDisableModal, showEnableModal, showAbortModal, showDeleteRequestModal };

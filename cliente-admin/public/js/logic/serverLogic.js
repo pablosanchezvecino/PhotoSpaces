@@ -117,7 +117,38 @@ const disableServer = async (serverId) => {
 
 };
 
-const abortServer = (serverId) => alert("Abortar " + serverId);
+const abortServer = async (serverId) => {
+  confirmationModalReturnButton.style.display = "none";
+  confirmationModalConfirmationButton.style.display = "none";
+  confirmationModalBody.innerHTML = spinnerHtml;
+
+  try {
+    const response = await fetch(`http://${administrationMicroserviceIp}:${administrationMicroservicePort}/servers/${serverId}/abort`, { method: "POST" });
+
+    const jsonContent = await response.json();
+    let alertContent = null;
+
+    if (response.ok) {
+      alertContent = jsonContent.message;
+    } else {
+      alertContent = jsonContent.error;
+    }
+
+    // Espera adicional para que funcione bien modal
+    setTimeout(() => {
+      confirmationModal.hide();
+      setTimeout(() => alert(alertContent), 200);
+    }, 1000);
+
+  } catch (error) {
+    console.error(`Error en la conexión con el microservicio de administración. ${error}`);
+    setTimeout(() => {
+      confirmationModal.hide();
+      setTimeout(() => alert("Error en la conexión con el microservicio de administración"), 200);
+    }, 1000);
+  }
+
+};
 
 const deleteServer = async (serverId) => {
   confirmationModalReturnButton.style.display = "none";

@@ -228,7 +228,7 @@ const enableServer = async (req, res) => {
         Accept: "application/json"
       }
     });
-  
+    
     if (response.ok) {
       // Si todo fue bien
       // Actualizar estado en BD
@@ -249,7 +249,69 @@ const enableServer = async (req, res) => {
     console.error(`Error en la conexión con el servidor de renderizado. ${error}`.red);
     res.status(500).send({ error: "Error en la conexión con el servidor de renderizado" });
   }
+  
+};
 
+const abortServer = async (req, res) => {
+  // Oid no válido
+  if (!mongoose.isValidObjectId(req.params.id)) {
+    console.error(`Recibido parámetro id no válido (${req.params.id})`.red);
+    res.status(400).send({ error: "El parámetro id no es válido" });
+    return;
+  }
+
+  // Consultar dirección IP y estado del servidor
+  let serverInfo = null;
+  try {
+    serverInfo = await Server.findById(req.params.id, "status ip");
+  } catch (error) {
+    console.error(`Error en las consultas a la base de datos previas a abortar el procesamiento en el servidor. ${error}`.red);
+    res.status(500).send({ error: "Error en las consultas a la base de datos previas a abortar el procesamiento en el servidor" });
+    return;
+  }
+
+  // No se encuentra el servidor
+  if (!serverInfo) {
+    console.error(`Servidor asociado al id ${req.params.id} no encontrado`.red);
+    res.status(404).send({error: "El parámetro id no se corresponde con ningún servidor de renderizado almacenado en el sistema"});
+    return;
+  }
+
+  // Solo se puede deshabilitar el servidor si este se encuentra en estado "busy"
+  if (serverInfo.status !== "busy") {
+    res.status(400).send({ error: "El servidor no se encuentra procesando una petición" });
+    return;
+  }
+
+  // Contactar con el servidor para que cambie su estado
+  try {
+    const response = await fetch(`http://${serverInfo.ip}:${process.env.RENDER_SERVER_PORT}/abort`, {
+      method: "POST",
+      headers: {
+        Accept: "application/json"
+      }
+    });
+  
+    if (response.ok) {
+      // Si todo fue bien
+      // Actualizar estado en BD
+      try {
+        await Server.findByIdAndUpdate(req.params.id, { status: "idle" });
+      } catch (error) {
+        console.error(`Error interno en la conexión con la base de datos al abortar el procesamiento en el servidor. ${error}`.red);
+        res.status(500).send({ error: "Error interno en la conexión con la base de datos al abortar el procesamiento en el servidor" });
+        return;
+      }
+  
+      // Informar del éxito al cliente
+      res.status(200).send({message: (await response.json()).message });
+    } else {
+      res.status(400).send({ error: (await response.json()).error });
+    }
+  } catch (error) {
+    console.error(`Error en la conexión con el servidor de renderizado. ${error}`.red);
+    res.status(500).send({ error: "Error en la conexión con el servidor de renderizado" });
+  }
 };
 
 const deleteServer = async (req, res) => {
@@ -259,7 +321,7 @@ const deleteServer = async (req, res) => {
     res.status(400).send({ error: "El parámetro id no es válido" });
     return;
   }
-
+  
   // Consultar dirección IP y estado del servidor
   let serverInfo = null;
   try {
@@ -320,4 +382,4 @@ const deleteServer = async (req, res) => {
 
 };
 
-export { getServers, getServerById, addServer, disableServer, enableServer, deleteServer };
+export { getServers, getServerById, addServer, disableServer, enableServer, deleteServer, abortServer };

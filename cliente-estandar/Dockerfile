@@ -6,7 +6,6 @@ FROM node:18-alpine
 
 # Crea el directorio de la aplicacion
 WORKDIR /usr/src/app
-ENV BLENDER_MAJOR 3.0
 
 # Copia el archivo package.json y package-lock.json (si existe)
 COPY package*.json ./

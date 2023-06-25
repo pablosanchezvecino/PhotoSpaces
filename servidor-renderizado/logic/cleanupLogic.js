@@ -17,7 +17,7 @@ const performCleanup = () => {
   }
 
   files.forEach(async (file) => {
-    if (file !== "renderTest.gltf" ) {
+    if (file !== "renderTest.glb" ) {
       try {
         unlinkSync(`${tempDir}/${file}`);
         console.log(`Archivo ${file} eliminado exitosamente.`.yellow);

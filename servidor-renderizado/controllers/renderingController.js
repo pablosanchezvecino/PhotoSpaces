@@ -22,7 +22,7 @@ const test = async (req, res) => {
 
   // Realizar renderizado de prueba
   try {
-    await render(JSON.parse(dataString), "renderTest");
+    await render(JSON.parse(dataString), "renderTest.glb");
   } catch (error) {
     console.error(`Error en la prueba de renderizado. ${error}`.red);
     res.status(500).send({

@@ -1,4 +1,6 @@
+
 // Extrae el tiempo restante de la salida de Blender en ms
+
 const extractRemainingTimeMs = (data) => {
   const remainingTimeString = data
     .toString()

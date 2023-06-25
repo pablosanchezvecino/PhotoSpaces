@@ -1,4 +1,6 @@
+
 // String con los parámetros a utilizar para el renderizado de prueba
+
 const settingsString = JSON.stringify({
   lens: 13.048987490261585,
   clip_start: 0.1,

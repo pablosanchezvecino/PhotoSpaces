@@ -1,8 +1,9 @@
+import { extractRemainingTimeMs } from "./timeLogic.js";
 import { parentPort, workerData } from "worker_threads";
 import { spawn } from "child_process";
+import path from "path";
 import fs from "fs";
 import "colors";
-import { extractRemainingTimeMs } from "./timeLogic.js";
 
 // Introducir comando blender -b -P <ruta_del_script> -- <ruta_del_archivo_con_la_escena> <string_con_los_parametros>
 const command = spawn(
@@ -37,22 +38,11 @@ command.on("error", (error) => {
 });
 
 command.on("close", () => {
+  const filenameWithNoExtension = path.parse(`./temp/${workerData.filename}`).name;
   // Si se ha generado el png (ha ido todo bien)
-  if (fs.existsSync(`./temp/${workerData.filename}.png`)) {
+  if (fs.existsSync(`./temp/${filenameWithNoExtension}.png`)) {
     console.log("Renderizado realizado con éxito".magenta);
-
-    // Si no era un renderizado de prueba
-    if (workerData.filename !== "renderTest") {
-      try {
-        // Borrar el archivo temporal con la escena
-        console.log(`Eliminando archivo ${workerData.filename}.gltf...`.magenta);
-        fs.unlinkSync(`./temp/${workerData.filename}.gltf`);
-        console.log(`Archivo ${workerData.filename}.gltf eliminado`.magenta);
-      } catch (err) {
-        console.error(`Error al intentar eliminar ${workerData.filename}.gltf`);
-      }
-    }
   } else {
-    console.error("Error durante el proceso de renderizado");
+    console.error("Error durante el proceso de renderizado".red);
   }
 });

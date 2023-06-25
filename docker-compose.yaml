@@ -2,6 +2,7 @@ version: "3.8"
 services:
 
   cliente-estandar:
+    tty: true
     build:
       context: ./cliente-estandar
     container_name: cliente-estandar
@@ -15,6 +16,7 @@ services:
       - microservicio-gestion-peticiones 
 
   cliente-admin:
+    tty: true
     build:
       context: ./cliente-admin
     container_name: cliente-admin
@@ -30,6 +32,7 @@ services:
       - microservicio-administracion 
 
   microservicio-administracion:
+    tty: true
     build:
       context: ./microservicio-administracion
     container_name: microservicio-administracion
@@ -44,6 +47,7 @@ services:
       - ALLOWED_IPS="::1,127.0.0.1,192.168.1.35,172.17.0.1,192.168.1.33"
 
   microservicio-gestion-peticiones:
+    tty: true
     build:
       context: ./microservicio-gestion-peticiones
     container_name: microservicio-gestion-peticiones

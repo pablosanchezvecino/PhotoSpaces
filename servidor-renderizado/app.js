@@ -1,12 +1,12 @@
-import "colors";
-import dotenv from "dotenv";
-import ServerStates from "./constants/serverStatesEnum.js";
 import { setStatus, setEstimatedRemainingProcessingTime } from "./serverStatus.js";
-import express from "express";
-import cors from "cors";
-import morgan from "morgan";
-import renderingServerRouter from "./routes/renderingServerRouter.js";
 import { ipCheckMiddleware } from "./middleware/ipCheckMiddleware.js";
+import renderingServerRouter from "./routes/renderingServerRouter.js";
+import ServerStates from "./constants/serverStatesEnum.js";
+import express from "express";
+import dotenv from "dotenv";
+import morgan from "morgan";
+import cors from "cors";
+import "colors";
 
 dotenv.config();
 

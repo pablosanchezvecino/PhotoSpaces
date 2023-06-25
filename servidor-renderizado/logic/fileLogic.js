@@ -1,5 +1,7 @@
 import path from "path";
 
+// Funciones relacionadas con los archivos
+
 const mimeTypeToExtension = (mimeType) => {
   switch (mimeType) {
 

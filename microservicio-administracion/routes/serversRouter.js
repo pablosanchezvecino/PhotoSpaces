@@ -8,6 +8,7 @@ import {
   disableServer,
   enableServer,
   deleteServer,
+  abortServer
 } from "../controllers/serversController.js";
 
 const router = Router();
@@ -26,6 +27,9 @@ router.post("/:id/disable", disableServer);
 
 // POST /servers/:id/enable
 router.post("/:id/enable", enableServer);
+
+// POST /servers/:id/abort
+router.post("/:id/abort", abortServer);
 
 // DELETE /servers/:id
 router.delete("/:id", deleteServer);

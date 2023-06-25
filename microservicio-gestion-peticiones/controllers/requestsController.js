@@ -36,7 +36,7 @@ const handleNewRequest = async (req, res) => {
   const model = req.file;
   if (!model) {
     console.log("Error al intentar obtener el archivo".red);
-    res.status(400).send({ error: "No se ha recibido archivo" });
+    res.status(400).send({ error: "No se ha recibido archivo o este no tenía un tipo MIME válido" });
     return;
   }
   

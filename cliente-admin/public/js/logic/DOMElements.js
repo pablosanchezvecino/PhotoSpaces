@@ -31,8 +31,8 @@ const averageRequestProcessingTimeElement = document.getElementById("average-req
 const averageRequestQueueWaitingTimeElement = document.getElementById("average-request-queue-waiting-time");
 
 // Inputs formulario
-const ipInput = document.getElementById("ipInput");
-const nameInput = document.getElementById("nameInput");
+const ipInput = document.getElementById("ip-input");
+const nameInput = document.getElementById("name-input");
 
 export {
   confirmationModal,

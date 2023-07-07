@@ -1,1 +1,1 @@
-{"administrationMicroserviceIp":"127.0.0.1","administrationMicroservicePort":"9000","refreshPeriodMs":"5000"}
+{"administrationMicroserviceIp":"127.0.0.1","administrationMicroservicePort":"9000","refreshPeriodMs":"1000","maxCardsPerContainer":"100"}

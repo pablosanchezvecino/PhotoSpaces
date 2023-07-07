@@ -1,6 +1,7 @@
 # Run as: blender -b -P <this_script> -- <filename> <parameters JSON>
 from pathlib import Path
 import bpy, sys, mathutils, os, json
+from datetime import datetime
 
 print(sys.argv)
 
@@ -99,11 +100,11 @@ else:
     # bpy.context.preferences.addons['cycles'].preferences.compute_device = 0
     # bpy.ops.wm.save_userpref()
 
-    deviceList = bpy.context.preferences.addons["cycles"].preferences.get_devices()
-    for deviceTuple in deviceList:
-        print("Devices:")
-        for device in deviceTuple:
-            print(f"\t{device.name} ({device.type}) {device.use}")
+    # deviceList = bpy.context.preferences.addons["cycles"].preferences.get_devices()
+    # for deviceTuple in deviceList:
+    #     print("Devices:")
+    #     for device in deviceTuple:
+    #         print(f"\t{device.name} ({device.type}) {device.use}")
 
 
     # Muestreo adaptativo
@@ -131,4 +132,11 @@ else:
 
 # Donde guardar la imagen y renderizar
 bpy.context.scene.render.filepath = folder + f"{Path(filename).stem}.png"
+
+fecha_antes = datetime.now()
+print("Fecha antes:",  fecha_antes)
 bpy.ops.render.render(write_still=True)
+fecha_despues = datetime.now()
+print("Fecha antes:",  fecha_despues)
+
+print((fecha_despues - fecha_antes).total_seconds() * 1000)

@@ -20,4 +20,14 @@ const isValidModel = async (filename) => {
   }
 };
 
-export { isValidEmail, isValidModel };
+// Validar valor recibido para el nivel de compresión con Draco
+// (debe ser un entero entre 0 y 10)
+const isValidDracoCompressionLevel = (dracoCompressionLevel) => {
+  if (dracoCompressionLevel.includes(".") || isNaN(parseInt(dracoCompressionLevel))) {
+    return false;
+  }
+  dracoCompressionLevel = parseInt(dracoCompressionLevel);
+  return dracoCompressionLevel >= 0 && dracoCompressionLevel <= 10;
+};
+
+export { isValidEmail, isValidModel, isValidDracoCompressionLevel };

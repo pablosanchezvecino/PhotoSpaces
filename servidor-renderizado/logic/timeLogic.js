@@ -13,4 +13,16 @@ const extractRemainingTimeMs = (data) => {
   return milliseconds;
 };
 
-export { extractRemainingTimeMs };
+const extractTotalBlenderTimeMs = (data) => {
+  const totalBlenderTimeString = data
+    .toString()
+    .split("Time: ")[1]
+    .slice(0, 8);
+
+  const [minutes, seconds] = totalBlenderTimeString.split(":").map(Number);
+
+  const milliseconds = (minutes * 60 + seconds) * 1000;
+  return milliseconds;
+};
+
+export { extractRemainingTimeMs, extractTotalBlenderTimeMs };

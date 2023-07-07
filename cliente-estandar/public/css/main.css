@@ -81,12 +81,12 @@ label {
   border-bottom: 0.1rem solid #ccc;
 }
 
-#inputModel {
+#input-model {
   display: none;
 }
 
-#inputModel + label,
-#loadingModelLabel {
+#input-model + label,
+#loading-model-label {
   color: rgb(0, 149, 218);
   font-weight: 600;
   background-color: white;
@@ -96,32 +96,32 @@ label {
   padding: 0.5rem;
 }
 
-#inputModel:focus + label,
-#inputModel + label:hover,
-#loadingModelLabel:focus,
-#loadingModelLabel:hover {
+#input-model:focus + label,
+#input-model + label:hover,
+#loading-model-label:focus,
+#loading-model-label:hover {
   background-color: rgb(218, 218, 218);
 }
 
-#btnRender,
-#btnLoading,
-#btnClear,
-#btnDownload {
+#btn-render,
+#btn-loading,
+#btn-clear,
+#btn-download {
   color: white;
   background-color: rgb(0, 149, 218);
 }
 
 
-#btnRender:focus,
-#btnRender:hover,
-#btnClear:focus,
-#btnClear:hover,
-#btnDownload:focus,
-#btnDownload:hover {
+#btn-render:focus,
+#btn-render:hover,
+#btn-clear:focus,
+#btn-clear:hover,
+#btn-download:focus,
+#btn-download:hover {
   background-color: rgb(0, 149, 218);
 }
 
-#btnLoading {
+#btn-loading {
   cursor: default;
 }
 

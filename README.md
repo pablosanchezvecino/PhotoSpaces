@@ -28,6 +28,7 @@ La aplicación cuenta con 5 componentes diferenciados:
 ## Contribuidores
 
 - Rafael Marcos Luque Baena (tutorización del trabajo realizado)
+- Iván García Aguilar (tutorización del trabajo realizado)
 - Jose Mª Sánchez Fernández (desarrollo original de la aplicación)
 - Pablo Sánchez Vecino (desarrollo de la extensión de la aplicación)
 

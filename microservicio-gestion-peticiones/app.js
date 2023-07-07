@@ -3,11 +3,14 @@ import { setUpCleanupInterval } from "./logic/cleanupLogic.js";
 import { setUpEmailSendingBackupInterval } from "./logic/emailLogic.js";
 import requestsRouter from "./routes/requestsRouter.js";
 import dbConnection from "./database/databaseConfig.js";
+import { printAsciiArt } from "./logic/asciiArtLogic.js";
 import express from "express";
 import morgan from "morgan";
 import dotenv from "dotenv";
 import cors from "cors";
 import "colors";
+
+printAsciiArt();
 
 dotenv.config();
 
@@ -43,10 +46,7 @@ setInterval(processQueue, process.env.DB_CHECK_PERIOD_MS);
 // para evitar que se acumulen debido a algún problema
 setUpCleanupInterval();
 
-
 setUpEmailSendingBackupInterval();
-
-
 
 app.listen(port, () => {
   console.log(`Microservicio de gestión de peticiones escuchando en el puerto ${port}`.bold.magenta);

@@ -86,8 +86,13 @@ const RequestSchema = Schema(
     },
     fileExtension: {
       type: String,
-      enum: [".gltf", ".glb"],
+      enum: [".gltf", ".glb", ".drc"],
       require: true,
+    },
+    fileSize: {
+      type: Number,
+      min: 0,
+      require: true
     },
     queueStartTime: {
       type: Date,
@@ -100,6 +105,11 @@ const RequestSchema = Schema(
     processingEndTime: {
       type: Date,
       require: false,
+    },
+    totalBlenderTime: {
+      type: Number,
+      min: 0,
+      require: false
     },
     estimatedRemainingProcessingTime: {
       type: Number,

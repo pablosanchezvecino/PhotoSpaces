@@ -1,7 +1,4 @@
-// Funciones asociadas a los endpoints que llevan a cabo el renderizado
-
 import { setEstimatedRemainingProcessingTime } from "../serverStatus.js";
-import { options } from "../constants/sendRenderedImageOptions.js";
 import dataString from "../constants/renderTestSettings.js";
 import ServerStates from "../constants/serverStatesEnum.js";
 import { performCleanup } from "../logic/cleanupLogic.js";
@@ -9,8 +6,11 @@ import { setStatus, getStatus } from "../serverStatus.js";
 import { Worker } from "worker_threads";
 import { spawn } from "child_process";
 import si from "systeminformation";
+import { readFileSync } from "fs";
 
-const test = async (req, res) => {
+// Funciones asociadas a los endpoints que llevan a cabo el renderizado
+
+const bind = async (req, res) => {
   // Comprobar que el servidor se encuentra disponible
   if (getStatus() !== ServerStates.unbound) {
     res.status(400).send({ error: "El servidor no se encuentra disponible" });
@@ -58,7 +58,6 @@ const test = async (req, res) => {
 
     serverInfo.os = osData.distro;
     serverInfo.cpu = cpuData.manufacturer + " " + cpuData.brand;
-    console.log(gpuData.controllers);
     serverInfo.gpu = gpuData.controllers[gpuData.controllers.length - 1].name;
   } catch (error) {
     console.error(`Error en la obtención de las especificaciones del sistema. ${error}`.red);
@@ -105,13 +104,14 @@ const handleRenderingRequest = async (req, res) => {
   // El servidor pasa a encontrarse ocupado
   setStatus(ServerStates.busy);
 
+  let totalBlenderTime = null;
   // Obtener de la petición la información necesaria para el renderizado
   const parameters = JSON.parse(req.body.data);
   const requestId = req.body.requestId;
 
   // Comenzar proceso de renderizado
   try {
-    await render(parameters, req.file.filename);
+    totalBlenderTime = await render(parameters, req.file.filename);
     setEstimatedRemainingProcessingTime(null);
   } catch (error) {
     console.error(`Error en el proceso de renderizado. ${error}`.red);
@@ -124,20 +124,14 @@ const handleRenderingRequest = async (req, res) => {
   // El servidor vuelve a encontrarse disponible
   setStatus(ServerStates.idle);
 
-  // Devolver archivo .png generado
-  res.status(200).sendFile(`${requestId}.png`, options, (error) => {
-    if (error) {
-      console.error("Error al devolver la imagen renderizada".red);
-    } else {
-      console.log("Imagen renderizada devuelta correctamente".magenta);
-      // Borrar archivo .png temporal
-      performCleanup();
-    }
-  });
+  const pngContent = readFileSync(`./temp/${requestId}.png`, "base64");
+  await res.status(200).send({ totalBlenderTime: totalBlenderTime, renderedImage: pngContent });
+  performCleanup();
 };
 
 const render = (parameters, filename) => {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
+    let totalBlenderTime = null;
     // Creamos el worker (thread) para la ejecución del renderizado
     const worker = new Worker("./logic/renderLogic.js", {
       workerData: {
@@ -148,16 +142,22 @@ const render = (parameters, filename) => {
 
     // Recibimos los mensajes del worker con el tiempo de espera estimado en ms
     worker.on("message", (message) => {
-      // Actualizamos la BD con este valor para que lo pueda consultar el 
-      // microservicio de administración y que el de gestion de peticiones 
-      // pueda responder las peticiones del cliente
-      setEstimatedRemainingProcessingTime(message);
+      if (message === "error") {
+        reject("Recibido error de worker");
+      } else if (message.toString().startsWith("Total: ")) {
+        totalBlenderTime = Number(message.slice(7));
+      } else {
+        // Actualizamos la BD con este valor para que lo pueda consultar el 
+        // microservicio de administración y que el de gestion de peticiones 
+        // pueda responder las peticiones del cliente
+        setEstimatedRemainingProcessingTime(message);
+      }
     });
 
-    worker.on("exit", () => {console.log("worker exit");
-      resolve();
+    worker.on("exit", () => {
+      resolve(totalBlenderTime);
     });
   });
 };
 
-export { test, handleRenderingRequest };
+export { bind, handleRenderingRequest };

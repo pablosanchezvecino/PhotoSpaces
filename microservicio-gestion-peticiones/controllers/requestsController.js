@@ -1,7 +1,7 @@
 
-import { existsSync, readFileSync, writeFileSync, unlinkSync, renameSync } from "fs";
-import { extensionFromFilename, extensionToMimeType } from "../logic/fileLogic.js";
-import { isValidEmail, isValidModel } from "../logic/validationLogic.js";
+import { extensionFromFilename, extensionToMimeType, generateGltfFromGlb, generateDracoFromGltf } from "../logic/fileLogic.js";
+import { existsSync, readFileSync, writeFileSync, unlinkSync, renameSync, statSync } from "fs";
+import { isValidEmail, isValidModel, isValidDracoCompressionLevel } from "../logic/validationLogic.js";
 import { options } from "../constants/sendRenderedImageOptions.js";
 import { processIpAddress } from "../logic/ipAddressLogic.js";
 import PendingEmail from "../models/PendingEmail.js";
@@ -10,6 +10,8 @@ import { wait } from "../logic/timeLogic.js";
 import Request from "../models/Request.js";
 import Server from "../models/Server.js";
 import mongoose from "mongoose";
+import path from "path";
+
 
 // Funciones asociadas a los endpoints relacionados con la administración de las peticiones de renderizado
 
@@ -35,7 +37,7 @@ const handleNewRequest = async (req, res) => {
   // Obtener contenido archivo
   const model = req.file;
   if (!model) {
-    console.log("Error al intentar obtener el archivo".red);
+    console.error("Error al intentar obtener el archivo".red);
     res.status(400).send({ error: "No se ha recibido archivo o este no tenía un tipo MIME válido" });
     return;
   }
@@ -79,9 +81,55 @@ const handleNewRequest = async (req, res) => {
     }
   }
 
-  
-  
+  // Si se especificó compresión con Draco, comprimir el archivo recibido
+  if (req.body.dracoCompressionLevel !== undefined) {
+    
+    let dracoCompressionLevel = null;
+    if (!isValidDracoCompressionLevel(req.body.dracoCompressionLevel)) {
+      dracoCompressionLevel = parseInt(dracoCompressionLevel);
+      console.error(`Nivel de compresión Draco recibido no válido (${dracoCompressionLevel})`.red);
+      res.status(400).send({ error: "Nivel de compresión Draco recibido no válido" });
+      return;
+    }
 
+    // Si se recibió archivo .glb
+    if (extensionFromFilename(model.filename) === ".glb") {
+      try {
+        // Primero pasarlo a .gltf
+        await generateGltfFromGlb(`./temp/${model.filename}`);
+        // Borrar archivo .glb
+        try {
+          unlinkSync(`./temp/${model.filename}`);
+        } catch (error) {
+          console.error(`Error al eliminar el archivo .glb tras transformarlo a .gltf (Petición ${request._id}). ${error}`.red);
+        }
+      } catch (error) {
+        console.error(`Error al convertir el archivo .glb a .gltf (Petición ${request._id}). ${error}`.red);
+        res.status(500).send({ error: "Error al transformar el archivo .glb a .gltf" });
+        return;
+      }
+    }
+    try {
+      // Comprimir archivo .gltf a .drc
+      await generateDracoFromGltf(`./temp/${path.basename(model.filename, path.extname(model.filename))}.gltf`, dracoCompressionLevel);
+      // Borrar archivo .gltf
+      try {
+        unlinkSync(`./temp/${path.basename(model.filename, path.extname(model.filename))}.gltf`);
+      } catch (error) {
+        console.error(`Error al eliminar el archivo .gltf tras comprimirlo a .drc (Petición ${request._id}). ${error}`.red);
+      }
+    } catch (error) {
+      console.error(`Error al comprimir el archivo .gltf con Draco (Petición ${request._id}). ${error}`.red);
+      res.status(500).send({ error: "Error al comprimir el archivo .gltf con Draco" });
+      return;
+    }
+    request.fileExtension = ".drc";
+  }
+  
+  // Aquí ya tenemos el archivo que se va a enviar al servidor
+  // Obtener su peso en bytes
+  const fileSize = statSync(`./temp/${path.basename(model.filename, path.extname(model.filename))}${request.fileExtension}`).size;
+  request.fileSize = fileSize;
 
   // Comprobar estado del sistema
   let emptyQueue = null;
@@ -119,7 +167,7 @@ const handleNewRequest = async (req, res) => {
 
         // Renombrar archivo temporal generado por multer utilizando el oid de MongoDB
         try {
-          renameSync(`./temp/${model.filename}`, `./temp/${request._id}${request.fileExtension}`);
+          renameSync(`./temp/${path.basename(model.filename, path.extname(model.filename))}${request.fileExtension}`, `./temp/${request._id}${request.fileExtension}`);
         } catch (error) {
           console.error(`Error al renombrar el archivo ${model.filename} a ${request._id}${request.fileExtension}. ${error}`.red);
         }
@@ -145,7 +193,7 @@ const handleNewRequest = async (req, res) => {
 
       // Renombrar archivo temporal generado por multer utilizando el oid de MongoDB
       try {
-        renameSync(`./temp/${model.filename}`, `./temp/${request._id}${request.fileExtension}`);
+        renameSync(`./temp/${path.basename(model.filename, path.extname(model.filename))}${request.fileExtension}`, `./temp/${request._id}${request.fileExtension}`);
       } catch (error) {
         console.error(`Error al renombrar el archivo ${model.filename} a ${request._id}${request.fileExtension}. ${error}`.red);
       }
@@ -188,19 +236,19 @@ const forwardRequest = async (res, request, bestIdleServer) => {
         body: formData
       }
     )
-      .then((response) => {
+      .then(async (response) => {
         if (response.ok) {
           request.processingEndTime = new Date();
-          // Pasar a blob el archivo .png devuelto en la respuesta
-          return response.blob();
+          return response.json();
         } else {
-          throw new Error(`Código erróneo obtenido en la respuesta del servidor. ${response.json().error}`);
+          throw new Error(`Código erróneo obtenido en la respuesta del servidor. ${(await response.json()).error}`);
         }
       })
-      .then(async (blob) => {
+      .then(async (jsonContent) => {
         // Guardar temporalmente archivo .png recibido
+        const binaryData = Buffer.from(jsonContent.renderedImage, "base64");
         try {
-          writeFileSync(`./temp/${request._id}.png`, Buffer.from(await blob.arrayBuffer()));
+          writeFileSync(`./temp/${request._id}.png`, binaryData, "binary");
         } catch (error) {
           throw new Error(`Error en la escritura del archivo con imagen renderizada ${request._id}.png. ${error}`.red);
         }
@@ -244,8 +292,6 @@ const forwardRequest = async (res, request, bestIdleServer) => {
               }
             });
 
-          
-          
         }
 
         // Pasar petición a "fulfilled"
@@ -253,6 +299,7 @@ const forwardRequest = async (res, request, bestIdleServer) => {
         try {
           request.status = "fulfilled";
           request.nonDeletableFile = true;
+          request.totalBlenderTime = jsonContent.totalBlenderTime;
           await request.save();
           console.log(`Petición ${request._id} completada en BD`.magenta);
         } catch (error) {
@@ -261,7 +308,21 @@ const forwardRequest = async (res, request, bestIdleServer) => {
 
         console.log(`Liberando servidor ${request.assignedServer} en BD...`.magenta);
         try {
-          await Server.findByIdAndUpdate(bestIdleServer._id, { status: "idle" });
+          if (request.parameters.engine === "CYCLES") {
+            // Actualizar estadísticas de Cycles
+            await Server.findByIdAndUpdate(bestIdleServer._id, {
+              $inc: { fulfilledRequestsCount: 1, totalCyclesNeededTime: (request.processingEndTime - request.processingStartTime), totalCyclesBlenderTime: jsonContent.totalBlenderTime, totalCyclesProcessedBytes: request.fileSize },
+              status: "idle",
+              cyclesProcessedBytesPerMillisecondOfNeededTime: (bestIdleServer.totalCyclesProcessedBytes + request.fileSize) / (bestIdleServer.totalCyclesNeededTime + request.processingEndTime.getTime() - request.processingStartTime.getTime())
+            });
+          } else {
+            // Actualizar estadísticas de Eevee
+            await Server.findByIdAndUpdate(bestIdleServer._id, {
+              $inc: { fulfilledRequestsCount: 1, totalEeveeNeededTime: (request.processingEndTime - request.processingStartTime), totalEeveeBlenderTime: jsonContent.totalBlenderTime, totalEeveeProcessedBytes: request.fileSize },
+              status: "idle",
+              eeveeProcessedBytesPerMillisecondOfNeededTime: (bestIdleServer.totalEeveeProcessedBytes + request.fileSize) / (bestIdleServer.totalEeveeNeededTime + request.processingEndTime.getTime() - request.processingStartTime.getTime())
+            });
+          }
           console.log(`Servidor ${request.assignedServer} liberado en BD`.magenta);
         } catch (error) {
           throw new Error(`Error al intentar persistir el estado del servidor tras la finalización del renderizado. ${error}`.red);
@@ -287,10 +348,13 @@ const forwardRequest = async (res, request, bestIdleServer) => {
     if (request.parameters.engine === "CYCLES") {
       
       const polling = async () => {
-        
-        while (request.status !== "fulfilled") {
+        let errorCodeCount = 0;
+        while (request.status !== "fulfilled" && errorCodeCount <= 10) {
+
           await wait(process.env.RENDERING_SERVER_POLLING_INTERVAL_MS || 1000);
+
           console.log(`Consultando tiempo a servidor (Petición ${request._id}):`.green);
+          
           try {
             const response = await fetch(`http://${bestIdleServer.ip}:${process.env.RENDER_SERVER_PORT}/time`);
             if (response.ok) {
@@ -299,9 +363,8 @@ const forwardRequest = async (res, request, bestIdleServer) => {
               request.estimatedRemainingProcessingTime = estimatedRemainingProcessingTimeMs;
               await request.save();
             } else {
-              console.error(
-                `Obtenido código de respuesta ${response.status} al consultar el tiempo restante estimado del servidor de renderizado ${bestIdleServer.name}. ${(await response.json()).error}`.red
-              );
+              errorCodeCount++;
+              console.error(`Obtenido código de respuesta ${response.status} al consultar el tiempo restante estimado del servidor de renderizado ${bestIdleServer.name}. ${(await response.json()).error}`.red);
             }
           } catch (error) {
             console.error(`Error al intentar obtener tiempo restante estimado del servidor de renderizado ${bestIdleServer.name}. ${error}`.red);
@@ -408,11 +471,11 @@ const getWaitingInfo = async (req, res) => {
       );
     }
 
-    console.log({
-      requestQueuePosition: queuePosition,
-      processingRequestEstimatedRemainingProcessingTime: estimatedRemainingProcessingTime,
-      requestStatus: requestInfo.status,
-    });
+    // console.log({
+    //   requestQueuePosition: queuePosition,
+    //   processingRequestEstimatedRemainingProcessingTime: estimatedRemainingProcessingTime,
+    //   requestStatus: requestInfo.status,
+    // });
 
     res.status(200).send({
       requestQueuePosition: queuePosition,

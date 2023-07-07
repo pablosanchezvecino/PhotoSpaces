@@ -19,8 +19,8 @@ const deleteRequest = async (requestId) => {
     const response = await fetch(`http://${administrationMicroserviceIp}:${administrationMicroservicePort}/requests/${requestId}`, { method: "DELETE" });
 
     const jsonContent = await response.json();
+    
     let alertContent = null;
-
     if (response.ok) {
       alertContent = "Petición eliminada con éxito";
     } else {

@@ -3,10 +3,10 @@ import multer from "multer";
 
 
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
+  destination: (req, file, cb) => {
     cb(null, "./temp");
   },
-  filename: function (req, file, cb) {console.log(file)
+  filename: (req, file, cb) => {
     cb(null, `${req.body.requestId}${mimeTypeToExtension(file.mimetype)}`);
   }
 });

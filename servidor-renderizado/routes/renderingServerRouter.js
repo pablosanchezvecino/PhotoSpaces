@@ -1,6 +1,6 @@
 import { handleEstimatedRemainingProcessingTimeRequest } from "../controllers/timeController.js";
 import { disable, enable, unbind, abort } from "../controllers/statusManagementController.js";
-import { test, handleRenderingRequest } from "../controllers/renderingController.js";
+import { bind, handleRenderingRequest } from "../controllers/renderingController.js";
 import { upload } from "../constants/multerConfig.js";
 import { Router } from "express";
 
@@ -8,8 +8,8 @@ import { Router } from "express";
 
 const router = Router();
 
-// POST /test
-router.get("/test", test);
+// POST /bind
+router.get("/bind", bind);
 
 // POST /render
 router.post("/render", upload.single("model"), handleRenderingRequest);
@@ -29,5 +29,9 @@ router.post("/enable", enable);
 // POST /unbind
 router.post("/unbind", unbind);
 
+// POST /file
+router.post("/file-transfer", upload.single("model"), (req, res) => {
+  res.status(200).send();
+});
 
 export default router;

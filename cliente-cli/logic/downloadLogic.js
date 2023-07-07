@@ -1,0 +1,24 @@
+import { writeFileSync } from "fs";
+
+// Descargar la imagen cuando esta ya ha sido renderizada 
+// y almacenarla en el directorio /out
+const downloadImage = async (requestId) => {
+  try {
+    const response = await fetch(
+      `http://${process.env.REQUEST_HANDLING_MICROSERVICE_IP}:${process.env.REQUEST_HANDLING_MICROSERVICE_PORT}/requests/${requestId}`,
+      { method: "GET" }
+    );
+  
+    if (response.ok) {
+      writeFileSync(`./out/${requestId}.png`, Buffer.from(await response.arrayBuffer()), "binary");
+      console.log(`Archivo ${requestId}.png generado en el directorio out`.bold.magenta);
+    } else {
+      console.error(`Obtenido código ${response.status} al intentar descargar la imagen renderizada. ${(await response.json()).error}`.red);
+    }
+  
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export { downloadImage };

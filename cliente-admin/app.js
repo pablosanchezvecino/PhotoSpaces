@@ -1,9 +1,12 @@
 import { ipCheckMiddleware } from "./middleware/ipCheckMiddleware.js";
+import { printAsciiArt } from "./public/js/logic/asciiArtLogic.js";
 import { writeFileSync } from "fs";
 import express from "express";
 import dotenv from "dotenv";
 import path from "path";
 import "colors";
+
+printAsciiArt();
 
 dotenv.config();
 
@@ -15,7 +18,8 @@ try {
   const parameters = {
     administrationMicroserviceIp: process.env.ADMINISTRATION_MICROSERVICE_IP,
     administrationMicroservicePort: process.env.ADMINISTRATION_MICROSERVICE_PORT,
-    refreshPeriodMs: process.env.REFRESH_PERIOD_MS
+    refreshPeriodMs: process.env.REFRESH_PERIOD_MS,
+    maxCardsPerContainer: process.env.MAX_CARDS_PER_CONTAINER
   };
   writeFileSync("./public/parameters.json", JSON.stringify(parameters));
   console.log("Archivo parameters.json creado y contenido escrito correctamente".bold.magenta);

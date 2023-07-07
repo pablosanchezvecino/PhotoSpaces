@@ -1,265 +1,247 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Panel de Administración</title>
-    <link rel="icon" type="image/x-icon" href="./res/images/favicon.ico" />
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-      integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65"
-      crossorigin="anonymous"
-    />
-  </head>
-  <body style="background-color: white">
-    <!-- Modal -->
-    <div
-      class="modal fade"
-      id="confirmation-modal"
-      tabindex="-1"
-      aria-labelledby="exampleModalLabel"
-      aria-hidden="true"
-    >
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h1 class="modal-title fs-5" id="confirmation-modal-label">...</h1>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
-          </div>
-          <div class="modal-body" id="confirmation-modal-body">...</div>
-          <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-secondary"
-              id="return-button"
-              data-bs-dismiss="modal"
-            >
-              Volver
-            </button>
-            <button
-              type="button"
-              id="confirmation-button"
-              class="btn btn-primary"
-            >
-              Eliminar
-            </button>
-          </div>
-        </div>
+   <head>
+      <meta charset="utf-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
+      <title>Panel de Administración</title>
+      <link rel="icon" type="image/x-icon" href="./res/images/favicon.ico" />
+      <link
+         href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css"
+         rel="stylesheet"
+         integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65"
+         crossorigin="anonymous"
+         />
+   </head>
+   <body style="background-color: white">
+      <!-- Modal -->
+      <div
+         class="modal fade"
+         id="confirmation-modal"
+         tabindex="-1"
+         aria-labelledby="exampleModalLabel"
+         aria-hidden="true"
+         >
+         <div class="modal-dialog">
+            <div class="modal-content">
+               <div class="modal-header">
+                  <h1 class="modal-title fs-5" id="confirmation-modal-label">...</h1>
+                  <button
+                     type="button"
+                     class="btn-close"
+                     data-bs-dismiss="modal"
+                     aria-label="Close"
+                     ></button>
+               </div>
+               <div class="modal-body" id="confirmation-modal-body">...</div>
+               <div class="modal-footer">
+                  <button
+                     type="button"
+                     class="btn btn-secondary"
+                     id="return-button"
+                     data-bs-dismiss="modal"
+                     >
+                  Volver
+                  </button>
+                  <button
+                     type="button"
+                     id="confirmation-button"
+                     class="btn btn-primary"
+                     >
+                  Eliminar
+                  </button>
+               </div>
+            </div>
+         </div>
       </div>
-    </div>
-
-    <nav class="navbar bg-light">
+      <nav class="navbar bg-light">
+         <div class="container-fluid">
+            <a class="navbar-brand">
+            <img
+               src="./res/images/favicon.ico"
+               alt="Logo"
+               width="30"
+               height="24"
+               class="d-inline-block align-text-top"
+               />
+            PhotoSpaces | Panel de Administración
+            </a>
+         </div>
+      </nav>
       <div class="container-fluid">
-        <a class="navbar-brand">
-          <img
-            src="./res/images/favicon.ico"
-            alt="Logo"
-            width="30"
-            height="24"
-            class="d-inline-block align-text-top"
-          />
-          PhotosSpaces | Panel de Administración
-        </a>
+         <div class="row">
+            <div class="col-sm-6 border">
+               <div class="row" style="background-color: #bbc0bb">
+                  <h1>
+                     <img src="./res/svg/servers.svg" width="36" /><strong>
+                     Servidores</strong
+                        >
+                  </h1>
+               </div>
+               <div class="row justify-content-center border-bottom border-top">
+                  <h2>Disponibles</h2>
+                  <div
+                     class="row flex-row flex-nowrap"
+                     style="overflow-y: auto"
+                     id="idle-server-container"
+                     >
+                  </div>
+               </div>
+               <div class="row justify-content-center border-bottom border-top">
+                  <h2>Ocupados</h2>
+                  <div
+                     class="row flex-row flex-nowrap"
+                     style="overflow-y: auto"
+                     id="busy-server-container"
+                     >
+                  </div>
+               </div>
+               <div class="row justify-content-center border-bottom border-top">
+                  <h2>Deshabilitados</h2>
+                  <div
+                     class="row flex-row flex-nowrap"
+                     style="overflow-y: auto"
+                     id="disabled-server-container"
+                     >
+                  </div>
+               </div>
+            </div>
+            <div class="col-sm-6 border">
+               <div class="row" style="background-color: #bbc0bb">
+                  <h1>
+                     <img src="./res/svg/request.svg" width="36" /><strong
+                        >Peticiones</strong
+                        >
+                  </h1>
+               </div>
+               <div class="row justify-content-center border-bottom border-top">
+                  <h2>En proceso</h2>
+                  <div
+                     class="row flex-row flex-nowrap"
+                     style="overflow-y: auto"
+                     id="processing-request-container"
+                     >
+                  </div>
+               </div>
+               <div class="row justify-content-center border-bottom border-top">
+                  <h2>Encoladas</h2>
+                  <div
+                     class="row flex-row flex-nowrap"
+                     style="overflow-y: auto"
+                     id="enqueued-request-container"
+                     >
+                  </div>
+               </div>
+               <div class="row justify-content-center border-bottom border-top">
+                  <h2>Finalizadas</h2>
+                  <div
+                     class="row flex-row flex-nowrap"
+                     style="overflow-y: auto"
+                     id="fulfilled-request-container"
+                     >
+                  </div>
+               </div>
+            </div>
+         </div>
+         <div class="row">
+            <div class="col-sm-6 border">
+               <div class="row" style="background-color: #bbc0bb">
+                  <h1>
+                     <img src="./res/svg/add-server.svg" width="35" /><strong>
+                     Añadir servidor</strong
+                        >
+                  </h1>
+               </div>
+               <div class="row">
+                  <form onsubmit="handleSubmit(event)">
+                     <div class="mb-3 mt-2">
+                        <label for="name-input" class="form-label">Nombre:</label>
+                        <input
+                           required
+                           type="text"
+                           maxlength="20"
+                           class="form-control"
+                           id="name-input"
+                           aria-describedby="nameHelp"
+                           style="width: 150px"
+                           />
+                        <div id="nameHelp" class="form-text">
+                           Introduzca un nombre para el nuevo servidor
+                        </div>
+                     </div>
+                     <div class="mb-3">
+                        <label for="ip-input" class="form-label">Dirección IP:</label>
+                        <input
+                           required
+                           type="text"
+                           minlength="7"
+                           maxlength="15"
+                           size="15"
+                           pattern="^((\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.){3}(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])$"
+                           class="form-control"
+                           id="ip-input"
+                           aria-describedby="ipHelp"
+                           style="width: 150px"
+                           />
+                        <div id="ipHelp" class="form-text">
+                           Introduzca dirección IPv4 del nuevo servidor
+                        </div>
+                     </div>
+                     <button type="submit" class="btn btn-primary mb-3">
+                     Añadir servidor
+                     </button>
+                  </form>
+               </div>
+            </div>
+            <div class="col-sm-6 border">
+               <div class="row" style="background-color: #bbc0bb">
+                  <h1>
+                     <img src="./res/svg/system-status.svg" width="48" /><strong>
+                     Estado del sistema:</strong
+                        >
+                  </h1>
+               </div>
+               <div class="row">
+                  <div class="col">
+                     <h4 id="total-server-count">Servidores registrados: 0</h4>
+                     <h5 id="idle-server-count">Servidores disponibles: 0</h5>
+                     <h5 id="busy-server-count">Servidores ocupados: 0</h5>
+                     <h5 id="disabled-server-count">Servidores deshabilitados: 0</h5>
+                  </div>
+                  <div class="col">
+                     <h4>
+                        Peticiones totales: <span id="total-request-count"></span>
+                     </h4>
+                     <h5>
+                        Peticiones en proceso:
+                        <span id="processing-request-count"></span>
+                     </h5>
+                     <h5>
+                        Peticiones encoladas: <span id="enqueued-request-count"></span>
+                     </h5>
+                     <h5>
+                        Peticiones finalizadas:
+                        <span id="fulfilled-request-count"></span>
+                     </h5>
+                  </div>
+                  <div class="col">
+                     <h5>
+                        Tiempo medio de procesamiento:
+                        <span id="average-request-processing-time"></span>
+                     </h5>
+                     <h5>
+                        Tiempo medio de espera en cola:
+                        <span id="average-request-queue-waiting-time"></span>
+                     </h5>
+                  </div>
+               </div>
+            </div>
+         </div>
       </div>
-    </nav>
-
-    <div class="container-fluid">
-      <div class="row">
-        <div class="col-sm-6 border">
-          <div class="row" style="background-color: #bbc0bb">
-            <h1>
-              <img src="./res/svg/servers.svg" width="36" /><strong>
-                Servidores</strong
-              >
-            </h1>
-          </div>
-
-          <div class="row justify-content-center border-bottom border-top">
-            <h2>Disponibles</h2>
-            <div
-              class="row flex-row flex-nowrap"
-              style="overflow-y: auto"
-              id="idle-server-container"
-            >
-            </div>
-          </div>
-
-          <div class="row justify-content-center border-bottom border-top">
-            <h2>Ocupados</h2>
-            <div
-              class="row flex-row flex-nowrap"
-              style="overflow-y: auto"
-              id="busy-server-container"
-            >
-            </div>
-          </div>
-
-          <div class="row justify-content-center border-bottom border-top">
-            <h2>Deshabilitados</h2>
-            <div
-              class="row flex-row flex-nowrap"
-              style="overflow-y: auto"
-              id="disabled-server-container"
-            >
-            </div>
-          </div>
-        </div>
-
-
-
-
-
-
-
-        <div class="col-sm-6 border">
-          <div class="row" style="background-color: #bbc0bb">
-            <h1>
-              <img src="./res/svg/request.svg" width="36" /><strong
-                >Peticiones</strong
-              >
-            </h1>
-          </div>
-
-          <div class="row justify-content-center border-bottom border-top">
-            <h2>En proceso</h2>
-            <div
-              class="row flex-row flex-nowrap"
-              style="overflow-y: auto"
-              id="processing-request-container"
-            >
-            </div>
-          </div>
-
-          <div class="row justify-content-center border-bottom border-top">
-            <h2>Encoladas</h2>
-            <div
-              class="row flex-row flex-nowrap"
-              style="overflow-y: auto"
-              id="enqueued-request-container"
-            >
-            </div>
-          </div>
-
-          <div class="row justify-content-center border-bottom border-top">
-            <h2>Finalizadas</h2>
-            <div
-              class="row flex-row flex-nowrap"
-              style="overflow-y: auto"
-              id="fulfilled-request-container"
-            >
-          </div>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="col border">
-          <div class="row" style="background-color: #bbc0bb">
-            <h1>
-              <img src="./res/svg/add-server.svg" width="35" /><strong>
-                Añadir servidor</strong
-              >
-            </h1>
-          </div>
-          <div class="row">
-            <form onsubmit="handleSubmit(event)">
-              <div class="mb-3 mt-2">
-                <label for="nameInput" class="form-label">Nombre:</label>
-                <input
-                  required
-                  type="text"
-                  maxlength="20"
-                  class="form-control"
-                  id="nameInput"
-                  aria-describedby="nameHelp"
-                  style="width: 150px"
-                />
-                <div id="nameHelp" class="form-text">
-                  Introduzca un nombre para el nuevo servidor
-                </div>
-              </div>
-
-              <div class="mb-3">
-                <label for="ipInput" class="form-label">Dirección IP:</label>
-                <input
-                  required
-                  type="text"
-                  minlength="7"
-                  maxlength="15"
-                  size="15"
-                  pattern="^((\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.){3}(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])$"
-                  class="form-control"
-                  id="ipInput"
-                  aria-describedby="ipHelp"
-                  style="width: 150px"
-                />
-                <div id="ipHelp" class="form-text">
-                  Introduzca dirección IPv4 del nuevo servidor
-                </div>
-              </div>
-
-              <button type="submit" class="btn btn-primary">
-                Añadir servidor
-              </button>
-            </form>
-          </div>
-        </div>
-        <div class="col border">
-          <div class="row" style="background-color: #bbc0bb">
-            <h1>
-              <img src="./res/svg/system-status.svg" width="48" /><strong>
-                Estado del sistema:</strong
-              >
-            </h1>
-          </div>
-          <div class="row">
-            <div class="col">
-              <h4 id="total-server-count">Servidores registrados: 0</h4>
-              <h5 id="idle-server-count">Servidores disponibles: 0</h5>
-              <h5 id="busy-server-count">Servidores ocupados: 0</h5>
-              <h5 id="disabled-server-count">Servidores deshabilitados: 0</h5>
-            </div>
-            <div class="col">
-              <h4>
-                Peticiones totales: <span id="total-request-count"></span>
-              </h4>
-              <h5>
-                Peticiones en proceso:
-                <span id="processing-request-count"></span>
-              </h5>
-              <h5>
-                Peticiones encoladas: <span id="enqueued-request-count"></span>
-              </h5>
-              <h5>
-                Peticiones finalizadas:
-                <span id="fulfilled-request-count"></span>
-              </h5>
-            </div>
-            <div class="col">
-              <h5>
-                Tiempo medio de procesamiento:
-                <span id="average-request-processing-time"></span>
-              </h5>
-              <h5>
-                Tiempo medio de espera en cola:
-                <span id="average-request-queue-waiting-time"></span>
-              </h5>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <script
-      src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
-      integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4"
-      crossorigin="anonymous"
-    ></script>
-    <script src="./js/main.js" type ="module"></script>
-  </body>
+      <script
+         src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
+         integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4"
+         crossorigin="anonymous"
+         ></script>
+      <script src="./js/main.js" type ="module"></script>
+   </body>
 </html>

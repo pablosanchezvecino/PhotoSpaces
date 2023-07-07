@@ -1,4 +1,5 @@
 import { ipCheckMiddleware } from "./middleware/ipCheckMiddleware.js";
+import { printAsciiArt } from "./logic/asciiArtLogic.js";
 import requestsRouter from "./routes/requestsRouter.js";
 import dbConnection from "./database/databaseConfig.js";
 import serversRouter from "./routes/serversRouter.js";
@@ -7,6 +8,8 @@ import dotenv from "dotenv";
 import morgan from "morgan";
 import cors from "cors";
 import "colors";
+
+printAsciiArt();
 
 dotenv.config();
 

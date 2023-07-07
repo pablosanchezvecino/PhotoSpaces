@@ -1,9 +1,12 @@
-import "colors"
-import fs from "fs";
-import path from "path";
-import dotenv from "dotenv";
+import { printAsciiArt } from "./logic/asciiArtLogic.js";
 import express from "express";
+import dotenv from "dotenv";
 import morgan from "morgan";
+import path from "path";
+import fs from "fs";
+import "colors";
+
+printAsciiArt();
 
 dotenv.config();
 

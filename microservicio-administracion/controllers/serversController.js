@@ -1,11 +1,21 @@
 import Server from "../models/Server.js";
+import Request from "../models/Request.js";
 import mongoose from "mongoose";
 
 // Funciones asociadas a los endpoints relacionados con la administración de los servidores de renderizado
 
 const getServers = async (req, res) => {
   try {
-    const servers = await Server.find({});
+    let limit = req.query.limit;
+
+    // Si no se ha indicado límite o no es un entero
+    if (!limit || limit.includes(".") || isNaN(parseInt(limit))) {
+      // 0 indica a mongoose que no limite el nñumero de documentos deueltos
+      limit = 0; 
+    }
+    
+    const servers = await Server.find({}).limit(limit);
+    
     res.status(200).send(servers);
   } catch (error) {
     console.error(`Error en la consulta a la base de datos. ${error}`.red);
@@ -83,7 +93,7 @@ const addServer = async (req, res) => {
 
   // Realizar consulta al servidor para saber si este es capaz de actuar como servidor de renderizado
   try {
-    const response = await fetch(`http://${renderingServerIP}:3000/test`);
+    const response = await fetch(`http://${renderingServerIP}:3000/bind`);
     if (response.ok) {
       // Todo va bien en el servidor de renderizado
       // Persistir info servidor
@@ -92,13 +102,22 @@ const addServer = async (req, res) => {
       const newServer = new Server({
         name: renderingServerName,
         ip: renderingServerIP,
+        status: "idle",
         os: serverInfo.os,
         cpu: serverInfo.cpu,
         gpu: serverInfo.gpu,
         blenderVersion: serverInfo.blenderVersion,
-        status: "idle",
         registrationDate: Date.now(),
-        timeSpentOnRenderTest: serverInfo.timeSpentOnRenderTest
+        timeSpentOnRenderTest: serverInfo.timeSpentOnRenderTest,
+        fulfilledRequestsCount: 0,
+        totalCyclesNeededTime: 0,
+        totalCyclesBlenderTime: 0,
+        totalCyclesProcessedBytes: 0,
+        cyclesProcessedBytesPerMillisecondOfNeededTime: null,
+        totalEeveeNeededTime: 0,
+        totalEeveeBlenderTime: 0,
+        totalEeveeProcessedBytes: 0,
+        eeveeProcessedBytesPerMillisecondOfNeededTime: null
       });
 
       try {
@@ -263,7 +282,7 @@ const abortServer = async (req, res) => {
   // Consultar dirección IP y estado del servidor
   let serverInfo = null;
   try {
-    serverInfo = await Server.findById(req.params.id, "status ip");
+    serverInfo = await Server.findById(req.params.id, "status ip name");
   } catch (error) {
     console.error(`Error en las consultas a la base de datos previas a abortar el procesamiento en el servidor. ${error}`.red);
     res.status(500).send({ error: "Error en las consultas a la base de datos previas a abortar el procesamiento en el servidor" });
@@ -283,6 +302,16 @@ const abortServer = async (req, res) => {
     return;
   }
 
+  // Obtener petición que está siendo procesada el servidor
+  let request = null;
+  try {
+    request = await Request.findOne({ status: "processing", assignedServer: serverInfo.name });
+  } catch (error) {
+    console.error(`Error en las consultas a la base de datos previas a abortar el procesamiento en el servidor. ${error}`.red);
+    res.status(500).send({ error: "Error en las consultas a la base de datos previas a abortar el procesamiento en el servidor" });
+    return;
+  }
+
   // Contactar con el servidor para que cambie su estado
   try {
     const response = await fetch(`http://${serverInfo.ip}:${process.env.RENDER_SERVER_PORT}/abort`, {
@@ -297,9 +326,15 @@ const abortServer = async (req, res) => {
       // Actualizar estado en BD
       try {
         await Server.findByIdAndUpdate(req.params.id, { status: "idle" });
+        await Request.findByIdAndUpdate(request._id, {
+          status: "enqueued",
+          queueStartTime: new Date(),
+          processingStartTime: null,
+          assignedServer: null 
+        });
       } catch (error) {
-        console.error(`Error interno en la conexión con la base de datos al abortar el procesamiento en el servidor. ${error}`.red);
-        res.status(500).send({ error: "Error interno en la conexión con la base de datos al abortar el procesamiento en el servidor" });
+        console.error(`Error interno en la conexión con la base de datos tras abortar el procesamiento en el servidor. ${error}`.red);
+        res.status(500).send({ error: "Error interno en la conexión con la base de datos tras abortar el procesamiento en el servidor" });
         return;
       }
   

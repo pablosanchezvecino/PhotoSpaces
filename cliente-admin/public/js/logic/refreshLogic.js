@@ -1,4 +1,4 @@
-import { administrationMicroserviceIp, administrationMicroservicePort } from "../constants/parameters.js";
+import { administrationMicroserviceIp, administrationMicroservicePort, maxCardsPerContainer } from "../constants/parameters.js";
 import { addServerCard, addRequestCard } from "./cardLogic.js";
 import { msToTime } from "./timeLogic.js";
 import {
@@ -17,7 +17,7 @@ import {
   enqueuedRequestCountElement,
   fulfilledRequestCountElement,
   averageRequestProcessingTimeElement,
-  averageRequestQueueWaitingTimeElement,
+  averageRequestQueueWaitingTimeElement
 } from "./DOMElements.js";
 
 const refresh = async () => {
@@ -26,14 +26,24 @@ const refresh = async () => {
   let requests = null;
   let totalProcessingTime = 0;
   let totalQueueTime = 0;
+
+  const queryString = maxCardsPerContainer ? `?limit=${maxCardsPerContainer}` : "";
   
   // Obtener servidores y peticiones
   try {
-    const serversResponse = await fetch(`http://${administrationMicroserviceIp}:${administrationMicroservicePort}/servers`);
-    servers = await serversResponse.json();
+    const serversResponse = await fetch(`http://${administrationMicroserviceIp}:${administrationMicroservicePort}/servers${queryString}`);
+    if (serversResponse.ok) {
+      servers = await serversResponse.json();
+    } else {
+      throw new Error(`Obtenido código ${serversResponse.status} en la consulta de servidores`);
+    }
 
-    const requestsResponse = await fetch(`http://${administrationMicroserviceIp}:${administrationMicroservicePort}/requests`);
-    requests = await requestsResponse.json();
+    const requestsResponse = await fetch(`http://${administrationMicroserviceIp}:${administrationMicroservicePort}/requests${queryString}`);
+    if (requestsResponse.ok) {
+      requests = await requestsResponse.json();
+    } else {
+      throw new Error(`Obtenido código ${requestsResponse.status} en la consulta de peticiones`);
+    }
 
   } catch (error) {
     console.error(`Error en la consulta del estado del sistema. ${error}`);

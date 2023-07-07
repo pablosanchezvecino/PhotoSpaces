@@ -1,5 +1,6 @@
 # Archivos temporales
 temp/*
+!temp/renderTest.glb
 
 # Logs
 logs

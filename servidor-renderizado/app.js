@@ -2,11 +2,14 @@ import { setStatus, setEstimatedRemainingProcessingTime } from "./serverStatus.j
 import { ipCheckMiddleware } from "./middleware/ipCheckMiddleware.js";
 import renderingServerRouter from "./routes/renderingServerRouter.js";
 import ServerStates from "./constants/serverStatesEnum.js";
+import { printAsciiArt } from "./logic/asciiArtLogic.js";
 import express from "express";
 import dotenv from "dotenv";
 import morgan from "morgan";
 import cors from "cors";
 import "colors";
+
+printAsciiArt();
 
 dotenv.config();
 

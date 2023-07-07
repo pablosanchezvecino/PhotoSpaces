@@ -1,33 +1,35 @@
-import * as THREE from "/build/three.module.js";
+import { requestHandlingMicroserviceIp, requestHandlingMicroservicePort } from "./constants/parameters.js";
 import { PointerLockControls } from "/jsm/controls/PointerLockControls.js";
-import { GLTFLoader } from "/jsm/loaders/GLTFLoader.js";
 import { GLTFExporter } from "/jsm/exporters/GLTFExporter.js";
+import { wait, msToTime } from "./logic/timeLogic.js";
+import { GLTFLoader } from "/jsm/loaders/GLTFLoader.js";
 import { RGBELoader } from "/jsm/loaders/RGBELoader.js";
+import { isEmail } from "./logic/emailLogic.js";
 import { GUI } from "/jsm/libs/dat.gui.module.js";
-import {
-  requestHandlingMicroserviceIp,
-  requestHandlingMicroservicePort,
-} from "./constants/parameters.js";
+import * as THREE from "/build/three.module.js";
 
 // > Elementos HTML
-const inputField = document.getElementById("inputModel");
+const inputField = document.getElementById("input-model");
 const canvas = document.getElementById("canvas");
 
-const btnRender = document.getElementById("btnRender");
-const btnLoading = document.getElementById("btnLoading");
-const btnClear = document.getElementById("btnClear");
-const btnDownload = document.getElementById("btnDownload");
-const chooseFileLabel = document.getElementById("chooseFileLabel");
-const loadingModelLabel = document.getElementById("loadingModelLabel");
+const btnRender = document.getElementById("btn-render");
+const btnLoading = document.getElementById("btn-loading");
+const btnClear = document.getElementById("btn-clear");
+const btnDownload = document.getElementById("btn-download");
+const chooseFileLabel = document.getElementById("choose-file-label");
+const loadingModelLabel = document.getElementById("loading-model-label");
 
-const optionsDiv = document.getElementById("optionsDiv");
-const loadModelDiv = document.getElementById("loadModelDiv");
-const clearDiv = document.getElementById("clearDiv");
+const optionsDiv = document.getElementById("options-div");
+const loadModelDiv = document.getElementById("load-model-div");
+const clearDiv = document.getElementById("clear-div");
 
-const optionsFOV = document.getElementById("fovRange");
-const fovValue = document.getElementById("fovValue");
 
-const backgroundSelect = document.getElementById("backgroundSelect");
+const optionsFOV = document.getElementById("fov-range");
+const fovValue = document.getElementById("fov-value");
+
+const dracoCompressionLevelRange = document.getElementById("draco-compression-level-range");
+
+const backgroundSelect = document.getElementById("background-select");
 
 // - Parámetros de renderización
 const eeveeEngine = document.getElementById("eevee");
@@ -41,14 +43,21 @@ const sendEmail = document.getElementById("send-email");
 const browserDownload = document.getElementById("browser-download");
 const emailInput = document.getElementById("email-input");
 
+// - Parámetro Draco
+const dracoSwitch = document.getElementById("draco-switch");
+const dracoLabel = document.getElementById("draco-label");
+
+// - Parámetros de exportación de la escena
+const glbExport = document.getElementById("glb-export");
+
 // - Enlace para la descarga de la imagen
 const link = document.createElement("a");
 link.style.display = "none";
 document.body.appendChild(link);
 
 // - Luces
-const elementsDiv = document.getElementById("elementsDiv");
-const lightsList = document.getElementById("lightsList");
+const elementsDiv = document.getElementById("elements-div");
+const lightsList = document.getElementById("lights-list");
 let lights = 0;
 let fileCN;
 
@@ -66,15 +75,16 @@ const direction = new THREE.Vector3();
 let prevTime = performance.now();
 let controls;
 
-// > Escena, renderizador e intervalo de actualizacion
-let scene, renderer, intervalUpdate;
+// > Escena y renderizador
+let scene, renderer, camera;
+btnRender.addEventListener("click", async () => await sendModel(camera));
 
 // Validar y asignar un nuevo archivo
 const handleNewFile = (file) => {
   if (
     file &&
     (file.name.substring(file.name.length - 5, file.name.length) === ".gltf" ||
-      file.name.substring(file.name.length - 4, file.name.length) === ".glb")
+    file.name.substring(file.name.length - 4, file.name.length) === ".glb")
   ) {
     // create a file reader
     const reader = new FileReader();
@@ -106,12 +116,14 @@ const loadModel = (file) => {
 
   renderer.physicallyCorrectLights = true;
 
-  const camera = new THREE.PerspectiveCamera(
+  camera = new THREE.PerspectiveCamera(
     75,
     window.innerWidth / window.innerHeight,
     0.1,
     10000
   );
+
+
 
   scene = new THREE.Scene();
 
@@ -208,65 +220,65 @@ const initializeControls = (camera) => {
 
   const onKeyDown = (event) => {
     switch (event.code) {
-      case "ArrowUp":
-      case "KeyW":
-        moveForward = true;
-        break;
+    case "ArrowUp":
+    case "KeyW":
+      moveForward = true;
+      break;
 
-      case "ArrowLeft":
-      case "KeyA":
-        moveLeft = true;
-        break;
+    case "ArrowLeft":
+    case "KeyA":
+      moveLeft = true;
+      break;
 
-      case "ArrowDown":
-      case "KeyS":
-        moveBackward = true;
-        break;
+    case "ArrowDown":
+    case "KeyS":
+      moveBackward = true;
+      break;
 
-      case "ArrowRight":
-      case "KeyD":
-        moveRight = true;
-        break;
+    case "ArrowRight":
+    case "KeyD":
+      moveRight = true;
+      break;
 
-      case "Space":
-        moveUp = true;
-        break;
+    case "Space":
+      moveUp = true;
+      break;
 
-      case "ShiftLeft":
-        moveDown = true;
-        break;
+    case "ShiftLeft":
+      moveDown = true;
+      break;
     }
   };
 
   const onKeyUp = (event) => {
     switch (event.code) {
-      case "ArrowUp":
-      case "KeyW":
-        moveForward = false;
-        break;
+    case "ArrowUp":
+    case "KeyW":
+      moveForward = false;
+      break;
 
-      case "ArrowLeft":
-      case "KeyA":
-        moveLeft = false;
-        break;
+    case "ArrowLeft":
+    case "KeyA":
+      moveLeft = false;
+      break;
 
-      case "ArrowDown":
-      case "KeyS":
-        moveBackward = false;
-        break;
+    case "ArrowDown":
+    case "KeyS":
+      moveBackward = false;
+      break;
 
-      case "ArrowRight":
-      case "KeyD":
-        moveRight = false;
-        break;
+    case "ArrowRight":
+    case "KeyD":
+      moveRight = false;
+      break;
 
-      case "Space":
-        moveUp = false;
-        break;
+    case "Space":
+      moveUp = false;
+      break;
 
-      case "ShiftLeft":
-        moveDown = false;
-        break;
+    case "ShiftLeft":
+      moveDown = false;
+      break;
     }
   };
 
@@ -278,25 +290,25 @@ const initializeControls = (camera) => {
       speedMulti -= 1.0;
     }
   };
-
   canvas.addEventListener("click", () => {
     controls.isLocked ? controls.unlock() : controls.lock();
   });
-
-  btnRender.addEventListener("click", async () => await sendModel(camera));
   btnClear.addEventListener("click", clear);
+
 
   optionsDiv.style.display = "block";
   loadModelDiv.style.display = "none";
   clearDiv.style.display = "block";
 
-  fovValue.innerHTML = `FOV: ${optionsFOV.value}`;
+  fovValue.innerText = `FOV: ${optionsFOV.value}`;
 
   optionsFOV.addEventListener("change", () => {
     camera.fov = optionsFOV.value;
-    fovValue.innerHTML = `FOV: ${optionsFOV.value}`;
+    fovValue.innerText = `FOV: ${optionsFOV.value}`;
     camera.updateProjectionMatrix();
   });
+
+ 
 
   document.addEventListener("wheel", (e) => {
     controls.isLocked ? onScroll(e) : null;
@@ -425,18 +437,16 @@ const addLightToDiv = (type, name, gui) => {
   lightsList.appendChild(node);
 };
 
-const isEmail = (email) => {
-  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return regex.test(email);
-}
+
+
+
 
 // Exporta y envía el modelo al servidor
 const sendModel = async (cam) => {
+  const email = emailInput.value;
 
-const email = emailInput.value;
-
-// Si se ha solicitado descarga en el navegador o envío por email con una dirección válida
-if (browserDownload.checked || isEmail(email)) {
+  // Si se ha solicitado descarga en el navegador o envío por email con una dirección válida
+  if (browserDownload.checked || isEmail(email)) {
 
     btnRender.disabled = true;
     btnRender.style.display = "none";
@@ -461,71 +471,70 @@ if (browserDownload.checked || isEmail(email)) {
       ssr: ssr.checked,
     };
 
+
     // Exportamos la escena y la convertimos en un Blob para enviarla
-    exporter.parse(scene, async (gltf) => {
-      console.log(fileCN)
-      const mimeType = fileCN.endsWith(".gltf") ? "model/gltf+json" : "model/gltf-binary"
-
-      formData.append("model", new Blob([JSON.stringify(gltf, null)], { type: mimeType }));
+    exporter.parse(scene, async (scene) => {
+      
+      
+      if (glbExport.checked) {
+        // Exportación GLB
+        formData.append("model", new Blob([scene], { type: "model/gltf-binary" }));
+      } else {
+        // Exportación glTF
+        formData.append("model", new Blob([JSON.stringify(scene, null)], { type: "model/gltf+json" }));
+      }
+      
+      
       formData.append("data", JSON.stringify(camData));
-
+      
+      // Si se solicita envío por email
       if (sendEmail.checked) {
         formData.append("email", email);
       }
-
+      
+      // Si se solicita compresión con Draco
+      if (dracoSwitch.checked) {
+        formData.append("dracoCompressionLevel", dracoCompressionLevelRange.value);
+      }
 
       try {
         const response = await fetch(
           `http://${requestHandlingMicroserviceIp}:${requestHandlingMicroservicePort}/requests`,
           {
             method: "POST",
-            body: formData,
+            body: formData
           }
         );
 
+        if (response.ok) {
+          if (browserDownload.checked) {
+            const jsonContent = await response.json();
+            await requestPolling(jsonContent.requestId, jsonContent.requestStatus);
+          } else {
+            btnRender.disabled = false;
+            alert(`Petición recibida: Se enviará la imagen renderizada a ${email}`);
+          }
+        } else {
+          alert(`Error al recibir la petición. Recibido código ${response.status}. Error: ${(await response.json()).error}`);
+        }
         btnLoading.style.display = "none";
         btnRender.style.display = "block";
-
-        if (browserDownload.checked) {
-          const jsonContent = await response.json();
-          await requestPolling(jsonContent.requestId, jsonContent.requestStatus);
-        } else {
-          btnRender.disabled = false;
-          alert(`Petición recibida: Se enviará la imagen renderizada a ${email}`);
-        }
+  
+          
       } catch (error) {
         console.error(error);
       }
-    });
+    },
+    { binary: glbExport.checked });
   } else {
     alert("EL correo especificado debe ser válido");
   }
 };
 
-const msToTime = (duration) => {
-  if (!duration && duration !== 0) {
-    return "N/A";
-  } else {
-    let seconds = Math.floor((duration / 1000) % 60),
-      minutes = Math.floor((duration / (1000 * 60)) % 60),
-      hours = Math.floor(duration / (1000 * 60 * 60));
-    console.log([hours, minutes, seconds]);
-    hours = hours < 10 ? "0" + hours : hours;
-    minutes = minutes < 10 ? "0" + minutes : minutes;
-    seconds = seconds < 10 ? "0" + seconds : seconds;
-
-    return hours + ":" + minutes + ":" + seconds;
-  }
-};
-
-const wait = (ms) => {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 const requestPolling = async (requestId, requestStatus) => {
-  const currentRequestStatus = document.getElementById("currentRequestStatus");
-  const currentQueuePosition = document.getElementById("currentQueuePosition");
-  const oldestProcessingRequestEstimatedTime = document.getElementById("oldestProcessingRequestEstimatedTime");
+  const currentRequestStatus = document.getElementById("current-request-status");
+  const currentQueuePosition = document.getElementById("current-queue-position");
+  const oldestProcessingRequestEstimatedTime = document.getElementById("oldest-processing-request-estimated-time");
   const estimatedTimeTitle = document.getElementById("estimated-time-title");
   const queuePositionParagraph = document.getElementById("queue-position-paragraph");
 
@@ -544,7 +553,7 @@ const requestPolling = async (requestId, requestStatus) => {
   queuePositionParagraph.style.display =
     requestStatus === "enqueued" ? "block" : "none";
   
-    estimatedTimeTitle.textContent =
+  estimatedTimeTitle.textContent =
     requestStatus === "enqueued"
       ? "Tiempo de espera estimado para avance en la cola: "
       : "Tiempo de espera estimado: ";
@@ -559,24 +568,33 @@ const requestPolling = async (requestId, requestStatus) => {
       { method: "GET" }
     );
 
-    const jsonContent = await response.json();
+    if (response.ok) {
+      const jsonContent = await response.json();
+  
+      requestStatus = jsonContent.requestStatus;
+  
+      // Petición pasa de "enqueued" a "processing"
+      if (requestStatus === "processing" && wasEnqueuedBefore) {
+        wasEnqueuedBefore = false;
+        oldestProcessingRequestEstimatedTime.textContent = "";
+        queuePositionParagraph.style.display = "none";
+        currentRequestStatus.textContent = "Enviada a servidor";
+        estimatedTimeTitle.textContent = "Tiempo de espera estimado: ";
+        await wait(2000);
+      }
+  
+      console.log(jsonContent);
+      let estimatedRemainingTime = jsonContent.processingRequestEstimatedRemainingProcessingTime;
+  
+      if (estimatedRemainingTime === null || estimatedRemainingTime === undefined) {
+        oldestProcessingRequestEstimatedTime.textContent = "N/A";
+      } else {
+        estimatedRemainingTime = msToTime(estimatedRemainingTime);
+        oldestProcessingRequestEstimatedTime.textContent =  estimatedRemainingTime === "00:00:00" ? "N/A (Finalizando...)" : estimatedRemainingTime;
+      }
+      currentQueuePosition.textContent = jsonContent.requestQueuePosition;
 
-    requestStatus = jsonContent.requestStatus;
-
-    // Petición pasa de "enqueued" a "processing"
-    if (requestStatus === "processing" && wasEnqueuedBefore) {
-      wasEnqueuedBefore = false;
-      queuePositionParagraph.style.display = "none";
-      currentRequestStatus.textContent = "Enviada a servidor";
-      estimatedTimeTitle.textContent = "Tiempo de espera estimado: ";
-      await wait(5000);
     }
-
-    console.log(jsonContent);
-    // if (jsonContent.processingRequestEstimatedRemainingProcessingTime) {
-      oldestProcessingRequestEstimatedTime.textContent = msToTime(jsonContent.processingRequestEstimatedRemainingProcessingTime);
-    // }
-    currentQueuePosition.textContent = jsonContent.requestQueuePosition;
 
     await wait(2000);
   }
@@ -612,8 +630,8 @@ const downloadImage = (body) => {
     fileCN.substring(fileCN.length - 5, fileCN.length) === ".gltf"
       ? fileCN.substring(0, fileCN.length - 5)
       : fileCN.substring(fileCN.length - 4, fileCN.length) === ".glb"
-      ? fileCN.substring(0, fileCN.length - 4)
-      : "undefined";
+        ? fileCN.substring(0, fileCN.length - 4)
+        : "undefined";
 
   // Flujo de datos
   const fileStream = body.getReader();
@@ -696,13 +714,14 @@ const backgroundChange = (sel) => {
   }
 };
 
-$("#backgroundSelect").on("change", function () {
-  backgroundChange(this.value);
-});
+backgroundSelect.addEventListener(
+  "change",
+  () => backgroundChange(backgroundSelect.value)
+);
 
 backgroundSelect.selectedIndex = 0;
 
-const eeveeDiv = document.getElementById("eeveeDiv");
+const eeveeDiv = document.getElementById("eevee-div");
 eeveeEngine.addEventListener(
   "change",
   () => (eeveeDiv.style.display = "block")
@@ -716,8 +735,21 @@ cyclesEngine.addEventListener(
   () => (eeveeDiv.style.display = "none")
 );
 
-const emailDiv = document.getElementById("emailDiv");
+const emailDiv = document.getElementById("email-div");
 sendEmail.addEventListener("change", () => (emailDiv.style.display = "block"));
+
+const dracoDiv = document.getElementById("draco-div");
+dracoDiv.style.display = "none";
+
+dracoSwitch.addEventListener("change", () => {
+  dracoDiv.style.display = dracoSwitch.checked ? "block" : "none";
+  
+  dracoLabel.innerText = `Compresión con Draco: ${dracoSwitch.checked ? dracoCompressionLevelRange.value : "No"}`;
+});
+
+dracoCompressionLevelRange.addEventListener("change", () => {
+  dracoLabel.innerText = `Compresión con Draco: ${dracoCompressionLevelRange.value === null ? "No" : dracoCompressionLevelRange.value}`;
+});
 
 browserDownload.addEventListener(
   "change",
@@ -743,8 +775,8 @@ loadModelDiv.addEventListener(
 // Menu click-derecho
 const contextMenu = document.getElementById("context-menu");
 const body = document.querySelector("body");
-const addDirectional = document.getElementById("addDLight");
-const addPoint = document.getElementById("addPLight");
+const addDirectional = document.getElementById("add-directional-light");
+const addPoint = document.getElementById("add-point-light");
 
 canvas.addEventListener("contextmenu", (event) => {
   event.preventDefault();
@@ -763,5 +795,5 @@ body.addEventListener("click", (e) => {
   }
 });
 
-addDirectional.addEventListener("click", (e) => addLightToScene("Directional"));
-addPoint.addEventListener("click", (e) => addLightToScene("Point"));
+addDirectional.addEventListener("click", () => addLightToScene("Directional"));
+addPoint.addEventListener("click", () => addLightToScene("Point"));

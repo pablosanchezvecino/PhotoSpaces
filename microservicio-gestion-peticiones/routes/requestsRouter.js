@@ -11,9 +11,6 @@ const router = Router();
 router.get("/:id", transferRenderedImage);
 
 // POST /requests
-// router.post("", upload.single("model"), handleNewRequest);
-
-// POST /requests
 router.post("", (req, res) => {
   try {
     upload.single("model")(req, res, (err) => {

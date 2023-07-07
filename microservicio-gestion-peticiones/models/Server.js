@@ -41,6 +41,51 @@ const ServerSchema = Schema(
       type: Number,
       min: 0,
       require: true,
+    },
+    fulfilledRequestsCount: {
+      type: Number,
+      min: 0,
+      require: true,
+    },
+    totalCyclesNeededTime: {
+      type: Number,
+      min: 0,
+      require: true,
+    },
+    totalCyclesBlenderTime: {
+      type: Number,
+      min: 0,
+      require: true,
+    },
+    totalCyclesProcessedBytes: {
+      type: Number,
+      min: 0,
+      require: true,
+    },
+    cyclesProcessedBytesPerMillisecondOfNeededTime: {
+      type: Number,
+      min: 0,
+      require: false,
+    },
+    totalEeveeNeededTime: {
+      type: Number,
+      min: 0,
+      require: true,
+    },
+    totalEeveeBlenderTime: {
+      type: Number,
+      min: 0,
+      require: true,
+    },
+    totalEeveeProcessedBytes: {
+      type: Number,
+      min: 0,
+      require: true,
+    },
+    eeveeProcessedBytesPerMillisecondOfNeededTime: {
+      type: Number,
+      min: 0,
+      require: false,
     }
   },
   { optimisticConcurrency: true }

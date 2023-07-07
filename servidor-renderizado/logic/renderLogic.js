@@ -1,4 +1,4 @@
-import { extractRemainingTimeMs } from "./timeLogic.js";
+import { extractRemainingTimeMs, extractTotalBlenderTimeMs } from "./timeLogic.js";
 import { parentPort, workerData } from "worker_threads";
 import { spawn } from "child_process";
 import path from "path";
@@ -21,12 +21,16 @@ const command = spawn(
 
 
 command.stderr.on("data", (data) => {
-  console.error(`stderr: ${data}`);
+  console.error(`stderr: ${data}`.red);
+  parentPort.postMessage("error");
 });
 
 command.stdout.on("data", (data) => {
   if (process.env.SHOW_PYTHON_LOGS) {
     console.log(data.toString().green);
+  }
+  if (data.toString().startsWith("Saved:")) {
+    parentPort.postMessage(`Total: ${extractTotalBlenderTimeMs(data.toString())}`);
   }
   if (data.toString().includes("Remaining:")) {
     parentPort.postMessage(extractRemainingTimeMs(data));
@@ -34,7 +38,8 @@ command.stdout.on("data", (data) => {
 });
 
 command.on("error", (error) => {
-  console.error(error.message);
+  console.error(`error: ${error.message}`.red);
+  parentPort.postMessage("error");
 });
 
 command.on("close", () => {

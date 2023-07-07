@@ -8,10 +8,10 @@ const router = Router();
 // GET /requests
 router.get("", getRequests);
 
-// GET /requets/:id
+// GET /requests/:id
 router.get("/:id", getRequestById);
 
-// DELETE /requests/:requestId
+// DELETE /requests/:id
 router.delete("/:id", deleteRequest);
 
 export default router;

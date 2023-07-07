@@ -1,4 +1,7 @@
+import gltfPipeline from "gltf-pipeline";
+import fsExtra from "fs-extra";
 import path from "path";
+
 
 const mimeTypeToExtension = (mimeType) => {
   switch (mimeType) {
@@ -14,7 +17,6 @@ const mimeTypeToExtension = (mimeType) => {
 
   default:
     throw new Error(`Recibido MIME Type no válido (${mimeType})`);
-
   }
 };
 
@@ -32,7 +34,6 @@ const extensionToMimeType = (extension) => {
       
   default:
     throw new Error(`Recibida extensión no válida (${extension})`);
-      
   }
 };
 
@@ -40,4 +41,37 @@ const extensionFromFilename = (filename) => {
   return path.extname(filename);
 };
 
-export { mimeTypeToExtension, extensionToMimeType, extensionFromFilename };
+const generateGltfFromGlb = async (fileRoute) => {
+  const glb = fsExtra.readFileSync(fileRoute);
+  const results = await gltfPipeline.glbToGltf(glb);
+  fsExtra.writeJsonSync(`./temp/${path.basename(fileRoute, path.extname(fileRoute))}.gltf`, results.gltf);
+};
+
+
+const generateGlbFromGltf = async (fileRoute) => {
+  const gltf = fsExtra.readJsonSync(fileRoute);
+  const results = await gltfPipeline.gltfToGlb(gltf);
+  fsExtra.writeFileSync(`./temp/${path.basename(fileRoute, path.extname(fileRoute))}.glb`, results.glb);
+};
+
+const generateDracoFromGltf = async (fileRoute, dracoCompressionLevel) => {
+  const gltf = fsExtra.readJsonSync(fileRoute);
+  const options = {
+    dracoOptions: {
+      compressionLevel: dracoCompressionLevel
+    },
+  };
+  const results = await gltfPipeline.processGltf(gltf, options);
+  fsExtra.writeJsonSync(`./temp/${path.basename(fileRoute, path.extname(fileRoute))}.drc`, results.gltf);
+};
+
+
+
+export { 
+  mimeTypeToExtension, 
+  extensionToMimeType,
+  extensionFromFilename,
+  generateGlbFromGltf,
+  generateGltfFromGlb,
+  generateDracoFromGltf
+};

@@ -5,10 +5,6 @@ dotenv.config();
 let allowedIps = process.env.ALLOWED_IPS.split(",");
 
 const ipCheckMiddleware = (req, res, next) => {
-  // console.log(allowedIps)
-  // console.log(req.ip)
-  // console.log(req.connection.remoteAddress)
-  // console.log(req.headers["x-forwarded-for"])
 
   let requestIp = req.ip;
 
@@ -17,8 +13,6 @@ const ipCheckMiddleware = (req, res, next) => {
     // Extraer IPv4
     requestIp = requestIp.toString().slice(7);
   }
-
-  console.log(requestIp);
 
   if (!allowedIps.includes(requestIp)) {
     // Envía una respuesta de acceso denegado si la dirección IP no coincide con ninguna de las permitidas
@@ -29,3 +23,5 @@ const ipCheckMiddleware = (req, res, next) => {
 };
 
 export { ipCheckMiddleware };
+
+  

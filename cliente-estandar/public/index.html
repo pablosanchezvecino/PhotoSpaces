@@ -70,7 +70,16 @@
           <div class="centered">
             <p style="font-weight: bold;">Renderizado</p>
 
-            <p>Motor de renderizado:</p>
+            <label for="resolution-select">Resolución</label>
+            <select class="form-control mb-2" style="width: 100px;" id="resolution-select">
+              <option>480p</option>
+              <option>720p</option>
+              <option selected>1080p</option>
+              <option >1440p</option>
+              <option >2160p</option>
+            </select>
+
+            <label>Motor de renderizado:</label><br>
             <input type="radio" id="eevee" name="engine" value="eevee" checked>
             <label for="eevee" title="Renderizado mediante rasterización. Casi instantáneo, pero menos realista">Eevee</label>
             <input type="radio" id="cycles" name="engine" value="cycles" style="margin-left: 2rem; margin-bottom: 2rem;">

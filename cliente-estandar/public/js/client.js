@@ -1,11 +1,11 @@
 import { requestHandlingMicroserviceIp, requestHandlingMicroservicePort } from "./constants/parameters.js";
 import { PointerLockControls } from "/jsm/controls/PointerLockControls.js";
 import { GLTFExporter } from "/jsm/exporters/GLTFExporter.js";
-import { wait, msToTime } from "./logic/timeLogic.js";
 import { GLTFLoader } from "/jsm/loaders/GLTFLoader.js";
 import { RGBELoader } from "/jsm/loaders/RGBELoader.js";
-import { isEmail } from "./logic/emailLogic.js";
+import { wait, msToTime } from "./logic/timeLogic.js";
 import { GUI } from "/jsm/libs/dat.gui.module.js";
+import { isEmail } from "./logic/emailLogic.js";
 import * as THREE from "/build/three.module.js";
 
 // > Elementos HTML
@@ -23,7 +23,6 @@ const optionsDiv = document.getElementById("options-div");
 const loadModelDiv = document.getElementById("load-model-div");
 const clearDiv = document.getElementById("clear-div");
 
-
 const optionsFOV = document.getElementById("fov-range");
 const fovValue = document.getElementById("fov-value");
 
@@ -32,6 +31,7 @@ const dracoCompressionLevelRange = document.getElementById("draco-compression-le
 const backgroundSelect = document.getElementById("background-select");
 
 // - Parámetros de renderización
+const resolutionSelect = document.getElementById("resolution-select");
 const eeveeEngine = document.getElementById("eevee");
 const cyclesEngine = document.getElementById("cycles");
 const gtao = document.getElementById("gtao");
@@ -469,6 +469,7 @@ const sendModel = async (cam) => {
       gtao: gtao.checked,
       bloom: bloom.checked,
       ssr: ssr.checked,
+      resolution: resolutionSelect.value
     };
 
 

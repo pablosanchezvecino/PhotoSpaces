@@ -449,7 +449,7 @@ const addRequestCard = (requestData, queuePosition) => {
 
   const card = document.createElement("div");
   card.className = "card mb-2";
-  card.style = `height: 395px; width: 20rem; background-color: ${color}`;
+  card.style = `height: 430px; width: 20rem; background-color: ${color}`;
 
   const cardBody = document.createElement("div");
   cardBody.className = "card-body";
@@ -488,7 +488,7 @@ const addRequestCard = (requestData, queuePosition) => {
 
   // Motor de renderizado
   const renderEngineCardText = document.createElement("p");
-  clientIpCardText.className = "card-text";
+  renderEngineCardText.className = "card-text";
   const renderEngineImage = document.createElement("img");
   renderEngineImage.src = "./res/svg/engine.svg";
   renderEngineImage.width = "24";
@@ -496,6 +496,17 @@ const addRequestCard = (requestData, queuePosition) => {
   renderEngineCardText.appendChild(renderEngineImage);
   renderEngineImage.after(document.createTextNode(requestData.parameters.engine === "CYCLES" ? " Cycles" : " Eevee"));
   cardBody.appendChild(renderEngineCardText);
+
+  // Resolución
+  const resolutionCardText = document.createElement("p");
+  resolutionCardText.className = "card-text";
+  const resolutionImage = document.createElement("img");
+  resolutionImage.src = "./res/svg/resolution.svg";
+  resolutionImage.width = "24";
+  resolutionImage.title = "Resolución de la imagen renderizada";
+  resolutionCardText.appendChild(resolutionImage);
+  resolutionImage.after(document.createTextNode(" " + requestData.parameters.resolution));
+  cardBody.appendChild(resolutionCardText);
 
   // Detalles del fichero
   const fileDetailsCardText = document.createElement("p");

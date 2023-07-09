@@ -38,6 +38,11 @@ const LocationSchema = new Schema({
 
 const ParametersSchema = new Schema({
   _id: false,
+  resolution: {
+    type: String,
+    enum: ["480p", "720p", "1080p", "1440p", "2160p"],
+    required: true,
+  },
   lens: {
     type: Number,
     required: true,

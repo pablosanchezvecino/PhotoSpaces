@@ -303,7 +303,7 @@ const forwardRequest = async (res, request, bestIdleServer) => {
           await request.save();
           console.log(`Petición ${request._id} completada en BD`.magenta);
         } catch (error) {
-          throw new Error(`Error al intentar persistir el estado de la petición ${request._id} tras el envío por email. ${error}`.red);
+          throw new Error(`Error al intentar persistir el estado de la petición ${request._id} una vez procesada. ${error}`.red);
         }
 
         console.log(`Liberando servidor ${request.assignedServer} en BD...`.magenta);

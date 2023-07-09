@@ -129,6 +129,27 @@ else:
     bpy.context.scene.render.use_simplify = True
     bpy.context.scene.cycles.use_camera_cull = True
 
+render = bpy.context.scene.render
+print(parameters["resolution"])
+match parameters["resolution"]:
+    case "2160p":
+        render.resolution_x = 3840
+        render.resolution_y = 2160 
+    case "1440p":
+        render.resolution_x = 2560
+        render.resolution_y = 1440 
+    case "1080p":
+        render.resolution_x = 1920
+        render.resolution_y = 1080 
+    case "720p":
+        render.resolution_x = 1280
+        render.resolution_y = 720 
+    case "480p":
+        render.resolution_x = 640
+        render.resolution_y = 480 
+    case _:
+        render.resolution_x = 1920
+        render.resolution_y = 1080 
 
 # Donde guardar la imagen y renderizar
 bpy.context.scene.render.filepath = folder + f"{Path(filename).stem}.png"

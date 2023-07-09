@@ -31,6 +31,7 @@ router.post("/unbind", unbind);
 
 // POST /file
 router.post("/file-transfer", upload.single("model"), (req, res) => {
+  console.log(`Recibido fichero ${req.file.filename}`.magenta);
   res.status(200).send();
 });
 

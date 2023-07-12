@@ -19,6 +19,10 @@ const addServer = async (serverIP, serverName) => {
   try {
     const response = await fetch(`http://${administrationMicroserviceIp}:${administrationMicroservicePort}/servers`, {
       method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({ ip: serverIP, name: serverName }),
     });
 

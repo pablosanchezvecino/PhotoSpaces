@@ -49,7 +49,7 @@ const addServerCard = (serverData) => {
 
   const card = document.createElement("div");
   card.className = "card mb-2";
-  card.style = `height: 900px; width: 20rem; background-color: ${color}`; //395px
+  card.style = `height: 350; width: 65rem; background-color: ${color}`; //395px
 
   const cardBody = document.createElement("div");
   cardBody.className = "card-body";
@@ -58,6 +58,33 @@ const addServerCard = (serverData) => {
   const cardTitle = document.createElement("h5");
   cardTitle.className = "card-title";
   cardTitle.innerText = serverData.name;
+
+  // Row
+  const row = document.createElement("div");
+  row.className = "row";
+
+  // Cols
+  const col1 = document.createElement("div");
+  col1.className = "col";
+  const col2 = document.createElement("div");
+  col2.className = "col";
+  const col3 = document.createElement("div");
+  col3.className = "col";
+  const col4 = document.createElement("div");
+  col4.className = "col";
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   // Dirección IP
   const ipCardText = document.createElement("p");
@@ -147,6 +174,18 @@ const addServerCard = (serverData) => {
   fulfilledRequestsCountCardText.appendChild(fulfilledRequestsCountImage);
   fulfilledRequestsCountImage.after(
     document.createTextNode(" " + serverData.fulfilledRequestsCount)
+  );
+
+  // Peticiones encoladas
+  const enqueuedRequestsCountCardText = document.createElement("p");
+  enqueuedRequestsCountCardText.className = "card-text";
+  const enqueuedRequestsCountImage = document.createElement("img");
+  enqueuedRequestsCountImage.src = "./res/svg/queue.svg";
+  enqueuedRequestsCountImage.width = "24";
+  enqueuedRequestsCountImage.title = "Número de peticiones encoladas";
+  enqueuedRequestsCountCardText.appendChild(enqueuedRequestsCountImage);
+  enqueuedRequestsCountImage.after(
+    document.createTextNode(" " + serverData.enqueuedRequestsCount)
   );
 
   let boldElement = null;
@@ -366,11 +405,9 @@ const addServerCard = (serverData) => {
 
 
 
-
-
   const button1 = document.createElement("button");
   button1.className =
-    serverData.status === "disabled" ? "btn btn-success" : "btn btn-danger";
+    (serverData.status === "disabled" ? "btn btn-success" : "btn btn-danger") + " mt-3";
 
   button1.innerText =
     serverData.status === "idle"
@@ -386,33 +423,44 @@ const addServerCard = (serverData) => {
         ? () => showAbortModal(serverData._id)
         : () => showEnableModal(serverData._id);
 
+  col1.appendChild(ipCardText);  
+  col1.appendChild(osCardText);  
+  col1.appendChild(cpuCardText);  
+  col1.appendChild(gpuCardText);  
+  col1.appendChild(blenderVersionCardText);  
+  col1.appendChild(registrationDateCardText);  
+
+  col2.appendChild(totalSizeProcessedCyclesCardText);  
+  col2.appendChild(totalNeededTimeCyclesCardText);  
+  col2.appendChild(bytesPerNeededMsCyclesCardText);  
+  col2.appendChild(totalBlenderTimeCyclesCardText);  
+  col2.appendChild(bytesPerBlenderMsCyclesCardText);  
+
+  col3.appendChild(totalSizeProcessedEeveeCardText);  
+  col3.appendChild(totalNeededTimeEeveeCardText);  
+  col3.appendChild(bytesPerNeededMsEeveeCardText);  
+  col3.appendChild(totalBlenderTimeEeveeCardText);  
+  col3.appendChild(bytesPerBlenderMsEeveeCardText);
+  
+  col4.appendChild(timeSpentOnRenderTestCardText);  
+  col4.appendChild(fulfilledRequestsCountCardText);  
+  col4.appendChild(enqueuedRequestsCountCardText);  
+  
+  row.appendChild(col1);  
+  row.appendChild(col2);  
+  row.appendChild(col3);  
+  row.appendChild(col4);  
+
   cardBody.appendChild(cardTitle);
-  cardBody.appendChild(ipCardText);
-  cardBody.appendChild(osCardText);
-  cardBody.appendChild(cpuCardText);
-  cardBody.appendChild(gpuCardText);
-  cardBody.appendChild(blenderVersionCardText);
-  cardBody.appendChild(registrationDateCardText);
-  cardBody.appendChild(timeSpentOnRenderTestCardText);
-  cardBody.appendChild(fulfilledRequestsCountCardText);
+  cardBody.appendChild(row);
 
-  cardBody.appendChild(totalSizeProcessedCyclesCardText);
-  cardBody.appendChild(totalNeededTimeCyclesCardText);
-  cardBody.appendChild(bytesPerNeededMsCyclesCardText);
-  cardBody.appendChild(totalBlenderTimeCyclesCardText);
-  cardBody.appendChild(bytesPerBlenderMsCyclesCardText);
-
-  cardBody.appendChild(totalSizeProcessedEeveeCardText);
-  cardBody.appendChild(totalNeededTimeEeveeCardText);
-  cardBody.appendChild(bytesPerNeededMsEeveeCardText);
-  cardBody.appendChild(totalBlenderTimeEeveeCardText);
-  cardBody.appendChild(bytesPerBlenderMsEeveeCardText);
+  
 
   cardBody.appendChild(button1);
 
   if (serverData.status !== "busy") {
     const button2 = document.createElement("button");
-    button2.className = "btn btn-danger ms-4";
+    button2.className = "btn btn-danger mt-3 ms-4";
     button2.innerText = "Eliminar";
     button2.onclick = () => showDeleteModal(serverData._id);
     cardBody.appendChild(button2);
@@ -420,8 +468,6 @@ const addServerCard = (serverData) => {
   card.appendChild(cardBody);
 
   col.appendChild(card);
-
-  document.body.appendChild(col);
 
   container.appendChild(col);
 };
@@ -449,7 +495,7 @@ const addRequestCard = (requestData, queuePosition) => {
 
   const card = document.createElement("div");
   card.className = "card mb-2";
-  card.style = `height: 430px; width: 20rem; background-color: ${color}`;
+  card.style = `height: 480px; width: 20rem; background-color: ${color}`;
 
   const cardBody = document.createElement("div");
   cardBody.className = "card-body";
@@ -474,6 +520,19 @@ const addRequestCard = (requestData, queuePosition) => {
     queuePosition.position++;
     cardBody.appendChild(positionCardText);
   }
+
+  // Servidor asignado
+  const assignedServerCardText = document.createElement("p");
+  assignedServerCardText.className = "card-text";
+  const assignedServerImage = document.createElement("img");
+  assignedServerImage.src = "./res/svg/server.svg";
+  assignedServerImage.width = "24";
+  assignedServerImage.title = "Servidor asignado";
+  assignedServerCardText.appendChild(assignedServerImage);
+  assignedServerImage.after(
+    document.createTextNode(" " + (requestData.assignedServer !== null ? requestData.assignedServer : "Sin servidor asignado aún"))
+  );
+  cardBody.appendChild(assignedServerCardText);
   
   // Dirección IP del cliente
   const clientIpCardText = document.createElement("p");
@@ -519,19 +578,8 @@ const addRequestCard = (requestData, queuePosition) => {
   fileDetailsImage.after(document.createTextNode(" " + requestData.fileExtension + ` (${bytesToSize(requestData.fileSize)})`));
   cardBody.appendChild(fileDetailsCardText);
 
+
   if (requestData.status !== "enqueued") {
-    // Servidor asignado
-    const assignedServerCardText = document.createElement("p");
-    assignedServerCardText.className = "card-text";
-    const assignedServerImage = document.createElement("img");
-    assignedServerImage.src = "./res/svg/server.svg";
-    assignedServerImage.width = "24";
-    assignedServerImage.title = "Servidor asignado";
-    assignedServerCardText.appendChild(assignedServerImage);
-    assignedServerImage.after(
-      document.createTextNode(" " + requestData.assignedServer)
-    );
-    cardBody.appendChild(assignedServerCardText);
 
     // Tiempo de procesamiento de la petición
     const neededTimeCardText = document.createElement("p");
@@ -601,6 +649,24 @@ const addRequestCard = (requestData, queuePosition) => {
     );
     cardBody.appendChild(queueTimeCardText);
   }
+
+  // Tiempo de transferencia previa del archivo
+  const transferTimeCardText = document.createElement("p");
+  transferTimeCardText.className = "card-text";
+  const transferTimeImage = document.createElement("img");
+  transferTimeImage.src = "./res/svg/file-transfer.svg";
+  transferTimeImage.width = "24";
+  transferTimeImage.title = "Transferencia de fichero con escena 3D";
+  transferTimeCardText.appendChild(transferTimeImage);
+
+  transferTimeImage.after(
+
+    document.createTextNode(
+      " " + (requestData.transferTime ? `Transferencia previa (${requestData.transferTime} ms)` :
+        (requestData.status === "enqueued" ? "Transferencia pendiente" : "Transferencia junto a petición")))
+
+  );
+  cardBody.appendChild(transferTimeCardText);
 
   if (requestData.status === "fulfilled") {
     // Tiempo total de procesamiento en Blender

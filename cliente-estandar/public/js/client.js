@@ -584,7 +584,6 @@ const requestPolling = async (requestId, requestStatus) => {
         await wait(2000);
       }
   
-      console.log(jsonContent);
       let estimatedRemainingTime = jsonContent.processingRequestEstimatedRemainingProcessingTime;
   
       if (estimatedRemainingTime === null || estimatedRemainingTime === undefined) {

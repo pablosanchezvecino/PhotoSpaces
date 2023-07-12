@@ -136,6 +136,14 @@ const RequestSchema = Schema(
       type: String,
       require: false,
     },
+    sentFile: {
+      type: Boolean,
+      require: true
+    },
+    transferTime: {
+      type: Number,
+      require: false
+    },
     nonDeletableFile: {
       type: Boolean,
       require: false

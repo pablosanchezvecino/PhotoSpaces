@@ -48,6 +48,6 @@ command.on("close", () => {
   if (fs.existsSync(`./temp/${filenameWithNoExtension}.png`)) {
     console.log("Renderizado realizado con éxito".magenta);
   } else {
-    console.error("Error durante el proceso de renderizado".red);
+    parentPort.postMessage("error");
   }
 });

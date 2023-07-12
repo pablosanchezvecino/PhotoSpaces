@@ -130,26 +130,27 @@ else:
     bpy.context.scene.cycles.use_camera_cull = True
 
 render = bpy.context.scene.render
-print(parameters["resolution"])
-match parameters["resolution"]:
-    case "2160p":
-        render.resolution_x = 3840
-        render.resolution_y = 2160 
-    case "1440p":
-        render.resolution_x = 2560
-        render.resolution_y = 1440 
-    case "1080p":
-        render.resolution_x = 1920
-        render.resolution_y = 1080 
-    case "720p":
-        render.resolution_x = 1280
-        render.resolution_y = 720 
-    case "480p":
-        render.resolution_x = 640
-        render.resolution_y = 480 
-    case _:
-        render.resolution_x = 1920
-        render.resolution_y = 1080 
+res = parameters["resolution"]
+
+# Cadena de if / else pen lugar de match para mantener retrocompatibilidad
+if res == "2160p":
+    render.resolution_x = 3840
+    render.resolution_y = 2160 
+elif res == "1440p":
+    render.resolution_x = 2560
+    render.resolution_y = 1440 
+elif res == "1080p":
+    render.resolution_x = 1920
+    render.resolution_y = 1080 
+elif res == "720p":
+    render.resolution_x = 1280
+    render.resolution_y = 720 
+elif res == "480p":
+    render.resolution_x = 640
+    render.resolution_y = 480
+else:
+    render.resolution_x = 1920
+    render.resolution_y = 1080
 
 # Donde guardar la imagen y renderizar
 bpy.context.scene.render.filepath = folder + f"{Path(filename).stem}.png"

@@ -14,8 +14,17 @@ const getServers = async (req, res) => {
       limit = 0; 
     }
     
-    const servers = await Server.find({}).limit(limit);
-    
+    let servers = null;
+    if (limit === 0) { // Sin límite
+      servers = await Server.find({});
+    } else { // Consulta limitada por cada estado posible
+      const idleServers = await Server.find({ status: "idle" }).limit(limit);
+      const busyServers = await Server.find({ status: "busy" }).limit(limit);
+      const disabledServers = await Server.find({ status: "disabled" }).limit(limit);
+
+      servers = idleServers.concat(busyServers, disabledServers);
+    }
+
     res.status(200).send(servers);
   } catch (error) {
     console.error(`Error en la consulta a la base de datos. ${error}`.red);
@@ -109,6 +118,7 @@ const addServer = async (req, res) => {
         blenderVersion: serverInfo.blenderVersion,
         registrationDate: Date.now(),
         timeSpentOnRenderTest: serverInfo.timeSpentOnRenderTest,
+        enqueuedRequestsCount: 0,
         fulfilledRequestsCount: 0,
         totalCyclesNeededTime: 0,
         totalCyclesBlenderTime: 0,
@@ -130,7 +140,9 @@ const addServer = async (req, res) => {
 
       // Avisar al microservicio de gestión de peticiones de que hay un nuevo servidor disponible
       try {
-        await fetch(`http://${process.env.REQUEST_MANAGEMENT_MICROSERVICE_IP}:${process.env.REQUEST_MANAGEMENT_MICROSERVICE_PORT}/new-server-available`);
+        await fetch(`http://${process.env.REQUEST_MANAGEMENT_MICROSERVICE_IP}:${process.env.REQUEST_MANAGEMENT_MICROSERVICE_PORT}/new-server-available`,
+          { method: "POST" }
+        );
       } catch (error) {
         console.error(`Error al intentar contactar con el microservicio de gestión de peticiones. ${error}`.red);
       }
@@ -183,12 +195,9 @@ const disableServer = async (req, res) => {
 
   // Contactar con el servidor para que cambie su estado
   try {
-    const response = await fetch(`http://${serverInfo.ip}:${process.env.RENDER_SERVER_PORT}/disable`, {
-      method: "POST",
-      headers: {
-        Accept: "application/json"
-      }
-    });
+    const response = await fetch(`http://${serverInfo.ip}:${process.env.RENDER_SERVER_PORT}/disable`, 
+      { method: "POST" }
+    );
   
     if (response.ok) {
       // Si todo fue bien
@@ -241,12 +250,9 @@ const enableServer = async (req, res) => {
 
   // Contactar con el servidor para que cambie su estado
   try {
-    const response = await fetch(`http://${serverInfo.ip}:${process.env.RENDER_SERVER_PORT}/enable`, {
-      method: "POST",
-      headers: {
-        Accept: "application/json"
-      }
-    });
+    const response = await fetch(`http://${serverInfo.ip}:${process.env.RENDER_SERVER_PORT}/enable`, 
+      { method: "POST" }
+    );
     
     if (response.ok) {
       // Si todo fue bien
@@ -261,6 +267,16 @@ const enableServer = async (req, res) => {
   
       // Informar del éxito al cliente
       res.status(200).send({message: (await response.json()).message });
+
+      // Avisar al microservicio de gestión de peticiones de que hay un nuevo servidor disponible
+      try {
+        await fetch(`http://${process.env.REQUEST_MANAGEMENT_MICROSERVICE_IP}:${process.env.REQUEST_MANAGEMENT_MICROSERVICE_PORT}/new-server-available`, 
+          { method: "POST" }
+        );
+      } catch (error) {
+        console.error(`Error al intentar contactar con el microservicio de gestión de peticiones. ${error}`.red);
+      }
+      
     } else {
       res.status(400).send({ error: (await response.json()).error });
     }
@@ -314,12 +330,9 @@ const abortServer = async (req, res) => {
 
   // Contactar con el servidor para que cambie su estado
   try {
-    const response = await fetch(`http://${serverInfo.ip}:${process.env.RENDER_SERVER_PORT}/abort`, {
-      method: "POST",
-      headers: {
-        Accept: "application/json"
-      }
-    });
+    const response = await fetch(`http://${serverInfo.ip}:${process.env.RENDER_SERVER_PORT}/abort`, 
+      { method: "POST" }
+    );
   
     if (response.ok) {
       // Si todo fue bien
@@ -330,12 +343,23 @@ const abortServer = async (req, res) => {
           status: "enqueued",
           queueStartTime: new Date(),
           processingStartTime: null,
-          assignedServer: null 
+          assignedServer: null,
+          sentFile: false,
+          transferTime: false
         });
       } catch (error) {
         console.error(`Error interno en la conexión con la base de datos tras abortar el procesamiento en el servidor. ${error}`.red);
         res.status(500).send({ error: "Error interno en la conexión con la base de datos tras abortar el procesamiento en el servidor" });
         return;
+      }
+
+      // Avisar al microservicio de gestión de peticiones de que hay un nuevo servidor disponible
+      try {
+        await fetch(`http://${process.env.REQUEST_MANAGEMENT_MICROSERVICE_IP}:${process.env.REQUEST_MANAGEMENT_MICROSERVICE_PORT}/new-server-available`, 
+          { method: "POST" }
+        );
+      } catch (error) {
+        console.error(`Error al intentar contactar con el microservicio de gestión de peticiones. ${error}`.red);
       }
   
       // Informar del éxito al cliente
@@ -384,12 +408,7 @@ const deleteServer = async (req, res) => {
   // Informar a servidor para que quede desvinculado
   try {
     const response = await fetch(`http://${serverInfo.ip}:${process.env.RENDER_SERVER_PORT}/unbind`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        }
-      }
+      { method: "POST" }
     );
 
     if (!response.ok) {

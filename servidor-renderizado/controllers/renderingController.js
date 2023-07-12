@@ -1,12 +1,12 @@
 import { setEstimatedRemainingProcessingTime } from "../serverStatus.js";
 import dataString from "../constants/renderTestSettings.js";
 import ServerStates from "../constants/serverStatesEnum.js";
-import { performCleanup } from "../logic/cleanupLogic.js";
 import { setStatus, getStatus } from "../serverStatus.js";
+import { readFileSync, unlinkSync } from "fs";
 import { Worker } from "worker_threads";
 import { spawn } from "child_process";
 import si from "systeminformation";
-import { readFileSync } from "fs";
+import path from "path";
 
 // Funciones asociadas a los endpoints que llevan a cabo el renderizado
 
@@ -25,21 +25,19 @@ const bind = async (req, res) => {
     await render(JSON.parse(dataString), "renderTest.glb");
   } catch (error) {
     console.error(`Error en la prueba de renderizado. ${error}`.red);
-    res.status(500).send({
-      error: "Error en la prueba de renderizado",
-    });
+    res.status(500).send({ error: "Error en la prueba de renderizado" });
     return;
   }
   
   // Parar cronómetro
   const rEnd = process.hrtime(hrStart);
 
+  // Eliminar fichero renderTest.png generado
   try {
-    performCleanup();
+    unlinkSync("./temp/renderTest.png");
   } catch (error) {
     console.error(`Error al intentar borrar archivo renderTest.png. ${error}`.red);
   }
-  // Borrar archivo renderTest.png generado
 
   // Pasar tiempo medido a milisegundos
   const timeSpentOnRenderTest = Math.round(rEnd[0] * 1000 + rEnd[1] / 1000000);
@@ -110,23 +108,41 @@ const handleRenderingRequest = async (req, res) => {
   const requestId = req.body.requestId;
 
   // Comenzar proceso de renderizado
+  const filename = req.file ? req.file.filename : req.body.filename;
   try {
-    totalBlenderTime = await render(parameters, req.file.filename);
-    setEstimatedRemainingProcessingTime(null);
+
+    totalBlenderTime = await render(parameters, filename);
+    
   } catch (error) {
-    console.error(`Error en el proceso de renderizado. ${error}`.red);
-    performCleanup();
-    res.status(500).send({ error: "Error en el proceso de renderizado" });
+    setEstimatedRemainingProcessingTime(null);
     setStatus(ServerStates.idle);
+    console.error(`Error en el proceso de renderizado. ${error}`.red);
+    res.status(500).send({ error: "Error en el proceso de renderizado" });
     return;
   }
-
+  
   // El servidor vuelve a encontrarse disponible
+  setEstimatedRemainingProcessingTime(null);
   setStatus(ServerStates.idle);
 
-  const pngContent = readFileSync(`./temp/${requestId}.png`, "base64");
+  let pngContent = null;
+  try {
+    pngContent = readFileSync(`./temp/${requestId}.png`, "base64");
+  } catch (error) {
+    console.error(`Error al leer el archivo ${requestId}.png antes de devolverlo. ${error}`.red);
+    res.status(500).send({ error: "Error al leer la imagen generada antes de devolverla" });
+    return;
+  }
+  
   await res.status(200).send({ totalBlenderTime: totalBlenderTime, renderedImage: pngContent });
-  performCleanup();
+
+  // Eliminar ficheros asociados a la petición procesada
+  try {
+    unlinkSync(`./temp/${filename}`);
+    unlinkSync(`./temp/${path.parse(filename).name}.png`);
+  } catch (error) {
+    console.error(`Error al intentar eliminar los ficheros asociados a la petición procesada. ${error}`.red);
+  }
 };
 
 const render = (parameters, filename) => {

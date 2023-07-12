@@ -43,6 +43,9 @@ const unbind = async (req, res) => {
   } 
 
   console.log("Desvinculando servidor...".magenta);
+
+  performCleanup();
+
   setStatus(ServerStates.unbound);
   res.status(200).send({ message: "Servidor desvinculado con éxito" });
 };
@@ -63,7 +66,6 @@ const abort = async (req, res) => {
       await killBlenderOnUnixBasedOs();
     }
 
-    performCleanup();
     console.log("Procesamiento en el servidor abortado con éxito".magenta);
     setStatus(ServerStates.idle);
 

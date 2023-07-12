@@ -1,4 +1,4 @@
-import { processQueue } from "./controllers/requestsController.js";
+import { updateQueues } from "./controllers/requestsController.js";
 import { setUpCleanupInterval } from "./logic/cleanupLogic.js";
 import { setUpEmailSendingBackupInterval } from "./logic/emailLogic.js";
 import requestsRouter from "./routes/requestsRouter.js";
@@ -28,18 +28,27 @@ app.use("/requests", requestsRouter);
 // el microservicio de administración avisa al microservicio de gestión de 
 // peticiones de la existencia de un nuevo servidor disponible para que 
 // compruebe si existe alguna petición encolada que se le pueda enviar
-app.get("/new-server-available", (req, res) => {
+app.post("/new-server-available", (req, res) => {
   res.status(200).send();
-  processQueue();
+  try {
+    updateQueues();
+  } catch (error) {
+    console.error(`Error durante la actualización de las colas. ${error}`.red);
+  }
 });
 
 // Para no depender completamente del endpoint anterior, de todas formas
 // el sistema comprobará de forma periódica la existencia de un nuevo
-// servidor disponible, así nos aseguraremos de que, en caso de fallo de
-// la comunicación anterior, a lo sumo la cantidad de tiempo
-// durante el cual haya peticiones encoladas y servidores disponibles al 
-// mismo tiempo coincidirá con el periodo especificado
-setInterval(processQueue, process.env.DB_CHECK_PERIOD_MS);
+// servidor disponible y si algún servidor tiene peticiones encoladas y
+// no las está procesando siendo posible este procesamiento
+setInterval(() => {
+  try {
+    updateQueues();
+  } catch (error) {
+    console.error(`Error durante la actualización de las colas. ${error}`.red);
+  }
+}, process.env.DB_CHECK_PERIOD_MS
+);
 
 // Aunque no debería suceder si todo funciona correctamente, el sistema 
 // comprobará de forma periódica si es posible eliminar algún archivo temporal

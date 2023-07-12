@@ -47,6 +47,11 @@ const ServerSchema = Schema(
       min: 0,
       require: true,
     },
+    enqueuedRequestsCount: {
+      type: Number,
+      min: 0,
+      require: true,
+    },
     totalCyclesNeededTime: {
       type: Number,
       min: 0,
@@ -66,7 +71,7 @@ const ServerSchema = Schema(
       type: Number,
       min: 0,
       require: false,
-    }, 
+    },
     totalEeveeNeededTime: {
       type: Number,
       min: 0,

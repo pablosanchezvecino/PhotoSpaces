@@ -14,7 +14,16 @@ const getRequests = async (req, res) => {
       limit = 0; 
     }
 
-    const requests = await Request.find({}).sort({ queueStartTime: "asc" }).limit(limit);
+    let requests = null;
+    if (limit === 0) { // Sin límite
+      requests = await Request.find({}).sort({ queueStartTime: 1 });
+    } else { // Consulta limitada por cada estado posible
+      const processingRequests = await Request.find({ status: "processing" }).sort({ processingStartTime: -1 }).limit(limit);
+      const enqueuedRequests = await Request.find({ status: "enqueued" }).sort({ queueStartTime: 1 }).limit(limit);
+      const fulfilledRequests = await Request.find({ status: "fulfilled" }).sort({ processingEndTime: -1 }).limit(limit);
+
+      requests = processingRequests.concat(enqueuedRequests, fulfilledRequests);
+    }
 
     res.status(200).send(requests);
   } catch (error) {
@@ -77,7 +86,9 @@ const deleteRequest = async (req, res) => {
     return;
   }
   
+
   // Si está siendo procesada en un servidor, abortar el procesamiento en este
+  let notifyRequestHandlingMicroservice = false;
   if (requestToDelete.status === "processing") {
     // Consultar el servidor que está procesando la petición
     let server = null;
@@ -91,16 +102,15 @@ const deleteRequest = async (req, res) => {
 
     // Contactar con el servidor
     try {
-      const response = await fetch(`http://${server.ip}:${process.env.RENDER_SERVER_PORT}/abort`, {
-        method: "POST",
-        headers: {
-          Accept: "application/json"
-        }
-      });
+      const response = await fetch(`http://${server.ip}:${process.env.RENDER_SERVER_PORT}/abort`, 
+        { method: "POST" }
+      );
 
-      if (response.ok) {
       // Si todo fue bien
-      // Actualizar estado en BD
+      if (response.ok) {
+        notifyRequestHandlingMicroservice = true;
+
+        // Actualizar estado en BD
         try {
           await Server.findByIdAndUpdate(server._id, { status: "idle" });
         } catch (error) {
@@ -127,6 +137,18 @@ const deleteRequest = async (req, res) => {
     console.error(`Error durante el borrado de la petición en la base de datos. ${error}`.red);
     res.status(500).send({ error: "Error durante el borrado de la petición en la base de datos" });
   }
+
+  if (notifyRequestHandlingMicroservice) {
+    // Avisar al microservicio de gestión de peticiones de que hay un nuevo servidor disponible
+    try {
+      await fetch(`http://${process.env.REQUEST_MANAGEMENT_MICROSERVICE_IP}:${process.env.REQUEST_MANAGEMENT_MICROSERVICE_PORT}/new-server-available`,
+        { method: "POST" }
+      );
+    } catch (error) {
+      console.error(`Error al intentar contactar con el microservicio de gestión de peticiones. ${error}`.red);
+    }
+  }
+
   // Todo bien
   res.status(200).send(deletedRequest);
 };

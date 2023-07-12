@@ -2,7 +2,7 @@ import { readdirSync, unlinkSync } from "fs";
 
 const tempDir = "./temp";
 
-// Elimina todos los archivos del directorio temp excepto renderTest.gltf
+// Elimina todos los archivos del directorio /temp excepto renderTest.glb
 const performCleanup = () => {
   console.log("Eliminando archivos temporales...".yellow);
 
@@ -10,9 +10,7 @@ const performCleanup = () => {
   try {
     files = readdirSync(tempDir);
   } catch (error) {
-    console.error(
-      `Error al leer el directorio de archivos temporales: ${error}`.red
-    );
+    console.error(`Error al leer el directorio de archivos temporales: ${error}`.red);
     return;
   }
 

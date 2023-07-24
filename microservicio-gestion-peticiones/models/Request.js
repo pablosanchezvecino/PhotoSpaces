@@ -128,6 +128,10 @@ const RequestSchema = Schema(
       type: String,
       require: true,
     },
+    requestLabel: {
+      type: String,
+      require: false,
+    },
     parameters: {
       type: ParametersSchema,
       require: true,
@@ -146,6 +150,10 @@ const RequestSchema = Schema(
     },
     nonDeletableFile: {
       type: Boolean,
+      require: false
+    },
+    renderedImage: {
+      type: Buffer,
       require: false
     }
   },

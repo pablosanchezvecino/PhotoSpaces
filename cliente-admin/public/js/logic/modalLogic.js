@@ -13,13 +13,13 @@ import {
   deleteServer,
 } from "./serverLogic.js";
 
-import {
-  deleteRequest
-} from "./requestLogic.js";
+import { spinnerHtml } from "../constants/spinnerHtml.js";
+import { deleteRequest } from "./requestLogic.js";
 
 const showAddModal = () => {
   confirmationModalLabel.innerText = "Añadiendo Servidor...";
-  confirmationModalBody.innerHTML = "<div class=\"d-flex justify-content-center\"><div class=\"spinner-border text-secondary\" role=\"status\"><span class=\"visually-hidden\">Loading...</span></div></div>";
+  confirmationModalBody.innerHTML = spinnerHtml;
+  confirmationModalReturnButton.style.display = "none";
   confirmationModalConfirmationButton.style.display = "none";
   confirmationModal.show();
 };
@@ -79,5 +79,21 @@ const showDeleteRequestModal = (requestId) => {
   confirmationModal.show();
 };
 
+const showDownloadingRenderedImageModal = () => {
+  confirmationModalLabel.innerText = "Descargando imagen...";
+  confirmationModalBody.innerHTML = spinnerHtml;
+  confirmationModalReturnButton.style.display = "none";
+  confirmationModalConfirmationButton.style.display = "none";
+  confirmationModal.show();
+};
 
-export { showAddModal, showDeleteModal, showDisableModal, showEnableModal, showAbortModal, showDeleteRequestModal };
+
+export {
+  showAddModal,
+  showDeleteModal,
+  showDisableModal,
+  showEnableModal,
+  showAbortModal,
+  showDeleteRequestModal,
+  showDownloadingRenderedImageModal
+};

@@ -1,8 +1,8 @@
 FROM node:18-alpine
 
-# ENV PORT=8081
-# ENV REQUEST_HANDLING_MICROSERVICE_IP="127.0.0.1"
-# ENV REQUEST_HANDLING_MICROSERVICE_PORT=9001
+ENV PORT=8081
+ENV REQUEST_HANDLING_MICROSERVICE_HOST=127.0.0.1
+ENV REQUEST_HANDLING_MICROSERVICE_PORT=9001
 
 # Crea el directorio de la aplicacion
 WORKDIR /usr/src/app
@@ -11,7 +11,8 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 
 # Instala las dependencias de la aplicación
-RUN npm ci --only=production
+RUN npm install
+# RUN npm ci --only=production
 
 # Copia el resto de los archivos de la aplicación
 COPY . .

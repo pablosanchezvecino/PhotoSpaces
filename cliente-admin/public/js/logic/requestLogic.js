@@ -1,5 +1,5 @@
 import {
-  administrationMicroserviceIp,
+  administrationMicroserviceHost,
   administrationMicroservicePort,
 } from "../constants/parameters.js";
 import {
@@ -16,7 +16,7 @@ const deleteRequest = async (requestId) => {
   confirmationModalBody.innerHTML = spinnerHtml;
 
   try {
-    const response = await fetch(`http://${administrationMicroserviceIp}:${administrationMicroservicePort}/requests/${requestId}`, { method: "DELETE" });
+    const response = await fetch(`http://${administrationMicroserviceHost}:${administrationMicroservicePort}/requests/${requestId}`, { method: "DELETE" });
 
     const jsonContent = await response.json();
     

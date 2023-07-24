@@ -1,7 +1,7 @@
 /* Obtener los distintos parámetros configurables, que habrán sido establecidos por el 
 servidor express a través de las variables de entorno antes de servir la carpeta public */
 
-let administrationMicroserviceIp = null;
+let administrationMicroserviceHost = null;
 let administrationMicroservicePort = null;
 let refreshPeriodMs = null;
 let maxCardsPerContainer = null;
@@ -10,7 +10,7 @@ try {
   const response = await fetch("./parameters.json");
   const parameters = await response.json();
 
-  administrationMicroserviceIp = parameters.administrationMicroserviceIp;
+  administrationMicroserviceHost = parameters.administrationMicroserviceHost;
   administrationMicroservicePort = parameters.administrationMicroservicePort;
   refreshPeriodMs = parameters.refreshPeriodMs;
   maxCardsPerContainer = parameters.maxCardsPerContainer;
@@ -19,7 +19,7 @@ try {
 }
 
 export {
-  administrationMicroserviceIp,
+  administrationMicroserviceHost,
   administrationMicroservicePort,
   refreshPeriodMs,
   maxCardsPerContainer

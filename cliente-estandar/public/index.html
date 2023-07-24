@@ -53,16 +53,16 @@
         <div class="row row-border">
           <div class="centered">
             <p style="font-weight: bold;">Intrucciones:</p>
-            Click izquierdo: Bloquear puntero</br>
-            Click derecho: Menú de objetos</br>
-            W: Adelante</br>
-            S: Atrás</br>
-            A: Izquierda</br>
-            D: Derecha</br>
-            Espacio: Arriba</br>
-            Shift Izq.: Abajo</br>
-            Scroll Arriba: Más velocidad</br>
-            Scroll Abajo: Menos velocidad</br>
+            <img src="./img/svg/mouse-left-click.svg" width="24" title="Click izquierdo del ratón"> Bloquear puntero</br>
+            <img src="./img/svg/mouse-right-click.svg" width="24" title="Click derecho del ratón"> Menú de objetos</br>
+            <img src="./img/svg/w-key.svg" width="24" title="Tecla W"> Adelante</br>
+            <img src="./img/svg/s-key.svg" width="24" title="Tecla S"> Atrás</br>
+            <img src="./img/svg/a-key.svg" width="24" title="Tecla A"> Izquierda</br>
+            <img src="./img/svg/d-key.svg" width="24" title="Tecla D"> Derecha</br>
+            <img src="./img/svg/spacebar.svg" width="24" title="Barra Espaciadora"> Arriba</br>
+            <img src="./img/svg/left-shift.svg" width="24" title="Shift Izquierdo"> Abajo</br>
+            <img src="./img/svg/mouse-scroll-up.svg" width="24" title="Scroll del ratón hacia arriba"> Más velocidad</br>
+            <img src="./img/svg/mouse-scroll-down.svg" width="24" title="Scroll del ratón hacia abajo"> Menos velocidad</br>
             </p>
           </div>
         </div>
@@ -70,16 +70,16 @@
           <div class="centered">
             <p style="font-weight: bold;">Renderizado</p>
 
-            <label for="resolution-select">Resolución</label>
+            <label for="resolution-select" title="Número de píxeles que conformarán la imagen renderizada (a mayor resolución, mayor tiempo de espera)">Resolución</label>
             <select class="form-control mb-2" style="width: 100px;" id="resolution-select">
-              <option >2160p</option>
-              <option >1440p</option>
-              <option selected>1080p</option>
-              <option>720p</option>
-              <option>480p</option>
+              <option title="3840×2160 píxeles">2160p</option>
+              <option title="2560×1440 píxeles">1440p</option>
+              <option title="1920×1080 píxeles" selected>1080p</option>
+              <option title="1280×720 píxeles">720p</option>
+              <option title="854×480 píxeles">480p</option>
             </select>
 
-            <label>Motor de renderizado:</label><br>
+            <label title="Motor de renderizado que se utilizará para generar la imagen">Motor de renderizado:</label><br>
             <input type="radio" id="eevee" name="engine" value="eevee" checked>
             <label for="eevee" title="Renderizado mediante rasterización. Casi instantáneo, pero menos realista">Eevee</label>
             <input type="radio" id="cycles" name="engine" value="cycles" style="margin-left: 2rem; margin-bottom: 2rem;">
@@ -117,26 +117,27 @@
                   <p>Email: <input id="email-input" type="email"/></p>
                 </label></br>
               </div>
+
               
               <div class="custom-control custom-switch">
                 <input type="checkbox" class="custom-control-input" id="draco-switch">
                 <label class="custom-control-label mb-3" for="draco-switch" id="draco-label">Compresión con Draco: No</label>
               </div>
-<!-- 
-              <label for="draco-compression-level-range" class="form-label">
-                <p id="draco-compression-level-value" title="
-                La compresión con Draco ayuda a disminuir el tamaño que ocupa la escena para agilizar el envío al servidor de renderizado, pero a cambio se perderá algo de calidad en la imagen renderizada (a mayor nivel, mayor dismnución de tamaño y de calidad). Solo se recomienda para escenas con tamaños muy grandes">Compresión con Draco: No</p>
-              </label> -->
+              
               <div id="draco-div">
                 <input id="draco-compression-level-range" type="range" style="padding-top: 0;" class="form-range range" min="0" max="10"
-                  step="1" value="0" />
+                step="1" value="0" />
               </div>
-
+              
               <label class="mt-3"><p>Exportación de la escena:</p></label><br/>
               <input type="radio" id="glb-export" name="scene-export-format" value="glb-export" checked>
               <label for="glb-export" title="Three.js exportará la escena en formato binario y esta será gestionada por el sistema como un archivo .glb (mayor eficiencia)">GLB</label>
               <input type="radio" id="gltf-export" name="scene-export-format" value="gltf-export" style="margin-left: 2rem; margin-bottom: 2rem;">
               <label for="gltf-export" title="Three.js exportará la escena en formato JSON y esta será gestionada por el sistema como un archivo .gltf">glTF</label></br>
+              
+              <label for="request-label-input" class="form-label mb-2" title="Etiqueta opcional para facilitar el seguimiento de la petición en el sistema">Etiqueta (opcional):</label>
+                <p><input id="request-label-input" type="text" maxlength="20" style="width: 214px;"/></p>
+              
 
             <div style="margin-top: 1rem;">
               <button id="btn-render" class="btn" type="button" title="Enviar petición de renderizado al sistema">
@@ -163,7 +164,7 @@
               </select>
             </p>
             <button id="btn-download" style="display: none;" class="btn" type="button">
-              Descargar imagen <img src="../img/download.svg" style="width: 1.2rem; height: 1.2rem; margin: 0.5rem;" />
+              Descargar imagen <img src="../img/svg/download.svg" style="width: 1.2rem; height: 1.2rem; margin: 0.5rem;" />
             </button>
           </div>
         </div>

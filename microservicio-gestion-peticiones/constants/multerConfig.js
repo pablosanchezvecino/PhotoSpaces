@@ -1,7 +1,7 @@
 import { mimeTypeToExtension } from "../logic/fileLogic.js";
+import { allowedMimeTypes } from "./allowedMimeTypes.js";
 import multer from "multer";
 import dotenv from "dotenv";
-
 dotenv.config();
 // Configuración de multer para la recepción de archivos
 
@@ -19,12 +19,6 @@ const storage = multer.diskStorage({
 const upload = multer({ 
   storage: storage,
   fileFilter: (req, file, cb) => {
-    const allowedMimeTypes = [
-      "model/gltf+json",
-      "model/gltf-binary",
-      "model/vnd.gltf.draco"
-    ];
-
     if (allowedMimeTypes.includes(file.mimetype)) {
       cb(null, true); // Aceptar el archivo
     } else {

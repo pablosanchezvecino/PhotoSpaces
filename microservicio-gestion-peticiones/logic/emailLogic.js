@@ -12,13 +12,13 @@ const sendMail = async (filename, recipientMailAddress) => {
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: "photospacesapp@gmail.com",
-        pass: process.env.EMAIL_PASSWORD
+        user: process.env.EMAIL_USER || "",
+        pass: process.env.EMAIL_PASSWORD || ""
       },
     });
     
     const mailOptions = {
-      from: "PhotoSpaces <photospacesapp@gmail.com>",
+      from: `PhotoSpaces <${process.env.EMAIL_USER || ""}>`,
       to: recipientMailAddress,
       subject: "Renderizado finalizado",
       text: "¡Tu escena ha sido renderizada con éxito! Aquí tienes la imagen resultante.",
@@ -44,7 +44,7 @@ const sendMail = async (filename, recipientMailAddress) => {
 const setUpEmailSendingBackupInterval = async () =>  {
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    await wait(process.env.EMAIL_SENDING_BACKUP_INTERVAL_MS);
+    await wait(process.env.EMAIL_SENDING_BACKUP_INTERVAL_MS || 3600000);
     await performEmailSendingBackup();
   }
 };

@@ -11,13 +11,18 @@ import "colors";
 
 printAsciiArt();
 
-dotenv.config();
+if (process.env.DOCKER_CONTAINER_EXECUTION) {
+  console.log("Ejecución en contenedor Docker detectada ".bold.blue);
+} else {
+  console.log("No se detectó ejecución en contenedor Docker, se cargarán las variables de entorno de fichero .env".bold.blue);
+  dotenv.config();
+}
 
 setStatus(ServerStates.unbound);
 setEstimatedRemainingProcessingTime(null);
 
 const app = express();
-const port = process.env.PORT;
+const port = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(morgan("dev"));

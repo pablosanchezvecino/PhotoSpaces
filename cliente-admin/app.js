@@ -8,18 +8,23 @@ import "colors";
 
 printAsciiArt();
 
-dotenv.config();
+if (process.env.DOCKER_CONTAINER_EXECUTION) {
+  console.log("Ejecución en contenedor Docker detectada ".bold.blue);
+} else {
+  console.log("No se detectó ejecución en contenedor Docker, se cargarán las variables de entorno de fichero .env".bold.blue);
+  dotenv.config();
+}
 
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-// Generar archivo parameters.json con las dirección IP y puerto a los que debe dirigirse el navegador
+// Generar archivo parameters.json con los parámetros cofigurables
 try {
   const parameters = {
-    administrationMicroserviceIp: process.env.ADMINISTRATION_MICROSERVICE_IP,
-    administrationMicroservicePort: process.env.ADMINISTRATION_MICROSERVICE_PORT,
-    refreshPeriodMs: process.env.REFRESH_PERIOD_MS,
-    maxCardsPerContainer: process.env.MAX_CARDS_PER_CONTAINER
+    administrationMicroserviceHost: (process.env.ADMINISTRATION_MICROSERVICE_HOST || "127.0.0.1"),
+    administrationMicroservicePort: (process.env.ADMINISTRATION_MICROSERVICE_PORT || 9000),
+    refreshPeriodMs: (process.env.REFRESH_PERIOD_MS || 1000),
+    maxCardsPerContainer: (process.env.MAX_CARDS_PER_CONTAINER || 0)
   };
   writeFileSync("./public/parameters.json", JSON.stringify(parameters));
   console.log("Archivo parameters.json creado y contenido escrito correctamente".bold.magenta);

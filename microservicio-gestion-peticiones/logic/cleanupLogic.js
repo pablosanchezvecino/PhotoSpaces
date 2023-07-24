@@ -14,7 +14,7 @@ const tempDir = "./temp";
 const setUpCleanupInterval = async () => {
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    await wait(process.env.CLEANUP_INTERVAL_MS);
+    await wait(process.env.CLEANUP_INTERVAL_MS || 86400000);
     await performCleanup();
   }
 };

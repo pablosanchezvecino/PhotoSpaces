@@ -1,12 +1,13 @@
 
 import { extensionFromFilename, extensionToMimeType, generateGltfFromGlb, generateDracoFromGltf } from "../logic/fileLogic.js";
+import { isValidEmail, isValidModel, isValidDracoCompressionLevel, isValidRequestLabel } from "../logic/validationLogic.js";
 import { existsSync, readFileSync, writeFileSync, unlinkSync, renameSync, statSync } from "fs";
-import { isValidEmail, isValidModel, isValidDracoCompressionLevel } from "../logic/validationLogic.js";
+import { resolutionToRatioWithRespectTo1080p, resolutionToPixelCount } from "../logic/resolutionLogic.js";
 import { options } from "../constants/sendRenderedImageOptions.js";
 import { processIpAddress } from "../logic/ipAddressLogic.js";
+import { performPolling } from "../logic/pollingLogic.js";
 import PendingEmail from "../models/PendingEmail.js";
 import { sendMail } from "../logic/emailLogic.js";
-import { performPolling } from "../logic/pollingLogic.js";
 import Request from "../models/Request.js";
 import Server from "../models/Server.js";
 import mongoose from "mongoose";
@@ -127,6 +128,16 @@ const handleNewRequest = async (req, res) => {
     request.fileExtension = ".drc";
   }
   
+  // Si se ha especificado etiqueta, añadirla a la petición 
+  if (req.body.requestLabel) {
+    if (!isValidRequestLabel(req.body.requestLabel)) {
+      console.error(`Etiqueta no válida recibida (${req.body.requestLabel})`.red);
+      res.status(500).send({ error: "Etiqueta no válida recibida" });
+      return;
+    }
+    request.requestLabel = req.body.requestLabel;
+  }
+
   // Aquí ya tenemos el archivo que se va a enviar al servidor
   // Obtener su peso en bytes
   try {
@@ -137,209 +148,6 @@ const handleNewRequest = async (req, res) => {
     res.status(500).send({ error: "Error al intentar obtener el tamaño del fichero recibido" });
     return;
   }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -410,31 +218,17 @@ const handleNewRequest = async (req, res) => {
     }
   }
   
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
 };
+
+
+
+
+
+
+
+
+
+
 
 const forwardRequest = async (res, request, server, originalFilename) => {
   console.log(`Reenviando petición ${request._id} a ${server.name}...`.magenta);
@@ -485,7 +279,7 @@ const forwardRequest = async (res, request, server, originalFilename) => {
     
     // Enviar petición a servidor de renderizado
     fetch(
-      `http://${server.ip}:${process.env.RENDER_SERVER_PORT}/render`,
+      `http://${server.ip}:${process.env.RENDER_SERVER_PORT || 3000}/render`,
       {
         method: "POST",
         body: formData
@@ -524,8 +318,6 @@ const forwardRequest = async (res, request, server, originalFilename) => {
                     { new: true }
                   );
 
-                  request.nonDeletableFile = false;
-                  await request.save();
                 } catch (error) {
                   console.error(`Error al desactivar flag nonDeletableFile en la base de datos (Petición ${request._id}). ${error}`.red);
                 }
@@ -561,10 +353,16 @@ const forwardRequest = async (res, request, server, originalFilename) => {
         try {
           request = await Request.findByIdAndUpdate(
             request._id, 
-            { status: "fulfilled", nonDeletableFile: true, totalBlenderTime: jsonContent.totalBlenderTime, processingEndTime: request.processingEndTime },
+            { 
+              status: "fulfilled", 
+              nonDeletableFile: true, 
+              totalBlenderTime: jsonContent.totalBlenderTime, 
+              processingEndTime: request.processingEndTime, 
+              renderedImage: readFileSync(`./temp/${request._id}.png`) 
+            },
             { new: true }
           );
-
+          
           console.log(`Petición ${request._id} completada en BD`.magenta);
         } catch (error) {
           throw new Error(`Error al intentar persistir el estado de la petición ${request._id} una vez procesada. ${error}`.red);
@@ -586,16 +384,18 @@ const forwardRequest = async (res, request, server, originalFilename) => {
           if (request.parameters.engine === "CYCLES") {
             // Actualizar estadísticas de Cycles
             await Server.findByIdAndUpdate(server._id, {
-              $inc: { fulfilledRequestsCount: 1, totalCyclesNeededTime: (request.processingEndTime - request.processingStartTime + (request.transferTime || 0)), totalCyclesBlenderTime: jsonContent.totalBlenderTime, totalCyclesProcessedBytes: request.fileSize },
+              $inc: { fulfilledRequestsCount: 1, totalCyclesNeededTime: (request.processingEndTime - request.processingStartTime + (request.transferTime || 0)), totalCyclesBlenderTime: jsonContent.totalBlenderTime, totalCyclesProcessedBytes: request.fileSize, totalCyclesProcessedPixels: resolutionToPixelCount(request.parameters.resolution) },
               status: firstEnqueuedRequest ? "busy" : "idle",
-              cyclesProcessedBytesPerMillisecondOfNeededTime: (server.totalCyclesProcessedBytes + request.fileSize) / (server.totalCyclesNeededTime + request.processingEndTime.getTime() - request.processingStartTime.getTime() + (request.transferTime || 0))
+              cyclesProcessedBytesPerMillisecondOfNeededTime: (server.totalCyclesProcessedBytes + request.fileSize) / (server.totalCyclesNeededTime + request.processingEndTime.getTime() - request.processingStartTime.getTime() + (request.transferTime || 0)),
+              cyclesScore: (server.totalCyclesProcessedBytes + ( request.fileSize * resolutionToRatioWithRespectTo1080p(request.parameters.resolution) )) / (server.totalCyclesNeededTime + request.processingEndTime.getTime() - request.processingStartTime.getTime() + (request.transferTime || 0))
             });
           } else {
             // Actualizar estadísticas de Eevee
             await Server.findByIdAndUpdate(server._id, {
-              $inc: { fulfilledRequestsCount: 1, totalEeveeNeededTime: (request.processingEndTime - request.processingStartTime + (request.transferTime || 0) ), totalEeveeBlenderTime: jsonContent.totalBlenderTime, totalEeveeProcessedBytes: request.fileSize },
+              $inc: { fulfilledRequestsCount: 1, totalEeveeNeededTime: (request.processingEndTime - request.processingStartTime + (request.transferTime || 0) ), totalEeveeBlenderTime: jsonContent.totalBlenderTime, totalEeveeProcessedBytes: request.fileSize, totalEeveeProcessedPixels: resolutionToPixelCount(request.parameters.resolution) },
               status: firstEnqueuedRequest ? "busy" : "idle",
-              eeveeProcessedBytesPerMillisecondOfNeededTime: (server.totalEeveeProcessedBytes + request.fileSize) / (server.totalEeveeNeededTime + request.processingEndTime.getTime() - request.processingStartTime.getTime() + (request.transferTime || 0))
+              eeveeProcessedBytesPerMillisecondOfNeededTime: (server.totalEeveeProcessedBytes + request.fileSize) / (server.totalEeveeNeededTime + request.processingEndTime.getTime() - request.processingStartTime.getTime() + (request.transferTime || 0)),
+              eeveeScore: (server.totalEeveeProcessedBytes + ( request.fileSize * resolutionToRatioWithRespectTo1080p(request.parameters.resolution) )) / (server.totalEeveeNeededTime + request.processingEndTime.getTime() - request.processingStartTime.getTime() + (request.transferTime || 0))
             });
           }
           console.log(`Servidor ${request.assignedServer} actualizado en BD`.magenta);
@@ -658,29 +458,6 @@ const forwardRequest = async (res, request, server, originalFilename) => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 const enqueueRequest = async (res, request, originalFilename) => {
   console.log(`Encolando petición ${request._id}...`.magenta);
 
@@ -695,26 +472,24 @@ const enqueueRequest = async (res, request, originalFilename) => {
     // en llevar a cabo el renderizado de prueba)
     bestBusyServer = (await Server.findOneAndUpdate(
       { status: "busy", [totalEngineProcessedBytes]: 0 }, 
-      { $set: { status: "busy" }, $inc: { enqueuedRequestsCount: 1 } }, 
+      { $inc: { enqueuedRequestsCount: 1 } }, 
       { sort: { timeSpentOnRenderTest: 1 } },
       { new: true } 
-    ));
+    ));console.log(bestBusyServer)
     
     if (!bestBusyServer) {console.log("CONSULTA 2 ENCOLAR");
       // Buscar servidor en estado "busy" con menos peticiones encoladas (de los
-      // posibles candidatos, seleccionar el que mayor número de
-      // B/ms tenga para el motor indicado en la peticion recibida)
+      // posibles candidatos, seleccionar el que mayor valor tenga
+      // en la puntuación que se usa como criterio para el motor corrspondiente)
       bestBusyServer = await Server.findOneAndUpdate(
         { status: "busy" },
-        { $set: { status: "busy" }, $inc: { enqueuedRequestsCount: 1 } },
-        { sort: { enqueuedRequestCount: 1, [engineProcessedBytesPerMillisecondOfNeededTime]: -1 } },
+        { $inc: { enqueuedRequestsCount: 1 } },
+        { sort: { enqueuedRequestsCount: 1, [engineProcessedBytesPerMillisecondOfNeededTime]: -1 } },
         { new: true } 
       );
         
     }
 
-    
-      
   } catch (error) {
     throw new Error(`Error al intentar determinar el mejor servidor al que encolar (Petición ${request._id}). ${error}`.red);
   }
@@ -724,7 +499,6 @@ const enqueueRequest = async (res, request, originalFilename) => {
   }
 
   // O no hay ningún servidor registrado en el sistema, o todos se encuentran deshabilitados
-    
   if (!bestBusyServer) {
     console.log(`No existe servidor al que se pueda encolar la petición ${request._id} en el sistema`.yellow);
   }
@@ -766,7 +540,7 @@ const enqueueRequest = async (res, request, originalFilename) => {
     try {
       const beforeTransfer = new Date();
       const response = await fetch(
-        `http://${bestBusyServer.ip}:${process.env.RENDER_SERVER_PORT}/file-transfer`,
+        `http://${bestBusyServer.ip}:${process.env.RENDER_SERVER_PORT || 3000}/file-transfer`,
         {
           method: "POST",
           body: formData
@@ -801,7 +575,7 @@ const enqueueRequest = async (res, request, originalFilename) => {
 
 
 // Manejar la presencia de servidores disponibles enviándoles su próxima petición encolada,
-// y asignar peticiones que no pudieron ser asignadas a ningñun servidor cuando se recibieron
+// y asignar peticiones que no pudieron ser asignadas a ningún servidor cuando se recibieron
 
 const updateQueues = async () => {
   console.log("Comprobando servidores disponibles y colas...".yellow);
@@ -830,20 +604,22 @@ const updateQueues = async () => {
           return;
         }
   
-        // Enviar la petición al servidor
-        try {
-          server = await Server.findByIdAndUpdate(
-            server._id, 
-            { status: "busy", $inc: { enqueuedRequestsCount: -1 } },
-            { new: true }
-          );
-          forwardRequest(null, firstEnqueuedRequest, server, null)
-            .catch((error) => {
-              console.error(`Error durante el reenvío directo de la petición ${firstEnqueuedRequest._id}. ${error}`.red);
-            });
-        } catch (error) {
-          console.error(`Error durante el reenvío directo de la petición ${firstEnqueuedRequest._id}. ${error}`);
-          return;
+        if (firstEnqueuedRequest) {
+          try {
+            server = await Server.findByIdAndUpdate(
+              server._id, 
+              { status: "busy", $inc: { enqueuedRequestsCount: -1 } },
+              { new: true }
+            );
+            // Enviar la petición al servidor
+            forwardRequest(null, firstEnqueuedRequest, server, null)
+              .catch((error) => {
+                console.error(`Error durante el reenvío directo de la petición ${firstEnqueuedRequest._id}. ${error}`.red);
+              });
+          } catch (error) {
+            console.error(`Error durante el reenvío directo de la petición ${firstEnqueuedRequest._id}. ${error}`);
+            return;
+          }
         }
       }
     });
@@ -862,7 +638,6 @@ const updateQueues = async () => {
 
   // Si existe alguna
   if (unassignedEnqueuedRequests && unassignedEnqueuedRequests.length > 0) {
-
     let newIdleServer = null;
     try {
       newIdleServer = (await Server.findOneAndUpdate(
@@ -890,13 +665,20 @@ const updateQueues = async () => {
     } else {
       // Intentar encolar todas las que aún están sin asignar
       unassignedEnqueuedRequests.forEach((request) => {
-        enqueueRequest(null, request, null);
+        try { 
+
+          enqueueRequest(null, request, null);
+    
+        } catch (error) {
+          console.error(`Error durante el reenvío directo de la petición ${request._id}. ${error}`.red);
+        }
+        
       });
     }
 
   }
 
-  console.log("Comprobando de servidores disponibles y colas finalizada".yellow);
+  console.log("Comprobación de servidores disponibles y colas finalizada".yellow);
 };
 
 
@@ -1046,7 +828,7 @@ const transferRenderedImage = async (req, res) => {
     return;
   }
 
-  // Se envará la imagen solo si la petición procede de la misma dirección IP que la solicitó
+  // Se enviará la imagen solo si la petición procede de la misma dirección IP que la solicitó
   let ip = processIpAddress(req.headers["x-forwarded-for"] || req.ip);
   
   if (ip !== request.clientIp) {
@@ -1069,8 +851,11 @@ const transferRenderedImage = async (req, res) => {
         try {
           console.log(`Archivo ${fileRoute}.png enviado`.magenta);
           try {
-            request.nonDeletableFile = false;
-            await request.save();
+            Request.findByIdAndUpdate(
+              request._id,
+              { nonDeletableFile: false },
+              { new: true }
+            );
           } catch (error) {
             console.error(`Error al desactivar flag nonDeletableFile en la base de datos (Petición ${req.params.id}). ${error}`.red);
           }
@@ -1093,7 +878,6 @@ const transferRenderedImage = async (req, res) => {
 
 export {
   handleNewRequest,
-  // processQueue,
   updateQueues,
   getWaitingInfo,
   transferRenderedImage,

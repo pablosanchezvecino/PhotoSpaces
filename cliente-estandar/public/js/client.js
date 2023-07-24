@@ -1,4 +1,4 @@
-import { requestHandlingMicroserviceIp, requestHandlingMicroservicePort } from "./constants/parameters.js";
+import { requestHandlingMicroserviceHost, requestHandlingMicroservicePort } from "./constants/parameters.js";
 import { PointerLockControls } from "/jsm/controls/PointerLockControls.js";
 import { GLTFExporter } from "/jsm/exporters/GLTFExporter.js";
 import { GLTFLoader } from "/jsm/loaders/GLTFLoader.js";
@@ -49,6 +49,9 @@ const dracoLabel = document.getElementById("draco-label");
 
 // - Parámetros de exportación de la escena
 const glbExport = document.getElementById("glb-export");
+
+// Etiqueta opcional para la petición
+const requestLabelInput = document.getElementById("request-label-input");
 
 // - Enlace para la descarga de la imagen
 const link = document.createElement("a");
@@ -498,9 +501,14 @@ const sendModel = async (cam) => {
         formData.append("dracoCompressionLevel", dracoCompressionLevelRange.value);
       }
 
+      // Si se especifica etiqueta
+      if (requestLabelInput.value) {
+        formData.append("requestLabel", requestLabelInput.value);
+      }
+
       try {
         const response = await fetch(
-          `http://${requestHandlingMicroserviceIp}:${requestHandlingMicroservicePort}/requests`,
+          `http://${requestHandlingMicroserviceHost}:${requestHandlingMicroservicePort}/requests`,
           {
             method: "POST",
             body: formData
@@ -565,7 +573,7 @@ const requestPolling = async (requestId, requestStatus) => {
   while (requestStatus !== "fulfilled") {
 
     const response = await fetch(
-      `http://${requestHandlingMicroserviceIp}:${requestHandlingMicroservicePort}/requests/${requestId}/info`,
+      `http://${requestHandlingMicroserviceHost}:${requestHandlingMicroservicePort}/requests/${requestId}/info`,
       { method: "GET" }
     );
 
@@ -605,7 +613,7 @@ const requestPolling = async (requestId, requestStatus) => {
 
   try {
     const response = await fetch(
-      `http://${requestHandlingMicroserviceIp}:${requestHandlingMicroservicePort}/requests/${requestId}`,
+      `http://${requestHandlingMicroserviceHost}:${requestHandlingMicroservicePort}/requests/${requestId}`,
       { method: "GET" }
     );
 
@@ -699,7 +707,7 @@ const backgroundChange = (sel) => {
     // ENV Background
     new RGBELoader()
       .setDataType(THREE.UnsignedByteType)
-      .setPath("../img/")
+      .setPath("../img/backgrounds/")
       .load(sel, (texture) => {
         const pmremGenerator = new THREE.PMREMGenerator(renderer);
         pmremGenerator.compileEquirectangularShader();

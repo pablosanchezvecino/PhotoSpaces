@@ -29,7 +29,7 @@ router.post("", (req, res) => {
   }
 });
 
-// GET /requests/:requestId/time
+// GET /requests/:id/time
 router.get("/:requestId/info", getWaitingInfo);
 
 export default router;

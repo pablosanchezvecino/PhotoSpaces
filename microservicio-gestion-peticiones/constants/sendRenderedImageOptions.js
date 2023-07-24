@@ -1,6 +1,5 @@
 // Opciones para que funcione correctamente el 
-// envío de la imagen renderizada al cliente
-
+// envío de la imagen renderizada 
 const options = {
   root: "./",
   dotfiles: "deny",

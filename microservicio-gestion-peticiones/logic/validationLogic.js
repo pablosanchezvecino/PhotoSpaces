@@ -30,4 +30,11 @@ const isValidDracoCompressionLevel = (dracoCompressionLevel) => {
   return dracoCompressionLevel >= 0 && dracoCompressionLevel <= 10;
 };
 
-export { isValidEmail, isValidModel, isValidDracoCompressionLevel };
+// Validar valor recibido para la etiqueta de la petición
+// (debe tener una longitud menor o igual a 20)
+const isValidRequestLabel = (label) => {
+  return label.length <= 20;
+};
+
+export { isValidEmail, isValidModel, isValidDracoCompressionLevel, isValidRequestLabel };
+

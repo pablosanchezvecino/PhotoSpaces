@@ -11,7 +11,12 @@ import "colors";
 
 printAsciiArt();
 
-dotenv.config();
+if (process.env.DOCKER_CONTAINER_EXECUTION) {
+  console.log("Ejecución en contenedor Docker detectada ".bold.blue);
+} else {
+  console.log("No se detectó ejecución en contenedor Docker, se cargarán las variables de entorno de fichero .env".bold.blue);
+  dotenv.config();
+}
 
 const app = express();
 const port = process.env.PORT || 9000;
@@ -23,6 +28,7 @@ dbConnection();
 app.use(cors());
 app.use(morgan("dev"));
 app.use(express.json());
+
 // Utilizar comprobación de direcciones IP
 app.use(ipCheckMiddleware);
 

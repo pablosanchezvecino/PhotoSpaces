@@ -17,9 +17,10 @@ tiempos de espera de las peticiones de renderizado de una aplicación web*.
 
 El repositorio con la aplicación original se puede consultar [aquí](https://github.com/JoseSFOc/PhotoSpaces).
 
-La aplicación cuenta con 5 componentes diferenciados:
+La aplicación cuenta con 6 componentes diferenciados:
 
-- [Cliente estándar](./cliente-estandar): Sirve a los usuarios el cliente que permite la carga y edición de las escenas 3D y la generación y envío de las peticiones de renderizado.
+- [Cliente estándar](./cliente-estandar): Sirve a los usuarios el cliente que permite la carga, visualización y edición de las escenas 3D y la generación y envío de las peticiones de renderizado.
+- [Cliente CLI](./cliente-cli): Aplicación de consola que actúa como cliente y que ofrece una interfaz de línea de comandos. Permite el envío de peticiones de renderizado al sistema, pero no ofrece las funcionalidades de visualización y edición a partir de la carga de ficheros del cliente estándar.
 - [Cliente de administración](./cliente-admin): Sirve a los administradores del sistema el panel de administración de la aplicación.
 - [Microservicio de administración](./microservicio-administracion): Se encarga de manejar las peticiones generadas desde el cliente de administración.
 - [Microservicio de gestión de peticiones](./microservicio-gestion-peticiones): Es el responsable de gestionar todo lo relacionado con las peticiones de renderizado generadas desde el cliente estándar.
@@ -67,11 +68,11 @@ Una vez configuradas las variables de entorno, existen dos opciones:
 - Utilizar los scripts incluidos en los siguientes directorios dependiendo del sistema operativo:
 
   - [Windows](./scripts/windows/host)
-  - [Linux](./scripts/linux/host)
+  - [Unix-like](./scripts/unix-like/host)
 
 ### Despliegue sobre contenedores Docker individuales
 
-**IMPORTANTE:** No se recomienda desplegar el servidor de renderizado mediante contenedores, ya que estos por defecto no tienen acceso a la GPU del sistema, esto solo es posible en equipos Linux y con GPUS NVIDIA con el uso de algunas herramientas.
+**IMPORTANTE:** No se recomienda desplegar el servidor de renderizado mediante contenedores, ya que estos por defecto no tienen acceso a la GPU del sistema, esto solo es posible en equipos Linux y con GPUs NVIDIA con el uso de algunas herramientas.
 Si optamos por desplegar cada componente por separado, la configuración de las variables se realizará en los archivos `Dockerfile` correspondientes a cada componente.
 
 De nuevo, tenemos dos opciones a la hora de desplegar tras configurarlas:
@@ -93,7 +94,7 @@ De nuevo, tenemos dos opciones a la hora de desplegar tras configurarlas:
 - Utilizar los scripts incluidos en los siguientes directorios dependiendo del sistema operativo:
 
   - [Windows](./scripts/windows/docker)
-  - [Linux](./scripts/linux/docker)
+  - [Unix-like](./scripts/unix-like/docker)
 
 ### Despliegue sobre contenedores Docker utilizando docker-compose
 
@@ -110,4 +111,4 @@ Una vez configuradas las variables de entorno, de nuevo se presentan dos opcione
 - Utiizar el único script situado en uno de los siguientes directorios dependiendo del sistema operativo:
 
   - [Windows](./scripts/windows/docker/docker-compose)
-  - [Linux](./scripts/linux/docker/docker-compose)
+  - [Unix-like](./scripts/unix-like/docker/docker-compose)

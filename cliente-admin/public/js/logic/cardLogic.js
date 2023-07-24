@@ -1,30 +1,12 @@
-import { msToTime } from "./timeLogic.js";
+import { downloadRenderedImage } from "./downloadLogic.js";
+import { msToTime, bytesToSize } from "./conversionsLogic.js";
 import {
   showDisableModal,
   showEnableModal,
   showDeleteModal,
   showDeleteRequestModal,
-  showAbortModal
+  showAbortModal,
 } from "./modalLogic.js";
-
-const bytesToSize = (bytes) => {
-  const kibibyte = 1024;
-  const mebibyte = kibibyte * 1024;
-  const gibibyte = mebibyte * 1024;
-
-  if (bytes < kibibyte) {
-    return bytes.toFixed(2) + " B";
-  } else if (bytes < mebibyte) {
-    const kibibytes = bytes / kibibyte;
-    return kibibytes.toFixed(2) + " KiB";
-  } else if (bytes < gibibyte) {
-    const mebibytes = bytes / mebibyte;
-    return mebibytes.toFixed(2) + " MiB";
-  } else {
-    const gibibytes = bytes / gibibyte;
-    return gibibytes.toFixed(2) + " GiB";
-  }
-};
 
 const addServerCard = (serverData) => {
   const containerId =
@@ -45,6 +27,7 @@ const addServerCard = (serverData) => {
 
   const col = document.createElement("div");
   col.className = "col server";
+  col.style = "min-width: 1100px;";
   col.id = serverData._id;
 
   const card = document.createElement("div");
@@ -75,22 +58,11 @@ const addServerCard = (serverData) => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
   // Dirección IP
   const ipCardText = document.createElement("p");
   ipCardText.className = "card-text";
   const ipImage = document.createElement("img");
-  ipImage.src = "./res/svg/ip.svg";
+  ipImage.src = "./res/img/svg/ip.svg";
   ipImage.width = "24";
   ipImage.title = "Dirección IP";
   ipCardText.appendChild(ipImage);
@@ -100,7 +72,7 @@ const addServerCard = (serverData) => {
   const osCardText = document.createElement("p");
   osCardText.className = "card-text";
   const osImage = document.createElement("img");
-  osImage.src = "./res/svg/os.svg";
+  osImage.src = "./res/img/svg/os.svg";
   osImage.width = "24";
   osImage.title = "Sistema Operativo";
   osCardText.appendChild(osImage);
@@ -110,7 +82,7 @@ const addServerCard = (serverData) => {
   const cpuCardText = document.createElement("p");
   cpuCardText.className = "card-text";
   const cpuImage = document.createElement("img");
-  cpuImage.src = "./res/svg/cpu.svg";
+  cpuImage.src = "./res/img/svg/cpu.svg";
   cpuImage.width = "24";
   cpuImage.title = "Procesador";
   cpuCardText.appendChild(cpuImage);
@@ -120,7 +92,7 @@ const addServerCard = (serverData) => {
   const gpuCardText = document.createElement("p");
   gpuCardText.className = "card-text";
   const gpuImage = document.createElement("img");
-  gpuImage.src = "./res/svg/gpu.svg";
+  gpuImage.src = "./res/img/svg/gpu.svg";
   gpuImage.width = "24";
   gpuImage.title = "Tarjeta Gráfica";
   gpuCardText.appendChild(gpuImage);
@@ -130,7 +102,7 @@ const addServerCard = (serverData) => {
   const blenderVersionCardText = document.createElement("p");
   blenderVersionCardText.className = "card-text";
   const blenderVersionImage = document.createElement("img");
-  blenderVersionImage.src = "./res/svg/blender.svg";
+  blenderVersionImage.src = "./res/img/svg/blender.svg";
   blenderVersionImage.width = "24";
   blenderVersionImage.title = "Versión de Blender";
   blenderVersionCardText.appendChild(blenderVersionImage);
@@ -142,7 +114,7 @@ const addServerCard = (serverData) => {
   const registrationDateCardText = document.createElement("p");
   registrationDateCardText.className = "card-text";
   const registrationDateImage = document.createElement("img");
-  registrationDateImage.src = "./res/svg/date.svg";
+  registrationDateImage.src = "./res/img/svg/date.svg";
   registrationDateImage.width = "24";
   registrationDateImage.title = "Fecha y hora de registro en el sistema";
   registrationDateCardText.appendChild(registrationDateImage);
@@ -156,7 +128,7 @@ const addServerCard = (serverData) => {
   const timeSpentOnRenderTestCardText = document.createElement("p");
   timeSpentOnRenderTestCardText.className = "card-text";
   const timeSpentOnRenderTestImage = document.createElement("img");
-  timeSpentOnRenderTestImage.src = "./res/svg/test.svg";
+  timeSpentOnRenderTestImage.src = "./res/img/svg/test.svg";
   timeSpentOnRenderTestImage.width = "24";
   timeSpentOnRenderTestImage.title = "Tiempo empleado en renderizado de prueba";
   timeSpentOnRenderTestCardText.appendChild(timeSpentOnRenderTestImage);
@@ -168,7 +140,7 @@ const addServerCard = (serverData) => {
   const fulfilledRequestsCountCardText = document.createElement("p");
   fulfilledRequestsCountCardText.className = "card-text";
   const fulfilledRequestsCountImage = document.createElement("img");
-  fulfilledRequestsCountImage.src = "./res/svg/fulfilled.svg";
+  fulfilledRequestsCountImage.src = "./res/img/svg/fulfilled.svg";
   fulfilledRequestsCountImage.width = "24";
   fulfilledRequestsCountImage.title = "Número de peticiones satisfechas";
   fulfilledRequestsCountCardText.appendChild(fulfilledRequestsCountImage);
@@ -180,7 +152,7 @@ const addServerCard = (serverData) => {
   const enqueuedRequestsCountCardText = document.createElement("p");
   enqueuedRequestsCountCardText.className = "card-text";
   const enqueuedRequestsCountImage = document.createElement("img");
-  enqueuedRequestsCountImage.src = "./res/svg/queue.svg";
+  enqueuedRequestsCountImage.src = "./res/img/svg/queue.svg";
   enqueuedRequestsCountImage.width = "24";
   enqueuedRequestsCountImage.title = "Número de peticiones encoladas";
   enqueuedRequestsCountCardText.appendChild(enqueuedRequestsCountImage);
@@ -195,12 +167,12 @@ const addServerCard = (serverData) => {
   const totalSizeProcessedCyclesCardText = document.createElement("p");
   totalSizeProcessedCyclesCardText.className = "card-text";
   const totalSizeProcessedSumCyclesImage = document.createElement("img");
-  totalSizeProcessedSumCyclesImage.src = "./res/svg/sum.svg";
+  totalSizeProcessedSumCyclesImage.src = "./res/img/svg/sum.svg";
   totalSizeProcessedSumCyclesImage.width = "24";
   totalSizeProcessedSumCyclesImage.title = "Tamaño de la información total procesada con Cycles";
   totalSizeProcessedCyclesCardText.appendChild(totalSizeProcessedSumCyclesImage);
   const totalSizeProcessedCyclesImage = document.createElement("img");
-  totalSizeProcessedCyclesImage.src = "./res/svg/total-size-processed.svg";
+  totalSizeProcessedCyclesImage.src = "./res/img/svg/total-size-processed.svg";
   totalSizeProcessedCyclesImage.width = "24";
   totalSizeProcessedCyclesImage.title = "Tamaño de la información total procesada con Cycles";
   totalSizeProcessedCyclesCardText.appendChild(totalSizeProcessedCyclesImage);
@@ -210,16 +182,35 @@ const addServerCard = (serverData) => {
   totalSizeProcessedCyclesImage.after(boldElement);
   boldElement.after(document.createTextNode(bytesToSize(serverData.totalCyclesProcessedBytes)));
 
+  // Píxeles totales renderizados Cycles
+  const totalPixelsProcessedCyclesCardText = document.createElement("p");
+  totalPixelsProcessedCyclesCardText.className = "card-text";
+  const totalPixelsProcessedSumCyclesImage = document.createElement("img");
+  totalPixelsProcessedSumCyclesImage.src = "./res/img/svg/sum.svg";
+  totalPixelsProcessedSumCyclesImage.width = "24";
+  totalSizeProcessedSumCyclesImage.title = "Número total de píxeles renderizados con Cycles";
+  totalPixelsProcessedCyclesCardText.appendChild(totalPixelsProcessedSumCyclesImage);
+  const totalPixelsProcessedCyclesImage = document.createElement("img");
+  totalPixelsProcessedCyclesImage.src = "./res/img/svg/pixels.svg";
+  totalPixelsProcessedCyclesImage.width = "24";
+  totalPixelsProcessedCyclesImage.title = "Número total de píxeles renderizados con Cycles";
+  totalPixelsProcessedCyclesCardText.appendChild(totalPixelsProcessedCyclesImage);
+  boldElement = document.createElement("b");
+  auxText = document.createTextNode(" (CYCLES) ");
+  boldElement.appendChild(auxText);
+  totalPixelsProcessedCyclesImage.after(boldElement);
+  boldElement.after(document.createTextNode(serverData.totalCyclesProcessedPixels));
+
   // Tiempo total requerido Cycles
   const totalNeededTimeCyclesCardText = document.createElement("p");
   totalNeededTimeCyclesCardText.className = "card-text";
   const totalNeededTimeSumCyclesImage = document.createElement("img");
-  totalNeededTimeSumCyclesImage.src = "./res/svg/sum.svg";
+  totalNeededTimeSumCyclesImage.src = "./res/img/svg/sum.svg";
   totalNeededTimeSumCyclesImage.width = "24";
   totalNeededTimeSumCyclesImage.title = "Tiempo total requerido para satisfacer todas las peticiones de Cycles recibidas";
   totalNeededTimeCyclesCardText.appendChild(totalNeededTimeSumCyclesImage);
   const totalNeededTimeCyclesImage = document.createElement("img");
-  totalNeededTimeCyclesImage.src = "./res/svg/processing-time.svg";
+  totalNeededTimeCyclesImage.src = "./res/img/svg/processing-time.svg";
   totalNeededTimeCyclesImage.width = "24";
   totalNeededTimeCyclesImage.title = "Tiempo total requerido para satisfacer todas las peticiones de Cycles recibidas";
   totalNeededTimeCyclesCardText.appendChild(totalNeededTimeCyclesImage);
@@ -233,17 +224,17 @@ const addServerCard = (serverData) => {
   const bytesPerNeededMsCyclesCardText = document.createElement("p");
   bytesPerNeededMsCyclesCardText.className = "card-text";
   const bytesPerNeededMsFirstCyclesImage = document.createElement("img");
-  bytesPerNeededMsFirstCyclesImage.src = "./res/svg/total-size-processed.svg";
+  bytesPerNeededMsFirstCyclesImage.src = "./res/img/svg/total-size-processed.svg";
   bytesPerNeededMsFirstCyclesImage.width = "24";
   bytesPerNeededMsFirstCyclesImage.title = "Bytes procesados con Cycles por milisegundo requerido por el sistema";
   bytesPerNeededMsCyclesCardText.appendChild(bytesPerNeededMsFirstCyclesImage);
   const bytesPerNeededMsSlashCyclesImage = document.createElement("img");
-  bytesPerNeededMsSlashCyclesImage.src = "./res/svg/slash.svg";
+  bytesPerNeededMsSlashCyclesImage.src = "./res/img/svg/slash.svg";
   bytesPerNeededMsSlashCyclesImage.height = "24";
   bytesPerNeededMsSlashCyclesImage.title = "Bytes procesados con Cycles por milisegundo requerido por el sistema";
   bytesPerNeededMsCyclesCardText.appendChild(bytesPerNeededMsSlashCyclesImage);
   const bytesPerNeededMsSecondCyclesImage = document.createElement("img");
-  bytesPerNeededMsSecondCyclesImage.src = "./res/svg/processing-time.svg";
+  bytesPerNeededMsSecondCyclesImage.src = "./res/img/svg/processing-time.svg";
   bytesPerNeededMsSecondCyclesImage.width = "24";
   bytesPerNeededMsSecondCyclesImage.title = "Bytes procesados con Cycles por milisegundo requerido por el sistema";
   bytesPerNeededMsCyclesCardText.appendChild(bytesPerNeededMsSecondCyclesImage);
@@ -257,12 +248,12 @@ const addServerCard = (serverData) => {
   const totalBlenderTimeCyclesCardText = document.createElement("p");
   totalSizeProcessedCyclesCardText.className = "card-text";
   const totalBlenderTimeSumCyclesImage = document.createElement("img");
-  totalBlenderTimeSumCyclesImage.src = "./res/svg/sum.svg";
+  totalBlenderTimeSumCyclesImage.src = "./res/img/svg/sum.svg";
   totalBlenderTimeSumCyclesImage.width = "24";
   totalBlenderTimeSumCyclesImage.title = "Tiempo total de procesamiento con Blender usando Cycles";
   totalBlenderTimeCyclesCardText.appendChild(totalBlenderTimeSumCyclesImage);
   const totalBlenderTimeCyclesImage = document.createElement("img");
-  totalBlenderTimeCyclesImage.src = "./res/svg/blender.svg";
+  totalBlenderTimeCyclesImage.src = "./res/img/svg/blender.svg";
   totalBlenderTimeCyclesImage.width = "24";
   totalBlenderTimeCyclesImage.title = "Tiempo total de procesamiento con Blender usando Cycles";
   totalBlenderTimeCyclesCardText.appendChild(totalBlenderTimeCyclesImage);
@@ -276,17 +267,17 @@ const addServerCard = (serverData) => {
   const bytesPerBlenderMsCyclesCardText = document.createElement("p");
   bytesPerBlenderMsCyclesCardText.className = "card-text";
   const bytesPerBlenderMsFirstCyclesImage = document.createElement("img");
-  bytesPerBlenderMsFirstCyclesImage.src = "./res/svg/total-size-processed.svg";
+  bytesPerBlenderMsFirstCyclesImage.src = "./res/img/svg/total-size-processed.svg";
   bytesPerBlenderMsFirstCyclesImage.width = "24";
   bytesPerBlenderMsFirstCyclesImage.title = "Bytes procesados por milisegundo de ejecución en Blender";
   bytesPerBlenderMsCyclesCardText.appendChild(bytesPerBlenderMsFirstCyclesImage);
   const bytesPerBlenderMsSlashCyclesImage = document.createElement("img");
-  bytesPerBlenderMsSlashCyclesImage.src = "./res/svg/slash.svg";
+  bytesPerBlenderMsSlashCyclesImage.src = "./res/img/svg/slash.svg";
   bytesPerBlenderMsSlashCyclesImage.height = "24";
   bytesPerBlenderMsSlashCyclesImage.title = "Bytes procesados por milisegundo de ejecución en Blender";
   bytesPerBlenderMsCyclesCardText.appendChild(bytesPerBlenderMsSlashCyclesImage);
   const bytesPerBlenderMsSecondCyclesImage = document.createElement("img");
-  bytesPerBlenderMsSecondCyclesImage.src = "./res/svg/blender.svg";
+  bytesPerBlenderMsSecondCyclesImage.src = "./res/img/svg/blender.svg";
   bytesPerBlenderMsSecondCyclesImage.width = "24";
   bytesPerBlenderMsSecondCyclesImage.title = "Bytes procesados por milisegundo de ejecución en Blender";
   bytesPerBlenderMsCyclesCardText.appendChild(bytesPerBlenderMsSecondCyclesImage);
@@ -294,20 +285,32 @@ const addServerCard = (serverData) => {
   auxText = document.createTextNode(" (CYCLES) ");
   boldElement.appendChild(auxText);
   bytesPerBlenderMsSecondCyclesImage.after(boldElement);
-  boldElement.after(document.createTextNode(serverData.totalCyclesProcessedBytes ? bytesToSize(serverData.cyclesProcessedBytesPerMillisecondOfNeededTime) + "/ms" : "N/A"));
+  boldElement.after(document.createTextNode(serverData.totalCyclesProcessedBytes ? bytesToSize(serverData.totalCyclesProcessedBytes / serverData.totalCyclesBlenderTime) + "/ms" : "N/A"));
 
-
+  // Puntuación Cycles
+  const cyclesScoreCardText = document.createElement("p");
+  cyclesScoreCardText.className = "card-text";
+  const cyclesScoreImage = document.createElement("img");
+  cyclesScoreImage.src = "./res/img/svg/score.svg";
+  cyclesScoreImage.width = "24";
+  cyclesScoreImage.title = "Puntuación";
+  cyclesScoreCardText.appendChild(cyclesScoreImage);
+  boldElement = document.createElement("b");
+  auxText = document.createTextNode(" (CYCLES) ");
+  boldElement.appendChild(auxText);
+  cyclesScoreImage.after(boldElement);
+  boldElement.after(document.createTextNode(" " + (serverData.cyclesScore !== null ? (serverData.cyclesScore.toFixed(2) + " puntos") : "N/A" )));
 
   // Tamaño total procesado Eevee
   const totalSizeProcessedEeveeCardText = document.createElement("p");
   totalSizeProcessedEeveeCardText.className = "card-text";
   const totalSizeProcessedSumEeveeImage = document.createElement("img");
-  totalSizeProcessedSumEeveeImage.src = "./res/svg/sum.svg";
+  totalSizeProcessedSumEeveeImage.src = "./res/img/svg/sum.svg";
   totalSizeProcessedSumEeveeImage.width = "24";
   totalSizeProcessedSumEeveeImage.title = "Tamaño de la información total procesada con Eevee";
   totalSizeProcessedEeveeCardText.appendChild(totalSizeProcessedSumEeveeImage);
   const totalSizeProcessedEeveeImage = document.createElement("img");
-  totalSizeProcessedEeveeImage.src = "./res/svg/total-size-processed.svg";
+  totalSizeProcessedEeveeImage.src = "./res/img/svg/total-size-processed.svg";
   totalSizeProcessedEeveeImage.width = "24";
   totalSizeProcessedEeveeImage.title = "Tamaño de la información total procesada con Eevee";
   totalSizeProcessedEeveeCardText.appendChild(totalSizeProcessedEeveeImage);
@@ -317,16 +320,35 @@ const addServerCard = (serverData) => {
   totalSizeProcessedEeveeImage.after(boldElement);
   boldElement.after(document.createTextNode(bytesToSize(serverData.totalEeveeProcessedBytes)));
 
+  // Píxeles totales renderizados Eevee
+  const totalPixelsProcessedEeveeCardText = document.createElement("p");
+  totalPixelsProcessedEeveeCardText.className = "card-text";
+  const totalPixelsProcessedSumEeveeImage = document.createElement("img");
+  totalPixelsProcessedSumEeveeImage.src = "./res/img/svg/sum.svg";
+  totalPixelsProcessedSumEeveeImage.width = "24";
+  totalSizeProcessedSumEeveeImage.title = "Número total de píxeles renderizados con Eevee";
+  totalPixelsProcessedEeveeCardText.appendChild(totalPixelsProcessedSumEeveeImage);
+  const totalPixelsProcessedEeveeImage = document.createElement("img");
+  totalPixelsProcessedEeveeImage.src = "./res/img/svg/pixels.svg";
+  totalPixelsProcessedEeveeImage.width = "24";
+  totalPixelsProcessedEeveeImage.title = "Número total de píxeles renderizados con Eevee";
+  totalPixelsProcessedEeveeCardText.appendChild(totalPixelsProcessedEeveeImage);
+  boldElement = document.createElement("b");
+  auxText = document.createTextNode(" (EEVEE) ");
+  boldElement.appendChild(auxText);
+  totalPixelsProcessedEeveeImage.after(boldElement);
+  boldElement.after(document.createTextNode(serverData.totalEeveeProcessedPixels));
+
   // Tiempo total requerido Eevee
   const totalNeededTimeEeveeCardText = document.createElement("p");
   totalNeededTimeEeveeCardText.className = "card-text";
   const totalNeededTimeSumEeveeImage = document.createElement("img");
-  totalNeededTimeSumEeveeImage.src = "./res/svg/sum.svg";
+  totalNeededTimeSumEeveeImage.src = "./res/img/svg/sum.svg";
   totalNeededTimeSumEeveeImage.width = "24";
   totalNeededTimeSumEeveeImage.title = "Tiempo total requerido para satisfacer todas las peticiones de Eevee recibidas";
   totalNeededTimeEeveeCardText.appendChild(totalNeededTimeSumEeveeImage);
   const totalNeededTimeEeveeImage = document.createElement("img");
-  totalNeededTimeEeveeImage.src = "./res/svg/processing-time.svg";
+  totalNeededTimeEeveeImage.src = "./res/img/svg/processing-time.svg";
   totalNeededTimeEeveeImage.width = "24";
   totalNeededTimeEeveeImage.title = "Tiempo total requerido para satisfacer todas las peticiones de Eevee recibidas";
   totalNeededTimeEeveeCardText.appendChild(totalNeededTimeEeveeImage);
@@ -340,17 +362,17 @@ const addServerCard = (serverData) => {
   const bytesPerNeededMsEeveeCardText = document.createElement("p");
   bytesPerNeededMsEeveeCardText.className = "card-text";
   const bytesPerNeededMsFirstEeveeImage = document.createElement("img");
-  bytesPerNeededMsFirstEeveeImage.src = "./res/svg/total-size-processed.svg";
+  bytesPerNeededMsFirstEeveeImage.src = "./res/img/svg/total-size-processed.svg";
   bytesPerNeededMsFirstEeveeImage.width = "24";
   bytesPerNeededMsFirstEeveeImage.title = "Bytes procesados con Eevee por milisegundo requerido por el sistema";
   bytesPerNeededMsEeveeCardText.appendChild(bytesPerNeededMsFirstEeveeImage);
   const bytesPerNeededMsSlashEeveeImage = document.createElement("img");
-  bytesPerNeededMsSlashEeveeImage.src = "./res/svg/slash.svg";
+  bytesPerNeededMsSlashEeveeImage.src = "./res/img/svg/slash.svg";
   bytesPerNeededMsSlashEeveeImage.height = "24";
   bytesPerNeededMsSlashEeveeImage.title = "Bytes procesados con Eevee por milisegundo requerido por el sistema";
   bytesPerNeededMsEeveeCardText.appendChild(bytesPerNeededMsSlashEeveeImage);
   const bytesPerNeededMsSecondEeveeImage = document.createElement("img");
-  bytesPerNeededMsSecondEeveeImage.src = "./res/svg/processing-time.svg";
+  bytesPerNeededMsSecondEeveeImage.src = "./res/img/svg/processing-time.svg";
   bytesPerNeededMsSecondEeveeImage.width = "24";
   bytesPerNeededMsSecondEeveeImage.title = "Bytes procesados con Eevee por milisegundo requerido por el sistema";
   bytesPerNeededMsEeveeCardText.appendChild(bytesPerNeededMsSecondEeveeImage);
@@ -364,12 +386,12 @@ const addServerCard = (serverData) => {
   const totalBlenderTimeEeveeCardText = document.createElement("p");
   totalSizeProcessedEeveeCardText.className = "card-text";
   const totalBlenderTimeSumEeveeImage = document.createElement("img");
-  totalBlenderTimeSumEeveeImage.src = "./res/svg/sum.svg";
+  totalBlenderTimeSumEeveeImage.src = "./res/img/svg/sum.svg";
   totalBlenderTimeSumEeveeImage.width = "24";
   totalBlenderTimeSumEeveeImage.title = "Tiempo total de procesamiento con Blender usando Eevee";
   totalBlenderTimeEeveeCardText.appendChild(totalBlenderTimeSumEeveeImage);
   const totalBlenderTimeEeveeImage = document.createElement("img");
-  totalBlenderTimeEeveeImage.src = "./res/svg/blender.svg";
+  totalBlenderTimeEeveeImage.src = "./res/img/svg/blender.svg";
   totalBlenderTimeEeveeImage.width = "24";
   totalBlenderTimeEeveeImage.title = "Tiempo total de procesamiento con Blender usando Eevee";
   totalBlenderTimeEeveeCardText.appendChild(totalBlenderTimeEeveeImage);
@@ -383,17 +405,17 @@ const addServerCard = (serverData) => {
   const bytesPerBlenderMsEeveeCardText = document.createElement("p");
   bytesPerBlenderMsEeveeCardText.className = "card-text";
   const bytesPerBlenderMsFirstEeveeImage = document.createElement("img");
-  bytesPerBlenderMsFirstEeveeImage.src = "./res/svg/total-size-processed.svg";
+  bytesPerBlenderMsFirstEeveeImage.src = "./res/img/svg/total-size-processed.svg";
   bytesPerBlenderMsFirstEeveeImage.width = "24";
   bytesPerBlenderMsFirstEeveeImage.title = "Bytes procesados por milisegundo de ejecución en Blender";
   bytesPerBlenderMsEeveeCardText.appendChild(bytesPerBlenderMsFirstEeveeImage);
   const bytesPerBlenderMsSlashEeveeImage = document.createElement("img");
-  bytesPerBlenderMsSlashEeveeImage.src = "./res/svg/slash.svg";
+  bytesPerBlenderMsSlashEeveeImage.src = "./res/img/svg/slash.svg";
   bytesPerBlenderMsSlashEeveeImage.height = "24";
   bytesPerBlenderMsSlashEeveeImage.title = "Bytes procesados por milisegundo de ejecución en Blender";
   bytesPerBlenderMsEeveeCardText.appendChild(bytesPerBlenderMsSlashEeveeImage);
   const bytesPerBlenderMsSecondEeveeImage = document.createElement("img");
-  bytesPerBlenderMsSecondEeveeImage.src = "./res/svg/blender.svg";
+  bytesPerBlenderMsSecondEeveeImage.src = "./res/img/svg/blender.svg";
   bytesPerBlenderMsSecondEeveeImage.width = "24";
   bytesPerBlenderMsSecondEeveeImage.title = "Bytes procesados por milisegundo de ejecución en Blender";
   bytesPerBlenderMsEeveeCardText.appendChild(bytesPerBlenderMsSecondEeveeImage);
@@ -403,18 +425,31 @@ const addServerCard = (serverData) => {
   bytesPerBlenderMsSecondEeveeImage.after(boldElement);
   boldElement.after(document.createTextNode(serverData.totalEeveeProcessedBytes ? bytesToSize(serverData.totalEeveeProcessedBytes / serverData.totalEeveeBlenderTime) + "/ms" : "N/A"));
 
+  // Puntuación Eevee
+  const eeveeScoreCardText = document.createElement("p");
+  eeveeScoreCardText.className = "card-text";
+  const eeveeScoreImage = document.createElement("img");
+  eeveeScoreImage.src = "./res/img/svg/score.svg";
+  eeveeScoreImage.width = "24";
+  eeveeScoreImage.title = "Puntuación";
+  eeveeScoreCardText.appendChild(eeveeScoreImage);
+  boldElement = document.createElement("b");
+  auxText = document.createTextNode(" (EEVEE) ");
+  boldElement.appendChild(auxText);
+  eeveeScoreImage.after(boldElement);
+  boldElement.after(document.createTextNode(" " + (serverData.eeveeScore !== null ? (serverData.eeveeScore.toFixed(2) + " puntos") : "N/A" )));
+
 
 
   const button1 = document.createElement("button");
-  button1.className =
-    (serverData.status === "disabled" ? "btn btn-success" : "btn btn-danger") + " mt-3";
+  button1.className = (serverData.status === "disabled" ? "btn btn-success" : "btn btn-danger") + " mt-3";
 
-  button1.innerText =
+  button1.title = 
     serverData.status === "idle"
-      ? "Deshabilitar"
+      ? "Deshabilitar servidor"
       : serverData.status === "busy"
-        ? "Abortar procesamiento"
-        : "Habilitar";
+        ? "Abortar procesamiento en servidor"
+        : "Habilitar servidor";
 
   button1.onclick =
     serverData.status === "idle"
@@ -422,6 +457,30 @@ const addServerCard = (serverData) => {
       : serverData.status === "busy"
         ? () => showAbortModal(serverData._id)
         : () => showEnableModal(serverData._id);
+
+  const button1svgResourceName =
+   serverData.status === "idle"
+     ? "locked"
+     : serverData.status === "busy"
+       ? "abort"
+       : "unlocked";
+
+  const button1Image = document.createElement("img");
+  button1Image.src = `./res/img/svg/${button1svgResourceName}.svg`;
+  button1Image.width = "24";
+  button1Image.title = 
+    serverData.status === "idle"
+      ? "Deshabilitar servidor"
+      : serverData.status === "busy"
+        ? "Abortar procesamiento en el servidor"
+        : "Habilitar servidor";
+
+  button1.appendChild(button1Image);
+
+  const buttonsContainer = document.createElement("div");
+  buttonsContainer.className = "d-flex justify-content-end";
+ 
+  buttonsContainer.appendChild(button1);
 
   col1.appendChild(ipCardText);  
   col1.appendChild(osCardText);  
@@ -431,16 +490,20 @@ const addServerCard = (serverData) => {
   col1.appendChild(registrationDateCardText);  
 
   col2.appendChild(totalSizeProcessedCyclesCardText);  
+  col2.appendChild(totalPixelsProcessedCyclesCardText);  
   col2.appendChild(totalNeededTimeCyclesCardText);  
   col2.appendChild(bytesPerNeededMsCyclesCardText);  
   col2.appendChild(totalBlenderTimeCyclesCardText);  
-  col2.appendChild(bytesPerBlenderMsCyclesCardText);  
-
+  col2.appendChild(bytesPerBlenderMsCyclesCardText); 
+  col2.appendChild(cyclesScoreCardText); 
+   
   col3.appendChild(totalSizeProcessedEeveeCardText);  
+  col3.appendChild(totalPixelsProcessedEeveeCardText);  
   col3.appendChild(totalNeededTimeEeveeCardText);  
   col3.appendChild(bytesPerNeededMsEeveeCardText);  
   col3.appendChild(totalBlenderTimeEeveeCardText);  
   col3.appendChild(bytesPerBlenderMsEeveeCardText);
+  col3.appendChild(eeveeScoreCardText);  
   
   col4.appendChild(timeSpentOnRenderTestCardText);  
   col4.appendChild(fulfilledRequestsCountCardText);  
@@ -454,17 +517,20 @@ const addServerCard = (serverData) => {
   cardBody.appendChild(cardTitle);
   cardBody.appendChild(row);
 
-  
-
-  cardBody.appendChild(button1);
-
   if (serverData.status !== "busy") {
     const button2 = document.createElement("button");
     button2.className = "btn btn-danger mt-3 ms-4";
-    button2.innerText = "Eliminar";
+    button2.title = "Eliminar servidor";
     button2.onclick = () => showDeleteModal(serverData._id);
-    cardBody.appendChild(button2);
+    const deleteImage = document.createElement("img");
+    deleteImage.src = "./res/img/svg/trash.svg";
+    deleteImage.width = "24";
+    deleteImage.title = "Eliminar servidor";
+    button2.appendChild(deleteImage);
+    buttonsContainer.appendChild(button2);
   }
+
+  cardBody.appendChild(buttonsContainer);
   card.appendChild(cardBody);
 
   col.appendChild(card);
@@ -495,7 +561,7 @@ const addRequestCard = (requestData, queuePosition) => {
 
   const card = document.createElement("div");
   card.className = "card mb-2";
-  card.style = `height: 480px; width: 20rem; background-color: ${color}`;
+  card.style = `height: 520px; width: 20rem; background-color: ${color}`;
 
   const cardBody = document.createElement("div");
   cardBody.className = "card-body";
@@ -505,12 +571,14 @@ const addRequestCard = (requestData, queuePosition) => {
   cardTitle.innerText = requestData._id;
   cardBody.appendChild(cardTitle);
 
+
+
   if (requestData.status === "enqueued") {
     // Posición en la cola
     const positionCardText = document.createElement("p");
     positionCardText.className = "card-text";
     const positionImage = document.createElement("img");
-    positionImage.src = "./res/svg/position.svg";
+    positionImage.src = "./res/img/svg/position.svg";
     positionImage.width = "24";
     positionImage.title = "Posición en la cola";
     positionCardText.appendChild(positionImage);
@@ -521,11 +589,22 @@ const addRequestCard = (requestData, queuePosition) => {
     cardBody.appendChild(positionCardText);
   }
 
+  // Información del usuario
+  const userIpCardText = document.createElement("p");
+  userIpCardText.className = "card-text";
+  const userIpImage = document.createElement("img");
+  userIpImage.src = "./res/img/svg/user-ip.svg";
+  userIpImage.width = "24";
+  userIpImage.title = "Información del usuario";
+  userIpCardText.appendChild(userIpImage);
+  userIpImage.after(document.createTextNode(" " + (requestData.requestLabel ? (requestData.requestLabel + " ") : "Etiqueta no especificada ") + `(${requestData.clientIp})`));
+  cardBody.appendChild(userIpCardText);
+  
   // Servidor asignado
   const assignedServerCardText = document.createElement("p");
   assignedServerCardText.className = "card-text";
   const assignedServerImage = document.createElement("img");
-  assignedServerImage.src = "./res/svg/server.svg";
+  assignedServerImage.src = "./res/img/svg/server.svg";
   assignedServerImage.width = "24";
   assignedServerImage.title = "Servidor asignado";
   assignedServerCardText.appendChild(assignedServerImage);
@@ -534,22 +613,22 @@ const addRequestCard = (requestData, queuePosition) => {
   );
   cardBody.appendChild(assignedServerCardText);
   
-  // Dirección IP del cliente
-  const clientIpCardText = document.createElement("p");
-  clientIpCardText.className = "card-text";
-  const clientIpImage = document.createElement("img");
-  clientIpImage.src = "./res/svg/user-ip.svg";
-  clientIpImage.width = "24";
-  clientIpImage.title = "Dirección IP del cliente";
-  clientIpCardText.appendChild(clientIpImage);
-  clientIpImage.after(document.createTextNode(" " + requestData.clientIp));
-  cardBody.appendChild(clientIpCardText);
+  // Método de recepción solicitado
+  const receiveMethodCardText = document.createElement("p");
+  receiveMethodCardText.className = "card-text";
+  const receiveMethodImage = document.createElement("img");
+  receiveMethodImage.src = "./res/img/svg/send.svg";
+  receiveMethodImage.width = "24";
+  receiveMethodImage.title = "Dirección IP del usuario";
+  receiveMethodCardText.appendChild(receiveMethodImage);
+  receiveMethodImage.after(document.createTextNode(" " + ( requestData.email ? `${requestData.email}` : "Descarga en el navegador")));
+  cardBody.appendChild(receiveMethodCardText);
 
   // Motor de renderizado
   const renderEngineCardText = document.createElement("p");
   renderEngineCardText.className = "card-text";
   const renderEngineImage = document.createElement("img");
-  renderEngineImage.src = "./res/svg/engine.svg";
+  renderEngineImage.src = "./res/img/svg/engine.svg";
   renderEngineImage.width = "24";
   renderEngineImage.title = "Motor de renderizado";
   renderEngineCardText.appendChild(renderEngineImage);
@@ -560,7 +639,7 @@ const addRequestCard = (requestData, queuePosition) => {
   const resolutionCardText = document.createElement("p");
   resolutionCardText.className = "card-text";
   const resolutionImage = document.createElement("img");
-  resolutionImage.src = "./res/svg/resolution.svg";
+  resolutionImage.src = "./res/img/svg/resolution.svg";
   resolutionImage.width = "24";
   resolutionImage.title = "Resolución de la imagen renderizada";
   resolutionCardText.appendChild(resolutionImage);
@@ -571,13 +650,12 @@ const addRequestCard = (requestData, queuePosition) => {
   const fileDetailsCardText = document.createElement("p");
   fileDetailsCardText.className = "card-text";
   const fileDetailsImage = document.createElement("img");
-  fileDetailsImage.src = "./res/svg/file-details.svg";
+  fileDetailsImage.src = "./res/img/svg/file-details.svg";
   fileDetailsImage.width = "24";
   fileDetailsImage.title = "Detalles del archivo";
   fileDetailsCardText.appendChild(fileDetailsImage);
   fileDetailsImage.after(document.createTextNode(" " + requestData.fileExtension + ` (${bytesToSize(requestData.fileSize)})`));
   cardBody.appendChild(fileDetailsCardText);
-
 
   if (requestData.status !== "enqueued") {
 
@@ -585,7 +663,7 @@ const addRequestCard = (requestData, queuePosition) => {
     const neededTimeCardText = document.createElement("p");
     neededTimeCardText.className = "card-text";
     const neededTimeImage = document.createElement("img");
-    neededTimeImage.src = "./res/svg/processing-time.svg";
+    neededTimeImage.src = "./res/img/svg/processing-time.svg";
     neededTimeImage.width = "24";
     neededTimeImage.title =
       requestData.status === "processing"
@@ -610,7 +688,7 @@ const addRequestCard = (requestData, queuePosition) => {
     const timeEstimationCardText = document.createElement("p");
     timeEstimationCardText.className = "card-text";
     const timeEstimationImage = document.createElement("img");
-    timeEstimationImage.src = "./res/svg/estimation.svg";
+    timeEstimationImage.src = "./res/img/svg/estimation.svg";
     timeEstimationImage.width = "24";
     timeEstimationImage.title = "Tiempo de espera estimado";
     timeEstimationCardText.appendChild(timeEstimationImage);
@@ -625,7 +703,7 @@ const addRequestCard = (requestData, queuePosition) => {
     const queueTimeCardText = document.createElement("p");
     queueTimeCardText.className = "card-text";
     const queueTimeImage = document.createElement("img");
-    queueTimeImage.src = "./res/svg/queue-wait.svg";
+    queueTimeImage.src = "./res/img/svg/queue-wait.svg";
     queueTimeImage.width = "24";
     queueTimeImage.title =
       requestData.status === "enqueued"
@@ -654,7 +732,7 @@ const addRequestCard = (requestData, queuePosition) => {
   const transferTimeCardText = document.createElement("p");
   transferTimeCardText.className = "card-text";
   const transferTimeImage = document.createElement("img");
-  transferTimeImage.src = "./res/svg/file-transfer.svg";
+  transferTimeImage.src = "./res/img/svg/file-transfer.svg";
   transferTimeImage.width = "24";
   transferTimeImage.title = "Transferencia de fichero con escena 3D";
   transferTimeCardText.appendChild(transferTimeImage);
@@ -673,7 +751,7 @@ const addRequestCard = (requestData, queuePosition) => {
     const totalBlenderTimeCardText = document.createElement("p");
     totalBlenderTimeCardText.className = "card-text";
     const totalBlenderTimeImage = document.createElement("img");
-    totalBlenderTimeImage.src = "./res/svg/blender.svg";
+    totalBlenderTimeImage.src = "./res/img/svg/blender.svg";
     totalBlenderTimeImage.width = "24";
     totalBlenderTimeImage.title = "Tiempo de procesamiento en Blender";
     totalBlenderTimeCardText.appendChild(totalBlenderTimeImage);
@@ -685,13 +763,37 @@ const addRequestCard = (requestData, queuePosition) => {
     cardBody.appendChild(totalBlenderTimeCardText);
   }
 
-  const button = document.createElement("button");
-  button.className = "btn btn-danger";
-  button.innerText = "Eliminar";
-  button.onclick = () => showDeleteRequestModal(requestData._id);
-  cardBody.appendChild(button);
-    
 
+  
+  const buttonContainer = document.createElement("div");
+  buttonContainer.className = "d-flex justify-content-end";
+  
+  const deleteButton = document.createElement("button");
+  deleteButton.className = "btn btn-danger";
+  deleteButton.title = "Eliminar petición";
+  deleteButton.onclick = () => showDeleteRequestModal(requestData._id);
+  cardBody.appendChild(deleteButton);
+  const deleteImage = document.createElement("img");
+  deleteImage.src = "./res/img/svg/trash.svg";
+  deleteImage.width = "24";
+  deleteImage.title = "Eliminar petición";
+  deleteButton.appendChild(deleteImage);
+  buttonContainer.appendChild(deleteButton);
+    
+  if (requestData.status === "fulfilled") {
+    const downloadButton = document.createElement("button");
+    downloadButton.className = "btn btn-primary ms-3";
+    downloadButton.title = "Descargar imagen renderizada";
+    downloadButton.onclick = () => downloadRenderedImage(requestData._id);
+    const downloadImage = document.createElement("img");
+    downloadImage.src = "./res/img/svg/download.svg";
+    downloadImage.width = "24";
+    downloadImage.title = "Descargar imagen renderizada";
+    downloadButton.appendChild(downloadImage);
+    buttonContainer.appendChild(downloadButton);
+  }
+
+  cardBody.appendChild(buttonContainer);
   card.appendChild(cardBody);
 
   col.appendChild(card);

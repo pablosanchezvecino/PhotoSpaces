@@ -9,16 +9,19 @@ import { Router } from "express";
 const router = Router();
 
 // POST /bind
-router.get("/bind", bind);
+router.post("/bind", bind);
+
+// POST /unbind
+router.post("/unbind", unbind);
 
 // POST /render
 router.post("/render", upload.single("model"), handleRenderingRequest);
 
-// POST /abort
-router.post("/abort", abort);
-
 // GET /time
 router.get("/time", handleEstimatedRemainingProcessingTimeRequest);
+
+// POST /abort
+router.post("/abort", abort);
 
 // POST /disable
 router.post("/disable", disable);
@@ -26,8 +29,6 @@ router.post("/disable", disable);
 // POST /enable
 router.post("/enable", enable);
 
-// POST /unbind
-router.post("/unbind", unbind);
 
 // POST /file
 router.post("/file-transfer", upload.single("model"), (req, res) => {

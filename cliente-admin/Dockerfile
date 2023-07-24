@@ -1,10 +1,10 @@
 FROM node:18-alpine
 
-# ENV PORT=8080
-# ENV ADMINISTRATION_MICROSERVICE_IP="127.0.0.1"
-# ENV ADMINISTRATION_MICROSERVICE_PORT=9000
-# ENV REFRESH_PERIOD_MS=4000
-# ENV ALLOWED_IPS="::1,127.0.0.1,192.168.1.36,172.17.0.1"
+ENV PORT=8080
+ENV ADMINISTRATION_MICROSERVICE_HOST="127.0.0.1"
+ENV ADMINISTRATION_MICROSERVICE_PORT=9000
+ENV REFRESH_PERIOD_MS=4000
+ENV ALLOWED_IPS="::1,127.0.0.1,192.168.1.36,172.17.0.1"
 
 # Establece el directorio de trabajo dentro del contenedor
 WORKDIR /app
@@ -13,7 +13,8 @@ WORKDIR /app
 COPY package*.json ./
 
 # Instala las dependencias de la aplicación
-RUN npm ci --only=production
+RUN npm install
+# RUN npm ci --only=production
 
 # Copia el resto de los archivos de la aplicación
 COPY . .

@@ -56,7 +56,11 @@ const bind = async (req, res) => {
 
     serverInfo.os = osData.distro;
     serverInfo.cpu = cpuData.manufacturer + " " + cpuData.brand;
-    serverInfo.gpu = gpuData.controllers[gpuData.controllers.length - 1].name;
+    try {
+      serverInfo.gpu = gpuData.controllers[gpuData.controllers.length - 1].name;
+    } catch {
+      serverInfo.gpu = "N/A";
+    }
   } catch (error) {
     console.error(`Error en la obtención de las especificaciones del sistema. ${error}`.red);
     res.status(500).send({

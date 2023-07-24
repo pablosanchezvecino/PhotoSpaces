@@ -12,7 +12,12 @@ import "colors";
 
 printAsciiArt();
 
-dotenv.config();
+if (process.env.DOCKER_CONTAINER_EXECUTION) {
+  console.log("Ejecución en contenedor Docker detectada ".bold.blue);
+} else {
+  console.log("No se detectó ejecución en contenedor Docker, se cargarán las variables de entorno de fichero .env".bold.blue);
+  dotenv.config();
+}
 
 dbConnection();
 
@@ -47,7 +52,7 @@ setInterval(() => {
   } catch (error) {
     console.error(`Error durante la actualización de las colas. ${error}`.red);
   }
-}, process.env.DB_CHECK_PERIOD_MS
+}, (process.env.DB_CHECK_PERIOD_MS || 30000)
 );
 
 // Aunque no debería suceder si todo funciona correctamente, el sistema 

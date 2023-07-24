@@ -7,7 +7,7 @@ import {
   confirmationModalBody
 } from "./DOMElements.js";
 import {
-  administrationMicroserviceIp,
+  administrationMicroserviceHost,
   administrationMicroservicePort
 } from "../constants/parameters.js";
 
@@ -17,7 +17,7 @@ const addServer = async (serverIP, serverName) => {
 
   // Contactar con el microservicio de administración para que se encargue de añadir el nuevo servidor al sistema
   try {
-    const response = await fetch(`http://${administrationMicroserviceIp}:${administrationMicroservicePort}/servers`, {
+    const response = await fetch(`http://${administrationMicroserviceHost}:${administrationMicroservicePort}/servers`, {
       method: "POST",
       headers: {
         Accept: "application/json",
@@ -57,7 +57,7 @@ const enableServer = async (serverId) => {
     
   // Contactar con el microservicio de administración para que se encargue de habilitar el servidor
   try {
-    const response = await fetch(`http://${administrationMicroserviceIp}:${administrationMicroservicePort}/servers/${serverId}/enable`, { method: "POST" });
+    const response = await fetch(`http://${administrationMicroserviceHost}:${administrationMicroservicePort}/servers/${serverId}/enable`, { method: "POST" });
 
     const jsonContent = await response.json();
     let alertContent = null;
@@ -90,7 +90,7 @@ const disableServer = async (serverId) => {
   confirmationModalBody.innerHTML = spinnerHtml;
 
   try {
-    const response = await fetch(`http://${administrationMicroserviceIp}:${administrationMicroservicePort}/servers/${serverId}/disable`, { method: "POST" });
+    const response = await fetch(`http://${administrationMicroserviceHost}:${administrationMicroservicePort}/servers/${serverId}/disable`, { method: "POST" });
 
     const jsonContent = await response.json();
     let alertContent = null;
@@ -123,7 +123,7 @@ const abortServer = async (serverId) => {
   confirmationModalBody.innerHTML = spinnerHtml;
 
   try {
-    const response = await fetch(`http://${administrationMicroserviceIp}:${administrationMicroservicePort}/servers/${serverId}/abort`, { method: "POST" });
+    const response = await fetch(`http://${administrationMicroserviceHost}:${administrationMicroservicePort}/servers/${serverId}/abort`, { method: "POST" });
 
     const jsonContent = await response.json();
     let alertContent = null;
@@ -156,7 +156,7 @@ const deleteServer = async (serverId) => {
   confirmationModalBody.innerHTML = spinnerHtml;
 
   try {
-    const response = await fetch(`http://${administrationMicroserviceIp}:${administrationMicroservicePort}/servers/${serverId}`, { method: "DELETE" });
+    const response = await fetch(`http://${administrationMicroserviceHost}:${administrationMicroservicePort}/servers/${serverId}`, { method: "DELETE" });
 
     const jsonContent = await response.json();
     let alertContent = null;

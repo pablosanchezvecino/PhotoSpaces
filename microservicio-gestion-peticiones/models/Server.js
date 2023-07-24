@@ -67,7 +67,17 @@ const ServerSchema = Schema(
       min: 0,
       require: true,
     },
+    totalCyclesProcessedPixels: {
+      type: Number,
+      min: 0,
+      require: true,
+    },
     cyclesProcessedBytesPerMillisecondOfNeededTime: {
+      type: Number,
+      min: 0,
+      require: false,
+    },
+    cyclesScore: {
       type: Number,
       min: 0,
       require: false,
@@ -87,7 +97,17 @@ const ServerSchema = Schema(
       min: 0,
       require: true,
     },
+    totalEeveeProcessedPixels: {
+      type: Number,
+      min: 0,
+      require: true,
+    },
     eeveeProcessedBytesPerMillisecondOfNeededTime: {
+      type: Number,
+      min: 0,
+      require: false,
+    },
+    eeveeScore: {
       type: Number,
       min: 0,
       require: false,

@@ -1,6 +1,6 @@
-import { administrationMicroserviceIp, administrationMicroservicePort, maxCardsPerContainer } from "../constants/parameters.js";
+import { administrationMicroserviceHost, administrationMicroservicePort, maxCardsPerContainer } from "../constants/parameters.js";
 import { addServerCard, addRequestCard } from "./cardLogic.js";
-import { msToTime } from "./timeLogic.js";
+import { msToTime } from "./conversionsLogic.js";
 import {
   idleServerContainer,
   busyServerContainer,
@@ -39,14 +39,14 @@ const refresh = async () => {
   
   // Obtener servidores y peticiones
   try {
-    const serversResponse = await fetch(`http://${administrationMicroserviceIp}:${administrationMicroservicePort}/servers${queryString}`);
+    const serversResponse = await fetch(`http://${administrationMicroserviceHost}:${administrationMicroservicePort}/servers${queryString}`);
     if (serversResponse.ok) {
       servers = await serversResponse.json();
     } else {
       throw new Error(`Obtenido código ${serversResponse.status} en la consulta de servidores`);
     }
     
-    const requestsResponse = await fetch(`http://${administrationMicroserviceIp}:${administrationMicroservicePort}/requests${queryString}`);
+    const requestsResponse = await fetch(`http://${administrationMicroserviceHost}:${administrationMicroservicePort}/requests${queryString}`);
     if (requestsResponse.ok) {
       requests = await requestsResponse.json();
     } else {

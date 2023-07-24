@@ -26,7 +26,7 @@ command.stderr.on("data", (data) => {
 });
 
 command.stdout.on("data", (data) => {
-  if (process.env.SHOW_PYTHON_LOGS) {
+  if (process.env.SHOW_PYTHON_LOGS === undefined ? true : process.env.SHOW_PYTHON_LOGS) {
     console.log(data.toString().green);
   }
   if (data.toString().startsWith("Saved:")) {

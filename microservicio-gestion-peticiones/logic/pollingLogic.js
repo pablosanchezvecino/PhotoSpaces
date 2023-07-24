@@ -14,7 +14,7 @@ const performPolling = async (request, server) => {
     // console.log(`Consultando tiempo a servidor (Petición ${request._id}):`.green);
       
     try {
-      const response = await fetch(`http://${server.ip}:${process.env.RENDER_SERVER_PORT}/time`);
+      const response = await fetch(`http://${server.ip}:${process.env.RENDER_SERVER_PORT || 3000}/time`);
       if (response.ok) {
         const estimatedRemainingProcessingTimeMs = (await response.json()).estimatedRemainingProcessingTime;
         // console.log(`Obtenido ${estimatedRemainingProcessingTimeMs}`.green);

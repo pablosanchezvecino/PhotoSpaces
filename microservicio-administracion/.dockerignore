@@ -9,7 +9,7 @@ build/
 out/
 
 # Ignorar archivos de configuración local
-.env
+
 
 # Ignorar archivos de respaldo de editor
 *~

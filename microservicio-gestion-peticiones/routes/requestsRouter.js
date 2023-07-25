@@ -7,8 +7,8 @@ import { Router } from "express";
 
 const router = Router();
 
-// GET /requests/:id
-router.get("/:id", transferRenderedImage);
+// GET /requests/:id/rendered-image
+router.get("/:id/rendered-image", transferRenderedImage);
 
 // POST /requests
 router.post("", (req, res) => {
@@ -29,7 +29,7 @@ router.post("", (req, res) => {
   }
 });
 
-// GET /requests/:id/time
-router.get("/:requestId/info", getWaitingInfo);
+// GET /requests/:id/info
+router.get("/:id/info", getWaitingInfo);
 
 export default router;

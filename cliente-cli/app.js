@@ -1,3 +1,4 @@
+import { requestHandlingMicroserviceHost, requestHandlingMicroservicePort } from "./env.js";
 import { getTerminationInput } from "./logic/terminationLogic.js";
 import { getDracoCompressionLevel } from "./logic/dracoLogic.js";
 import { getParameters } from "./logic/parametersLogic.js";
@@ -61,7 +62,7 @@ while (!terminate) {
   try {
 
     const response = await fetch(
-      `http://${process.env.REQUEST_HANDLING_MICROSERVICE_IP}:${process.env.REQUEST_HANDLING_MICROSERVICE_PORT}/requests`,
+      `http://${requestHandlingMicroserviceHost}:${requestHandlingMicroservicePort}/requests`,
       {
         method: "POST",
         body: formData

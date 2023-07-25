@@ -1,13 +1,14 @@
 
 import { extensionFromFilename, extensionToMimeType, generateGltfFromGlb, generateDracoFromGltf } from "../logic/fileLogic.js";
 import { isValidEmail, isValidModel, isValidDracoCompressionLevel, isValidRequestLabel } from "../logic/validationLogic.js";
-import { existsSync, readFileSync, writeFileSync, unlinkSync, renameSync, statSync } from "fs";
 import { resolutionToRatioWithRespectTo1080p, resolutionToPixelCount } from "../logic/resolutionLogic.js";
+import { existsSync, readFileSync, writeFileSync, unlinkSync, renameSync, statSync } from "fs";
 import { options } from "../constants/sendRenderedImageOptions.js";
 import { processIpAddress } from "../logic/ipAddressLogic.js";
 import { performPolling } from "../logic/pollingLogic.js";
 import PendingEmail from "../models/PendingEmail.js";
 import { sendMail } from "../logic/emailLogic.js";
+import { renderServerPort } from "../env.js";
 import Request from "../models/Request.js";
 import Server from "../models/Server.js";
 import mongoose from "mongoose";
@@ -132,7 +133,7 @@ const handleNewRequest = async (req, res) => {
   if (req.body.requestLabel) {
     if (!isValidRequestLabel(req.body.requestLabel)) {
       console.error(`Etiqueta no válida recibida (${req.body.requestLabel})`.red);
-      res.status(500).send({ error: "Etiqueta no válida recibida" });
+      res.status(400).send({ error: "Etiqueta no válida recibida" });
       return;
     }
     request.requestLabel = req.body.requestLabel;
@@ -279,7 +280,7 @@ const forwardRequest = async (res, request, server, originalFilename) => {
     
     // Enviar petición a servidor de renderizado
     fetch(
-      `http://${server.ip}:${process.env.RENDER_SERVER_PORT || 3000}/render`,
+      `http://${server.ip}:${renderServerPort}/render`,
       {
         method: "POST",
         body: formData
@@ -540,7 +541,7 @@ const enqueueRequest = async (res, request, originalFilename) => {
     try {
       const beforeTransfer = new Date();
       const response = await fetch(
-        `http://${bestBusyServer.ip}:${process.env.RENDER_SERVER_PORT || 3000}/file-transfer`,
+        `http://${bestBusyServer.ip}:${renderServerPort}/file-transfer`,
         {
           method: "POST",
           body: formData
@@ -659,22 +660,24 @@ const updateQueues = async () => {
           .catch((error) => {
             console.error(`Error durante el reenvío directo de la petición ${request._id}. ${error}`.red);
           });
+
+          
       } catch (error) {
         console.error(`Error al intentar asignar las peticiones encoladas no asignadas al servidor ${newIdleServer.name}`);
       }
-    } else {
-      // Intentar encolar todas las que aún están sin asignar
-      unassignedEnqueuedRequests.forEach((request) => {
-        try { 
+    } 
+    // Intentar encolar todas las que aún están sin asignar
+    unassignedEnqueuedRequests.forEach((request) => {
+      try { 
 
-          enqueueRequest(null, request, null);
+        enqueueRequest(null, request, null);
     
-        } catch (error) {
-          console.error(`Error durante el reenvío directo de la petición ${request._id}. ${error}`.red);
-        }
+      } catch (error) {
+        console.error(`Error durante el encolamiento de la petición ${request._id}. ${error}`.red);
+      }
         
-      });
-    }
+    });
+    
 
   }
 
@@ -750,9 +753,30 @@ const updateQueues = async () => {
 
 
 const getWaitingInfo = async (req, res) => {
+  // Oid no válido
+  if (!mongoose.isValidObjectId(req.params.id)) {
+    console.error(`Recibido parámetro id no válido (${req.params.id})`.red);
+    res.status(400).send({ error: "El parámetro id no es válido" });
+    return;
+  }
+
   try {
+  
     // Consutar estado de la petición y el momento en que fue encolada y, en caso de que contara con ella, la estimación del tiempo restante
-    const requestInfo = await Request.findById(req.params.requestId).select("queueStartTime assignedServer estimatedRemainingProcessingTime status").lean();
+    const requestInfo = await Request.findById(req.params.id).select("queueStartTime assignedServer estimatedRemainingProcessingTime status").lean();
+
+    // No se encuentra la petición
+    if (!requestInfo) {
+      console.error(`Petición de renderizado asociada al id ${req.params.id} no encontrada`.red);
+      res.status(404).send({ error: "El parámetro id no se corresponde con ninguna petición de renderizado almacenada en el sistema" });
+      return;
+    }
+
+    // if (requestInfo.status === "fulfilled") {
+    //   res.status(400).send({ error: "La petición ya ha sido procesada" });
+    //   console.error(`La petición con id ${req.params.id} ya ha sido procesada`.red);
+    //   return;
+    // }
 
     let queuePosition = 0;
     let estimatedRemainingProcessingTime = requestInfo.estimatedRemainingProcessingTime;

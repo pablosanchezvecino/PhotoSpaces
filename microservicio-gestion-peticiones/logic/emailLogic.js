@@ -1,3 +1,4 @@
+import { emailUser, emailPassword, emailSendingBackupIntervalMs } from "../env.js";
 import PendingEmail from "../models/PendingEmail.js";
 import { writeFileSync, unlinkSync } from "fs";
 import { wait } from "./timeLogic.js";
@@ -12,13 +13,13 @@ const sendMail = async (filename, recipientMailAddress) => {
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: process.env.EMAIL_USER || "",
-        pass: process.env.EMAIL_PASSWORD || ""
+        user: emailUser,
+        pass: emailPassword
       },
     });
     
     const mailOptions = {
-      from: `PhotoSpaces <${process.env.EMAIL_USER || ""}>`,
+      from: `PhotoSpaces <${emailUser}>`,
       to: recipientMailAddress,
       subject: "Renderizado finalizado",
       text: "¡Tu escena ha sido renderizada con éxito! Aquí tienes la imagen resultante.",
@@ -44,7 +45,7 @@ const sendMail = async (filename, recipientMailAddress) => {
 const setUpEmailSendingBackupInterval = async () =>  {
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    await wait(process.env.EMAIL_SENDING_BACKUP_INTERVAL_MS || 3600000);
+    await wait(emailSendingBackupIntervalMs);
     await performEmailSendingBackup();
   }
 };

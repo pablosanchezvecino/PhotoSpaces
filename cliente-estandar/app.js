@@ -1,6 +1,6 @@
+import { port, requestHandlingMicroserviceHost, requestHandlingMicroservicePort } from "./env.js";
 import { printAsciiArt } from "./logic/asciiArtLogic.js";
 import express from "express";
-import dotenv from "dotenv";
 import morgan from "morgan";
 import path from "path";
 import fs from "fs";
@@ -8,19 +8,11 @@ import "colors";
 
 printAsciiArt();
 
-if (process.env.DOCKER_CONTAINER_EXECUTION) {
-  console.log("Ejecución en contenedor Docker detectada ".bold.blue);
-} else {
-  console.log("No se detectó ejecución en contenedor Docker, se cargarán las variables de entorno de fichero .env".bold.blue);
-  dotenv.config();
-}
-
 const app = express();
-const port = process.env.PORT || 8081;
 
 const parameters = {
-  requestHandlingMicroserviceHost: (process.env.REQUEST_HANDLING_MICROSERVICE_HOST || "127.0.0.1"),
-  requestHandlingMicroservicePort: (process.env.REQUEST_HANDLING_MICROSERVICE_PORT || 9001)
+  requestHandlingMicroserviceHost: requestHandlingMicroserviceHost,
+  requestHandlingMicroservicePort: requestHandlingMicroservicePort
 };
 
 try {

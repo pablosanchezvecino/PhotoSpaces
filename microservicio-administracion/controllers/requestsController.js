@@ -1,4 +1,4 @@
-import { renderServerPort, requestHandlingMicroserviceHost, requestHandlingMicroservicePort } from "../constants/hostsAndPortsSetup.js";
+import { renderServerPort, requestHandlingMicroserviceHost, requestHandlingMicroservicePort } from "../env.js";
 import { options } from "../constants/sendRenderedImageOptions.js";
 import { writeFileSync, unlinkSync} from "fs";
 import Request from "../models/Request.js";
@@ -79,21 +79,21 @@ const getRequestRenderedImage = async (req, res) => {
     request = await Request.findById(req.params.id, "-renderedImage");
   } catch (error) {
     console.error(`Error en la consulta previa de la petición a la base de datos. ${error}`.red);
-    res.status(400).send({ error: "Error en en la consulta previa de la petición a la base de datos" });
+    res.status(500).send({ error: "Error en en la consulta previa de la petición a la base de datos" });
     return;
   }
 
   // No se encuentra la petición
   if (!request) {
     console.error(`Petición de renderizado asociada al id ${req.params.id} no encontrada`.red);
-    res.status(404).send({error: "El parámetro id no se corresponde con ninguna petición de renderizado almacenada en el sistema" });
+    res.status(404).send({ error: "El parámetro id no se corresponde con ninguna petición de renderizado almacenada en el sistema" });
     return;
   }
 
   // Petición existe pero no ha sido finalizada
   if (request.status !== "fulfilled") {
     console.error(`La petición de renderizado ${req.params.id} no ha sido procesada aún`.red);
-    res.status(404).send({error: "El parámetro id se corresponde con una petición de renderizado cuyo procesamiento no ha finalizado aún" });
+    res.status(400).send({ error: "El parámetro id se corresponde con una petición de renderizado cuyo procesamiento no ha finalizado aún" });
     return;
   }
 
@@ -153,7 +153,7 @@ const deleteRequest = async (req, res) => {
   // No se encuentra la petición
   if (!requestToDelete) {
     console.error(`Petición de renderizado asociada al id ${req.params.id} no encontrada`.red);
-    res.status(404).send({error: "El parámetro id no se corresponde con ninguna petición de renderizado almacenada en el sistema"});
+    res.status(404).send({ error: "El parámetro id no se corresponde con ninguna petición de renderizado almacenada en el sistema"});
     return;
   }
   

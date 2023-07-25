@@ -1,0 +1,359 @@
+openapi: 3.0.3
+info:
+  title: API Servidor de Renderizado
+  description: >-
+    Esta API es ofrecida por los servidores de renderizado que utiliza la
+    aplicación PhotoSpaces
+
+    para que los microservicios se puedan comunicar con estos.
+  version: '1.0'
+paths:
+  /bind:
+    post:
+      tags:
+        - bind
+      summary: Vincular el servidor de renderizado al sistema
+      description: >-
+        Realizar renderizado de prueba, medir el tiempo y devolverlo junto a las
+        especificaciones del servidor
+      operationId: bind
+      responses:
+        '200':
+          description: Todo va bien
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerInfo'
+        '400':
+          description: El servidor no se encuentra disponible
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BindUserErrorInfo'
+        '500':
+          description: >-
+            El servidor no es capaz de realizar el renderizado de prueba o de
+            obtener sus especificaciones
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BindServerErrorInfo'
+  /unbind:
+    post:
+      tags:
+        - unbind
+      summary: Desvincular el servidor de renderizado del sistema
+      description: >-
+        Liberar al servidor de renderizado para que no acepte más peticiones
+        hasta que vuelva a ser vinculado
+      operationId: unbind
+      responses:
+        '200':
+          description: Todo va bien
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnbindSuccessInfo'
+        '400':
+          description: El servidor se encuentra procesando una petición
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnbindErrorInfo'
+  /render:
+    post:
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                model:
+                  type: string
+                  format: binary
+                data:
+                  type: string
+              required:
+                - data
+      tags:
+        - render
+      summary: >-
+        Renderizar y devolver imagen correspondiente junto al tiempo requerido
+        por Blender (en milisegundos)
+      description: Generar archivo .png utilizando la escena 3D y los parámetros recibidos
+      operationId: render
+      responses:
+        '200':
+          description: Todo va bien
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RenderedImageResponseInfo'
+        '400':
+          description: El servidor no se encuentra disponible
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RenderUserErrorInfo'
+        '500':
+          description: >-
+            El servidor no es capaz de realizar el renderizado o de devolver la
+            imagen
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RenderServerErrorInfo'
+  /time:
+    get:
+      tags:
+        - time
+      summary: >-
+        Obtener el tiempo estimado de espera para la finalización del
+        renderizado
+      description: >-
+        Consultar el último log que ha ralizado el proceso de Blender
+        relacionado con el tiempo de procesamiento restante (en milsiengundos)
+      operationId: time
+      responses:
+        '200':
+          description: Todo va bien
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimeSuccessInfo'
+        '400':
+          description: El servidor no se encuentra procesando una petición
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimeUserErrorInfo'
+  /abort:
+    post:
+      tags:
+        - abort
+      summary: Abortar el procesamiento en el servidor
+      description: Abortar el proceso de Blender qe se está ejecutando en el servidor
+      operationId: abort
+      responses:
+        '200':
+          description: Todo va bien
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AbortSuccessInfo'
+        '400':
+          description: El servidor no se encuentra procesando una petición
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AbortUserErrorInfo'
+        '500':
+          description: Error interno al intentar abortar el proceso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AbortServerErrorInfo'
+  /disable:
+    post:
+      tags:
+        - disable
+      summary: Deshabilitar el servidor
+      description: >-
+        Pasar el estado del servidor a deshabiltado, partiendo de que este se
+        encuentra disponible
+      operationId: disable
+      responses:
+        '200':
+          description: Todo va bien
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DisableSuccessInfo'
+        '400':
+          description: El servidor no se encuentra disponible
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DisableErrorInfo'
+  /enable:
+    post:
+      tags:
+        - enable
+      summary: Habilitar el servidor
+      description: >-
+        Pasar el estado del servidor a disponible, partiendo de que este se
+        encuentra deshabilitado
+      operationId: enable
+      responses:
+        '200':
+          description: Todo va bien
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnableSuccessInfo'
+        '400':
+          description: El servidor no se encuentra deshabilitado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnableErrorInfo'
+  /file-transfer:
+    post:
+      tags:
+        - file-transfer
+      summary: Enviar al servidor fichero con escena 3D
+      description: >-
+        Envío previo de fichero con escena 3D correspondiente a una petición
+        encolada al servidor mientras este se encuentra procesando una petición
+        anterior
+      operationId: file-transfer
+      responses:
+        '200':
+          description: Todo va bien
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileTransferSuccessInfo'
+        '400':
+          description: Multer detecta algún error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileTransferMulterErrorInfo'
+components:
+  schemas:
+    ServerInfo:
+      type: object
+      properties:
+        timeSpentOnRenderTest:
+          type: integer
+          format: int64
+          example: 5695
+        os:
+          type: string
+          example: Microsoft Windows 11 Pro
+        cpu:
+          type: string
+          example: Intel® Core™ i7-7700K
+        gpu:
+          type: string
+          example: NVIDIA GeForce GTX 1080 Ti
+        blenderVersion:
+          type: string
+          example: 3.4.1
+    RenderedImageResponseInfo:
+      type: object
+      properties:
+        totalBlenderTime:
+          type: integer
+          format: int64
+          example: 50010
+        renderedImage:
+          type: string
+          format: byte
+          example: >-
+            SG9sYSwgZXN0ZSBlcyB1biBlbWplbG8gZGUgY2FuZGEnIGVuIGJhc2U2NCE=SG9sYSwgZXN0ZSBlcyB1biBlbWplbG8gZGUgY2FuZGEnIGVuIGJhc2U2NCE=SG9sYSwgZXN0ZSBlcyB1biBlbWplbG8gZGUgY2FuZGEnIGVuIGJhc2U2NCE=SG9sYSwgZXN0ZSBlcyB1biBlbWplbG8gZGUgY2FuZGEnIGVuIGJhc2U2NCE=SG9sYSwgZXN0ZSBlcyB1biBlbWplbG8gZGUgY2FuZGEnIGVuIGJhc2U2NCE=SG9sYSwgZXN0ZSBlcyB1biBlbWplbG8gZGUgY2FuZGEnIGVuIGJhc2U
+    BindUserErrorInfo:
+      type: object
+      properties:
+        error:
+          type: string
+          example: El servidor no se encuentra disponible
+    BindServerErrorInfo:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Error al intentar obtener la información del sistema
+    UnbindSuccessInfo:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Servidor desvinculado con éxito
+    UnbindErrorInfo:
+      type: object
+      properties:
+        error:
+          type: string
+          example: El servidor se encuentra procesando una petición
+    RenderUserErrorInfo:
+      type: object
+      properties:
+        error:
+          type: string
+          example: El servidor no se encuentra disponible
+    RenderServerErrorInfo:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Error en el proceso de renderizado
+    AbortSuccessInfo:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Procesamiento en el servidor abortado con éxito
+    TimeSuccessInfo:
+      type: object
+      properties:
+        estimatedRemainingProcessingTime:
+          type: integer
+          format: int64
+          example: 30123
+    TimeUserErrorInfo:
+      type: object
+      properties:
+        error:
+          type: string
+          example: El servidor no se encuentra procesando una petición
+    AbortUserErrorInfo:
+      type: object
+      properties:
+        error:
+          type: string
+          example: El servidor no se encontraba procesando una petición
+    AbortServerErrorInfo:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Error interno al intentar abortar el procesamiento en el servidor
+    DisableErrorInfo:
+      type: object
+      properties:
+        error:
+          type: string
+          example: El servidor se encuentra procesando una petición
+    DisableSuccessInfo:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Servidor deshabilitado con éxito
+    EnableErrorInfo:
+      type: object
+      properties:
+        error:
+          type: string
+          example: El servidor ya se encuentra habilitado y procesando una petición
+    EnableSuccessInfo:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Servidor habilitado con éxito
+    FileTransferSuccessInfo:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Fichero recibido con éxito
+    FileTransferMulterErrorInfo:
+      type: object
+      properties:
+        error:
+          type: string
+          example: File too large!

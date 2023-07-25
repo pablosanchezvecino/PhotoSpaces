@@ -4,25 +4,17 @@ import { setUpEmailSendingBackupInterval } from "./logic/emailLogic.js";
 import requestsRouter from "./routes/requestsRouter.js";
 import dbConnection from "./database/databaseConfig.js";
 import { printAsciiArt } from "./logic/asciiArtLogic.js";
+import { port, dbCheckPeriodMs } from "./env.js";
 import express from "express";
 import morgan from "morgan";
-import dotenv from "dotenv";
 import cors from "cors";
 import "colors";
 
 printAsciiArt();
 
-if (process.env.DOCKER_CONTAINER_EXECUTION) {
-  console.log("Ejecución en contenedor Docker detectada ".bold.blue);
-} else {
-  console.log("No se detectó ejecución en contenedor Docker, se cargarán las variables de entorno de fichero .env".bold.blue);
-  dotenv.config();
-}
-
 dbConnection();
 
 const app = express();
-const port = process.env.PORT || 9001;
 
 app.use(cors());
 app.use(morgan("dev"));
@@ -46,13 +38,15 @@ app.post("/new-server-available", (req, res) => {
 // el sistema comprobará de forma periódica la existencia de un nuevo
 // servidor disponible y si algún servidor tiene peticiones encoladas y
 // no las está procesando siendo posible este procesamiento
-setInterval(() => {
-  try {
-    updateQueues();
-  } catch (error) {
-    console.error(`Error durante la actualización de las colas. ${error}`.red);
-  }
-}, (process.env.DB_CHECK_PERIOD_MS || 30000)
+setInterval(
+  () => {
+    try {
+      updateQueues();
+    } catch (error) {
+      console.error(`Error durante la actualización de las colas. ${error}`.red);
+    }
+  }, 
+  dbCheckPeriodMs
 );
 
 // Aunque no debería suceder si todo funciona correctamente, el sistema 

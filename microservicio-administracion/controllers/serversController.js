@@ -1,4 +1,5 @@
-import { renderServerPort, requestHandlingMicroserviceHost, requestHandlingMicroservicePort } from "../constants/hostsAndPortsSetup.js";
+import { renderServerPort, requestHandlingMicroserviceHost, requestHandlingMicroservicePort } from "../env.js";
+import { isValidServerName, isValidIpv4 } from "../logic/validationLogic.js";
 import Request from "../models/Request.js";
 import Server from "../models/Server.js";
 import mongoose from "mongoose";
@@ -12,7 +13,7 @@ const getServers = async (req, res) => {
 
     // Si no se ha indicado límite o no es un entero
     if (!limit || limit.includes(".") || isNaN(parseInt(limit))) {
-      // 0 indica a mongoose que no limite el nñumero de documentos deueltos
+      // 0 indica a mongoose que no limite el número de documentos devueltos
       limit = 0; 
     }
     
@@ -65,11 +66,11 @@ const getServerById = async (req, res) => {
 
 const addServer = async (req, res) => {
   // Extraer dirección IP y nombre del servidor del cuerpo de la petición
-  const renderingServerIP = req.body.ip;
+  const renderingServerIp = req.body.ip;
   const renderingServerName = req.body.name;
 
   // Si no es posible extraer la dirección IP, informar del error
-  if (!renderingServerIP) {
+  if (!renderingServerIp) {
     console.error("No se encontró la dirección IP del servidor de renderizado en el cuerpo de la petición".red);
     res.status(400).send({ error: "No se encontró la dirección IP del servidor de renderizado en el cuerpo de la petición" });
     return;
@@ -82,11 +83,24 @@ const addServer = async (req, res) => {
     return;
   }
 
+  // Validaciones
+  if (!isValidServerName(renderingServerName)) {
+    console.error(`El nombre para el servidor recibido no es válido (${renderingServerName})`.red);
+    res.status(400).send({ error: "El nombre para el servidor recibido no es válido" });
+    return;
+  }
+
+  if (!isValidIpv4(renderingServerIp)) {
+    console.error(`La dirección IP recibida no sigue el formato IPv4 (${renderingServerIp})`.red);
+    res.status(400).send({ error: "La dirección IP recibida no sigue el formato IPv4" });
+    return;
+  }
+
   // Comprobar que no hay servidor registrado con la misma dirección IP
   let sameIPServer = null;
   let sameNameServer = null;
   try {
-    sameIPServer = await Server.findOne({ ip: renderingServerIP });
+    sameIPServer = await Server.findOne({ ip: renderingServerIp });
     sameNameServer = await Server.findOne({ name: renderingServerName });
   } catch (error) {
     console.error(`Error en las consultas a la base de datos previas a añadir el servidor. ${error}`.red);
@@ -107,8 +121,8 @@ const addServer = async (req, res) => {
   }
 
   // Realizar consulta al servidor para saber si este es capaz de actuar como servidor de renderizado
-  try {
-    const response = await fetch(`http://${renderingServerIP}:3000/bind`, { method: "POST" });
+  try { console.log(`http://${renderingServerIp}:3000/bind`)
+    const response = await fetch(`http://${renderingServerIp}:3000/bind`, { method: "POST" });
     if (response.ok) {
       // Todo va bien en el servidor de renderizado
       // Persistir info servidor
@@ -116,7 +130,7 @@ const addServer = async (req, res) => {
 
       const newServer = new Server({
         name: renderingServerName,
-        ip: renderingServerIP,
+        ip: renderingServerIp,
         status: "idle",
         os: serverInfo.os,
         cpu: serverInfo.cpu,
@@ -222,7 +236,7 @@ const disableServer = async (req, res) => {
       }
   
       // Informar del éxito al cliente
-      res.status(200).send({message: (await response.json()).message });
+      res.status(200).send({ message: (await response.json()).message });
     } else {
       console.error(`Recibido código ${response.status} en la respuesta del servidor de renderizado`.red);
       res.status(400).send({ error: (await response.json()).error });

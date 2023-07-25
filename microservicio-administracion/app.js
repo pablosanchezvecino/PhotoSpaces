@@ -1,25 +1,17 @@
 import { ipCheckMiddleware } from "./middleware/ipCheckMiddleware.js";
+import { port } from "./env.js";
 import { printAsciiArt } from "./logic/asciiArtLogic.js";
 import requestsRouter from "./routes/requestsRouter.js";
 import dbConnection from "./database/databaseConfig.js";
 import serversRouter from "./routes/serversRouter.js";
 import express from "express";
-import dotenv from "dotenv";
 import morgan from "morgan";
 import cors from "cors";
 import "colors";
 
 printAsciiArt();
 
-if (process.env.DOCKER_CONTAINER_EXECUTION) {
-  console.log("Ejecución en contenedor Docker detectada ".bold.blue);
-} else {
-  console.log("No se detectó ejecución en contenedor Docker, se cargarán las variables de entorno de fichero .env".bold.blue);
-  dotenv.config();
-}
-
 const app = express();
-const port = process.env.PORT || 9000;
 
 // Conexión a MongoDB
 dbConnection();

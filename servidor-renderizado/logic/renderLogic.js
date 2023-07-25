@@ -1,5 +1,6 @@
 import { extractRemainingTimeMs, extractTotalBlenderTimeMs } from "./timeLogic.js";
 import { parentPort, workerData } from "worker_threads";
+import { showPythonLogs } from "../env.js";
 import { spawn } from "child_process";
 import path from "path";
 import fs from "fs";
@@ -26,7 +27,7 @@ command.stderr.on("data", (data) => {
 });
 
 command.stdout.on("data", (data) => {
-  if (process.env.SHOW_PYTHON_LOGS === undefined ? true : process.env.SHOW_PYTHON_LOGS) {
+  if (showPythonLogs) {
     console.log(data.toString().green);
   }
   if (data.toString().startsWith("Saved:")) {

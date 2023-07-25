@@ -1,11 +1,4 @@
-let allowedIps = process.env.ALLOWED_IPS;
-
-// Extraer diecciones IP
-if (process.env.ALLOWED_IPS) {
-  allowedIps = allowedIps.split(",");
-} else { // Si no se especifican, no se realizará ningún filtrado
-  allowedIps = ["0.0.0.0"];
-}
+import { allowedIps } from "../env.js";
 
 const ipCheckMiddleware = (req, res, next) => {
   let requestIp = req.ip;

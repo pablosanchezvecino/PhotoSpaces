@@ -1,0 +1,1347 @@
+openapi: 3.0.3
+info:
+  title: API Principal PhotoSpaces
+  description: >-
+    Esta API es ofrecida por los microservicios de la aplicación PhotoSpaces, se
+    encarga de realizar las acciones, comprobaciones
+
+    y llamadas a las APIs de los servidores de renderizado necesarias para
+    satisfacer las peticiones de los clientes.
+  version: '1.0'
+paths:
+  /servers:
+    get:
+      tags:
+        - servers
+      summary: Obtener servidores
+      description: Obtener servidores registrados en el sistema
+      operationId: getServers
+      parameters:
+        - name: limit
+          in: query
+          description: Número máximo de servidores que se devolverán por estado
+          required: false
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: Todo va bien
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Servers'
+        '500':
+          description: Se produce un error en la consulta a la base de datos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetServersServerErrorInfo'
+    post:
+      tags:
+        - servers
+      summary: Añadir servidor
+      description: Registrar nuevo servidor en el sistema
+      operationId: addServer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ip:
+                  type: string
+                  format: ipv4
+                  example: 127.0.0.1
+                name:
+                  type: string
+                  example: localhost
+      responses:
+        '201':
+          description: Todo va bien
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Server'
+        '400':
+          description: Algún parámetro no válido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddServerUserError'
+        '500':
+          description: >-
+            Error relacionado con la base de datos, con el servidor de
+            renderizado, o con la comunicación con este
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddServerServerError'
+  '/servers/{id}':
+    get:
+      tags:
+        - servers
+      summary: Obtener servidor de renderizado por id
+      description: Obtener servidor de renderizado a partir de su oid en la base de datos
+      operationId: getServer
+      parameters:
+        - name: id
+          in: path
+          description: Id del servidor
+          required: true
+          schema:
+            type: string
+            example: 64be9afac8bd803b63efa530
+      responses:
+        '200':
+          description: Todo va bien
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Request'
+        '400':
+          description: Id no es válido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetServerInvalidIdError'
+        '404':
+          description: No existe petición con el id especificado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetServerNotFoundError'
+        '500':
+          description: Error en la consulta a la base de datos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetServerServerError'
+    delete:
+      tags:
+        - servers
+      summary: Eliminar servidor de renderizado
+      description: >-
+        Desvincular el servidor de renderizado correspondiente al parámetro id
+        del sistema
+      operationId: deleteServer
+      parameters:
+        - name: id
+          in: path
+          description: Id del servidor
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Todo va bien
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Server'
+        '400':
+          description: >-
+            Id no es válido o se ha enviado la petición se ha enviado en un
+            momento ilógico o conflictivo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteServerInvalidIdError'
+        '404':
+          description: No existe servidor con el id especificado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteServerNotFoundError'
+        '500':
+          description: >-
+            Error relacionado con la base de datos, con el servidor de
+            renderizado, o con la comunicación con este
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteServerServerError'
+  '/servers/{id}/disable':
+    post:
+      tags:
+        - servers
+      summary: Deshabilitar servidor de renderizado
+      description: Deshabilitar el servidor correspondiente al id especificado
+      operationId: disableServer
+      parameters:
+        - name: id
+          in: path
+          description: Id del servidor
+          required: true
+          schema:
+            type: string
+            example: 64be9afac8bd803b63efa530
+      responses:
+        '200':
+          description: Todo va bien
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DisableServerSuccess'
+        '400':
+          description: >-
+            Id no es válido o se ha enviado la petición se ha enviado en un
+            momento ilógico o conflictivo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DisableServerInvalidIdError'
+        '404':
+          description: No existe servidor con el id especificado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DisableServerNotFoundError'
+        '500':
+          description: >-
+            Error relacionado con la base de datos, con el servidor de
+            renderizado, o con la comunicación con este
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DisableServerServerError'
+  '/servers/{id}/enable':
+    post:
+      tags:
+        - servers
+      summary: Habilitar servidor de renderizado
+      description: Habilitar el servidor correspondiente al id especificado
+      operationId: enableServer
+      parameters:
+        - name: id
+          in: path
+          description: Id del servidor
+          required: true
+          schema:
+            type: string
+            example: 64be9afac8bd803b63efa530
+      responses:
+        '200':
+          description: Todo va bien
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnableServerSuccess'
+        '400':
+          description: >-
+            Id no es válido o se ha enviado la petición se ha enviado en un
+            momento ilógico o conflictivo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnableServerInvalidIdError'
+        '404':
+          description: No existe servidor con el id especificado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnableServerNotFoundError'
+        '500':
+          description: >-
+            Error relacionado con la base de datos, con el servidor de
+            renderizado, o con la comunicación con este
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnableServerServerError'
+  '/servers/{id}/abort':
+    post:
+      tags:
+        - servers
+      summary: Abortar procesamiento en servidor de renderizado
+      description: >-
+        Abortar el procesamiento en el servidor de renderizado correspondiente
+        al parámetro id
+      operationId: abortServer
+      parameters:
+        - name: id
+          in: path
+          description: Id del servidor
+          required: true
+          schema:
+            type: string
+            example: 64be9afac8bd803b63efa530
+      responses:
+        '200':
+          description: Todo va bien
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AbortServerSuccess'
+        '400':
+          description: >-
+            Id no es válido o se ha enviado la petición se ha enviado en un
+            momento ilógico o conflictivo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AbortServerInvalidIdError'
+        '404':
+          description: No existe servidor con el id especificado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AbortServerNotFoundError'
+        '500':
+          description: >-
+            Error relacionado con la base de datos, con el servidor de
+            renderizado, o con la comunicación con este
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AbortServerServerError'
+  /requests:
+    get:
+      tags:
+        - requests
+      summary: Obtener peticiones de renderizado
+      description: Obtener peticiones de renderizado registradas en el sistema
+      operationId: getRequests
+      parameters:
+        - name: limit
+          in: query
+          description: Número máximo de peticiones que se devolverán por estado
+          required: false
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: Todo va bien
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Requests'
+        '500':
+          description: Se produce un error en la consulta a la base de datos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetRequestsServerErrorInfo'
+    post:
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: string
+                  description: String con los parámetros de renderizado en formato JSON
+                model:
+                  type: string
+                  format: binary
+                  description: Fichero con la escena 3D
+                dracoCompressionLevel:
+                  type: integer
+                  format: int32
+                  description: >-
+                    Si se solicita compresión con Draco, el nivel que se
+                    aplicará
+                email:
+                  type: string
+                  format: email
+                  description: >-
+                    Si se elige envío por correo, la dirección a la que se
+                    enviará la imagen renderizada
+                requestTag:
+                  type: string
+                  description: >-
+                    Etiqueta para facilitar la identificación de la petición en
+                    el sistema
+              required:
+                - data
+      tags:
+        - requests
+      summary: Enviar petición
+      description: Generar petición de renderizado en el sistema
+      operationId: addRequest
+      responses:
+        '200':
+          description: Todo va bien
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddRequestSuccess'
+        '400':
+          description: Algún parámetro no válido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddRequestInvalidParametersError'
+        '500':
+          description: >-
+            Error relacionado con la base de datos, con el servidor de
+            renderizado, con la comunicación con este, con el manejo de
+            ficheros, con la compresión con Draco...
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddRequestServerError'
+  '/requests/{id}':
+    get:
+      tags:
+        - requests
+      summary: Obtener petición de renderizado por id
+      description: Obtener petición de renderizado a partir de su oid en la base de datos
+      operationId: getRequest
+      parameters:
+        - name: id
+          in: path
+          description: Id de la petición
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Todo va bien
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Request'
+        '400':
+          description: Id existe pero no se corresponde con una petición finalizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetRequestInvalidIdError'
+        '404':
+          description: Id no existe
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetRequestNotFoundError'
+        '500':
+          description: Error en la consulta a la base de datos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetRequestServerError'
+    delete:
+      tags:
+        - requests
+      summary: Eliminar petición de renderizado
+      description: >-
+        Eliminar la petición de renderizado correspondiente al parámetro id del
+        sistema, independientemente de su estado, abortando el procesamiento en
+        el servidor correspondiente si esta se encontrara siendo procesada
+      operationId: deleteRequest
+      parameters:
+        - name: id
+          in: path
+          description: Id de la petición
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Todo va bien
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Request'
+        '400':
+          description: >-
+            Id no es válido o se ha enviado la petición se ha enviado en un
+            momento ilógico o conflictivo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteRequestInvalidIdError'
+        '404':
+          description: No existe servidor con el id especificado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteRequestNotFoundError'
+        '500':
+          description: >-
+            Error relacionado con la base de datos, con el servidor de
+            renderizado, o con la comunicación con este
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteRequestServerError'
+  '/requests/{id}/info':
+    get:
+      tags:
+        - requests
+      summary: Obtener información de la petición
+      description: >-
+        Obtener estado y, en su cso, la posición en la cola y el tiempo restante
+        estimado de la petición de renderizado (si esta está siendo procesada,
+        para su finalizción, y si esta se encuentra encolada, para su avance en
+        la cola)
+      operationId: getRequestInfo
+      parameters:
+        - name: id
+          in: path
+          description: Id de la petición
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Todo va bien
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestInfo'
+        '400':
+          description: >-
+            Id no es válida o existe pero se corresponde con una petición
+            finalizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetRequestInfoInvalidIdError'
+        '404':
+          description: Id no existe
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetRequestInfoNotFoundError'
+        '500':
+          description: Error en la consulta a la base de datos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetRequestInfoServerError'
+  '/requests/{id}/rendered-image':
+    get:
+      tags:
+        - requests
+      summary: Descargar imagen renderizada
+      description: >-
+        Descargar imagen renderizada correspondiente a la petición indicada por
+        el parámetro id
+      operationId: downloadRenderedImage
+      parameters:
+        - name: id
+          in: path
+          description: Id de la petición
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Todo va bien
+          content:
+            image/png:
+              schema:
+                $ref: '#/components/schemas/RenderedImage'
+        '400':
+          description: Id no es válido o se corresponde a una petición no finalizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DownloadRenderedImageInvalidIdError'
+        '404':
+          description: Id no existe
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DownloadRenderedImageNotFoundError'
+        '500':
+          description: >-
+            Error relacionado con la base de datos o con la transferencia de la
+            imagen renderizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DownloadRenderedImageServerError'
+components:
+  schemas:
+    GetServersServerErrorInfo:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Error en la consulta a la base de datos
+    Servers:
+      type: array
+      items:
+        type: object
+        properties:
+          _id:
+            type: string
+            example: 64be9afac8bd803b63efa530
+          name:
+            type: string
+            example: localhost
+          ip:
+            type: string
+            example: 127.0.0.1
+          status:
+            type: string
+            example: idle
+          os:
+            type: string
+            example: Microsoft Windows 11 Pro
+          cpu:
+            type: string
+            example: Intel® Core™ i7-7700K
+          gpu:
+            type: string
+            example: NVIDIA GeForce GTX 1080 Ti
+          blenderVersion:
+            type: string
+            example: 3.4.1
+          registrationDate:
+            type: string
+            format: date-time
+            example: '2023-04-21T15:00:16.398Z'
+          timeSpentOnRenderTest:
+            type: integer
+            format: int64
+            example: 56956
+          fulfilledRequestsCount:
+            type: integer
+            format: int64
+            example: 0
+          enqueuedRequestsCount:
+            type: integer
+            format: int64
+            example: 0
+          totalCyclesNeededTime:
+            type: integer
+            format: int64
+            example: 0
+          totalCyclesBlenderTime:
+            type: integer
+            format: int64
+            example: 0
+          totalCyclesProcessedBytes:
+            type: integer
+            format: int64
+            example: 0
+          totalCyclesProcessedPixels:
+            type: integer
+            format: int64
+            example: 0
+          cyclesProcessedBytesPerMillisecondOfNeededTime:
+            type: integer
+            format: int64
+            example: 0
+          cyclesScore:
+            type: integer
+            format: int64
+            example: null
+          totalEeveeNeededTime:
+            type: integer
+            format: int64
+            example: 0
+          totalEeveeBlenderTime:
+            type: integer
+            format: int64
+            example: 0
+          totalEeveeProcessedBytes:
+            type: integer
+            format: int64
+            example: 0
+          totalEeveeProcessedPixels:
+            type: integer
+            format: int64
+            example: 0
+          eeveeProcessedBytesPerMillisecondOfNeededTime:
+            type: integer
+            format: int64
+            example: 0
+          eeveeScore:
+            type: integer
+            format: int64
+            example: null
+          __v:
+            type: integer
+            format: int64
+            example: 0
+      example:
+        - _id: 64be9afac8bd803b63efa530
+          name: localhost
+          ip: 127.0.0.1
+          status: idle
+          os: Microsoft Windows 11 Pro
+          cpu: Intel® Core™ i7-7700K
+          gpu: NVIDIA GeForce GTX 1080 Ti
+          blenderVersion: 3.4.1
+          registrationDate: '2023-04-21T15:00:16.398Z'
+          timeSpentOnRenderTest: 56956
+          fulfilledRequestsCount: 0
+          enqueuedRequestsCount: 0
+          totalCyclesNeededTime: 0
+          totalCyclesBlenderTime: 0
+          totalCyclesProcessedBytes: 0
+          totalCyclesProcessedPixels: 0
+          cyclesProcessedBytesPerMillisecondOfNeededTime: 0
+          cyclesScore: null
+          totalEeveeNeededTime: 0
+          totalEeveeBlenderTime: 0
+          totalEeveeProcessedBytes: 0
+          totalEeveeProcessedPixels: 0
+          eeveeProcessedBytesPerMillisecondOfNeededTime: 0
+          eeveeScore: null
+          __v: 0
+        - _id: 64be9afac8bd803b63efa534
+          name: Portátil
+          ip: 192.168.1.42
+          status: busy
+          os: Microsoft Windows 10 Pro
+          cpu: Intel® Core™ i7-13700K
+          gpu: NVIDIA GeForce RTX 4070
+          blenderVersion: 3.0 Alpha
+          registrationDate: '2023-04-21T15:00:16.398Z'
+          timeSpentOnRenderTest: 10443
+          fulfilledRequestsCount: 0
+          enqueuedRequestsCount: 0
+          totalCyclesNeededTime: 0
+          totalCyclesBlenderTime: 0
+          totalCyclesProcessedBytes: 0
+          totalCyclesProcessedPixels: 0
+          cyclesProcessedBytesPerMillisecondOfNeededTime: 0
+          cyclesScore: null
+          totalEeveeNeededTime: 0
+          totalEeveeBlenderTime: 0
+          totalEeveeProcessedBytes: 0
+          totalEeveeProcessedPixels: 0
+          eeveeProcessedBytesPerMillisecondOfNeededTime: 0
+          eeveeScore: null
+          __v: 0
+    Server:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 64be9afac8bd803b63efa530
+        name:
+          type: string
+          example: localhost
+        ip:
+          type: string
+          example: 127.0.0.1
+        status:
+          type: string
+          example: idle
+        os:
+          type: string
+          example: Microsoft Windows 11 Pro
+        cpu:
+          type: string
+          example: Intel® Core™ i7-7700K
+        gpu:
+          type: string
+          example: NVIDIA GeForce GTX 1080 Ti
+        blenderVersion:
+          type: string
+          example: 3.4.1
+        registrationDate:
+          type: string
+          format: date-time
+          example: '2023-04-21T15:00:16.398Z'
+        timeSpentOnRenderTest:
+          type: integer
+          format: int64
+          example: 56956
+        fulfilledRequestsCount:
+          type: integer
+          format: int64
+          example: 0
+        enqueuedRequestsCount:
+          type: integer
+          format: int64
+          example: 0
+        totalCyclesNeededTime:
+          type: integer
+          format: int64
+          example: 0
+        totalCyclesBlenderTime:
+          type: integer
+          format: int64
+          example: 0
+        totalCyclesProcessedBytes:
+          type: integer
+          format: int64
+          example: 0
+        totalCyclesProcessedPixels:
+          type: integer
+          format: int64
+          example: 0
+        cyclesProcessedBytesPerMillisecondOfNeededTime:
+          type: integer
+          format: int64
+          example: 0
+        cyclesScore:
+          type: integer
+          format: int64
+          example: null
+        totalEeveeNeededTime:
+          type: integer
+          format: int64
+          example: 0
+        totalEeveeBlenderTime:
+          type: integer
+          format: int64
+          example: 0
+        totalEeveeProcessedBytes:
+          type: integer
+          format: int64
+          example: 0
+        totalEeveeProcessedPixels:
+          type: integer
+          format: int64
+          example: 0
+        eeveeProcessedBytesPerMillisecondOfNeededTime:
+          type: integer
+          format: int64
+          example: 0
+        eeveeScore:
+          type: integer
+          format: int64
+          example: null
+        __v:
+          type: integer
+          format: int64
+          example: 0
+    GetServerInvalidIdError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: El parámetro id no es válido
+    GetServerNotFoundError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: >-
+            El parámetro id no se corresponde con ningún servidor de renderizado
+            almacenado en el sistema
+    GetServerServerError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Error en en la consulta del servidor en la base de datos
+    AddServerUserError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: >-
+            No se encontró el nombre del servidor de renderizado en el cuerpo de
+            la petición
+    AddServerServerError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: >-
+            Error interno en la conexión con la base de datos al persistir el
+            servidor
+    DisableServerSuccess:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Servidor deshabilitado con éxito
+    DisableServerInvalidIdError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: El parámetro id no es válido
+    DisableServerNotFoundError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: >-
+            El parámetro id no se corresponde con ningún servidor de renderizado
+            almacenado en el sistema
+    DisableServerServerError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Error en la conexión con el servidor de renderizado
+    EnableServerSuccess:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Servidor habilitado con éxito
+    EnableServerInvalidIdError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: El parámetro id no es válido
+    EnableServerNotFoundError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: >-
+            El parámetro id no se corresponde con ningún servidor de renderizado
+            almacenado en el sistema
+    EnableServerServerError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Error en la conexión con el servidor de renderizado
+    AbortServerSuccess:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Procesamiento en el servidor abortado con éxito
+    AbortServerInvalidIdError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: El parámetro id no es válido
+    AbortServerNotFoundError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: >-
+            El parámetro id no se corresponde con ningún servidor de renderizado
+            almacenado en el sistema
+    AbortServerServerError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Error en la conexión con el servidor de renderizado
+    DeleteServerInvalidIdError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: El parámetro id no es válido
+    DeleteServerNotFoundError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: >-
+            El parámetro id no se corresponde con ningún servidor de renderizado
+            almacenado en el sistema
+    DeleteServerServerError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: >-
+            Error en la conexión con el servidor de renderizado, se intentará
+            eliminar de todas formas
+    Requests:
+      type: array
+      items:
+        type: object
+        properties:
+          _id:
+            type: string
+            example: 6442a50094edb1a465f5cb14
+          assignedServer:
+            type: string
+            example: localhost
+          clientIp:
+            type: string
+            example: 127.0.0.1
+          status:
+            type: string
+            example: fulfilled
+          parameters:
+            type: object
+            properties:
+              resolution:
+                type: string
+                example: 1080p
+              bloom:
+                type: boolean
+                example: false
+              clip_end:
+                type: number
+                format: double
+                example: 10000
+              clip_start:
+                type: number
+                format: double
+                example: 0.1
+              gtao:
+                type: boolean
+                example: false
+              lens:
+                type: number
+                format: double
+                example: 13.048987490261585
+              location:
+                type: object
+                properties:
+                  x:
+                    type: number
+                    format: double
+                    example: 0
+                  'y':
+                    type: number
+                    format: double
+                    example: 0
+                  z:
+                    type: number
+                    format: double
+                    example: 0
+              engine:
+                type: string
+                example: CYCLES
+              qua:
+                type: object
+                properties:
+                  _x:
+                    type: number
+                    format: double
+                    example: 0
+                  _y:
+                    type: number
+                    format: double
+                    example: 0
+                  _z:
+                    type: number
+                    format: double
+                    example: 0
+                  _w:
+                    type: number
+                    format: double
+                    example: 0
+              ssr:
+                type: boolean
+                example: false
+          queueStartTime:
+            type: string
+            format: date-time
+            example: '2023-04-21T15:00:16.398Z'
+          processingStartTime:
+            type: string
+            format: date-time
+            example: '2023-04-21T15:00:16.398Z'
+          processingEndTime:
+            type: string
+            format: date-time
+            example: '2023-04-21T15:00:16.398Z'
+          requestLabel:
+            type: string
+            example: request1
+          totalBlenderTime:
+            type: integer
+            format: int64
+            example: 55499
+          nonDeletableFile:
+            type: boolean
+            example: false
+          __v:
+            type: integer
+            format: int64
+            example: 0
+      example:
+        - _id: 6442a50094edb1a465f5cc2
+          assignedServer: localhost
+          clientIp: 127.0.0.1
+          status: fulfilled
+          parameters:
+            resolution: 1080p
+            bloom: false
+            clip_end: 10000
+            clip_start: 0.1
+            gtao: false
+            lens: 13.048987490261585
+            location:
+              x: 0
+              'y': 0
+              z: 0
+            engine: CYCLES
+            qua:
+              _x: 0
+              _y: 0
+              _z: 0
+              _w: 0
+            ssr: false
+          queueStartTime: '2023-04-21T15:00:16.398Z'
+          processingStartTime: '2023-04-21T15:00:16.398Z'
+          processingEndTime: '2023-04-21T15:00:16.398Z'
+          requestLabel: request1
+          totalBlenderTime: 55499
+          nonDeletableFile: false
+          __v: 0
+        - _id: 6442a50094edb1a465f5cc6
+          assignedServer: Portátil
+          clientIp: 192.168.1.33
+          status: fulfilled
+          parameters:
+            resolution: 1440p
+            bloom: true
+            clip_end: 10000
+            clip_start: 0.1
+            gtao: false
+            lens: 13.048987490261585
+            location:
+              x: 0
+              'y': 0
+              z: 0
+            engine: EEVEE
+            qua:
+              _x: 0
+              _y: 0
+              _z: 0
+              _w: 0
+            ssr: false
+          queueStartTime: '2023-04-21T15:00:16.398Z'
+          processingStartTime: '2023-04-21T15:00:16.398Z'
+          processingEndTime: '2023-04-21T15:00:16.398Z'
+          requestLabel: request2
+          totalBlenderTime: 67543
+          nonDeletableFile: false
+          __v: 0
+    GetRequestsServerErrorInfo:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Error en la consulta a la base de datos
+    Request:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 6442a50094edb1a465f5cb14
+        assignedServer:
+          type: string
+          example: localhost
+        clientIp:
+          type: string
+          example: 127.0.0.1
+        status:
+          type: string
+          example: fulfilled
+        parameters:
+          type: object
+          properties:
+            resolution:
+              type: string
+              example: 1080p
+            bloom:
+              type: boolean
+              example: false
+            clip_end:
+              type: number
+              format: double
+              example: 10000
+            clip_start:
+              type: number
+              format: double
+              example: 0.1
+            gtao:
+              type: boolean
+              example: false
+            lens:
+              type: number
+              format: double
+              example: 13.048987490261585
+            location:
+              type: object
+              properties:
+                x:
+                  type: number
+                  format: double
+                  example: 0
+                'y':
+                  type: number
+                  format: double
+                  example: 0
+                z:
+                  type: number
+                  format: double
+                  example: 0
+            engine:
+              type: string
+              example: CYCLES
+            qua:
+              type: object
+              properties:
+                _x:
+                  type: number
+                  format: double
+                  example: 0
+                _y:
+                  type: number
+                  format: double
+                  example: 0
+                _z:
+                  type: number
+                  format: double
+                  example: 0
+                _w:
+                  type: number
+                  format: double
+                  example: 0
+            ssr:
+              type: boolean
+              example: false
+        queueStartTime:
+          type: string
+          format: date-time
+          example: '2023-04-21T15:00:16.398Z'
+        processingStartTime:
+          type: string
+          format: date-time
+          example: '2023-04-21T15:00:16.398Z'
+        processingEndTime:
+          type: string
+          format: date-time
+          example: '2023-04-21T15:00:16.398Z'
+        requestLabel:
+          type: string
+          example: request1
+        totalBlenderTime:
+          type: integer
+          format: int64
+          example: 55499
+        nonDeletableFile:
+          type: boolean
+          example: false
+        __v:
+          type: integer
+          format: int64
+          example: 0
+    GetRequestInvalidIdError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: El parámetro id no es válido
+    GetRequestNotFoundError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: >-
+            El parámetro id no se corresponde con ninguna petición de
+            renderizado almacenada en el sistema
+    GetRequestServerError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Error en en la consulta de la petición en la base de datos
+    DeleteRequestInvalidIdError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: El parámetro id no es válido
+    DeleteRequestNotFoundError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: >-
+            El parámetro id no se corresponde con ninguna petición de
+            renderizado almacenada en el sistema
+    DeleteRequestServerError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: >-
+            Error interno en la conexión con la base de datos tras abortar el
+            procesamiento en el servidor
+    RenderedImage:
+      type: string
+      format: binary
+      example: >-
+        iVBORw0KGgoAAAANSUhEUgAAASwAAAEsCAIAAAD2Hx6jAAAAhElEQVR42mP8/5+QXPiZYoEDAzMDAyMDEwAAAOAAKzEFwZOmBsAAAAASUVORK5CYII=
+    DownloadRenderedImageInvalidIdError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: >-
+            El parámetro id se corresponde con una petición de renderizado cuyo
+            procesamiento no ha finalizado aún
+    DownloadRenderedImageNotFoundError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: >-
+            El parámetro id no se corresponde con ninguna petición de
+            renderizado almacenada en el sistema
+    DownloadRenderedImageServerError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Error al intentar obtener la imagen renderizada de la base de datos
+    AddRequestSuccess:
+      type: object
+      properties:
+        requestId:
+          type: string
+          example: 64be2e66281bc95ec82c9bbe
+        requestStatus:
+          type: string
+          example: processing
+    AddRequestInvalidParametersError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: No se ha recibido archivo o este no tenía un tipo MIME válido
+    AddRequestServerError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Error interno durante las consultas a la base de datos
+    RequestInfo:
+      type: object
+      properties:
+        requestQueuePosition:
+          type: integer
+          format: int32
+          example: 2
+        processingRequestEstimatedRemainingProcessingTime:
+          type: integer
+          format: int32
+          example: 45450
+        requestStatus:
+          type: string
+          example: enqueued
+    GetRequestInfoInvalidIdError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: El parámetro id no es válido
+    GetRequestInfoNotFoundError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: >-
+            El parámetro id no se corresponde con ninguna petición de
+            renderizado almacenada en el sistema
+    GetRequestInfoServerError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Error interno en las consultas a la base de datos

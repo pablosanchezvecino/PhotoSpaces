@@ -1,8 +1,7 @@
 import { mimeTypeToExtension } from "../logic/fileLogic.js";
 import { allowedMimeTypes } from "./allowedMimeTypes.js";
+import { maxFileSizeBytes } from "../env.js";
 import multer from "multer";
-import dotenv from "dotenv";
-dotenv.config();
 // Configuración de multer para la recepción de archivos
 
 // Almacenar en la carpeta /temp con un nombre arbitrario 
@@ -26,7 +25,7 @@ const upload = multer({
     }
   },
   limits: {
-    fileSize: ((Number) (process.env.MAX_FILE_SIZE_BYTES)) || Infinity
+    fileSize: ((Number) (maxFileSizeBytes))
   }
 });
 

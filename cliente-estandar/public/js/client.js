@@ -613,7 +613,7 @@ const requestPolling = async (requestId, requestStatus) => {
 
   try {
     const response = await fetch(
-      `http://${requestHandlingMicroserviceHost}:${requestHandlingMicroservicePort}/requests/${requestId}`,
+      `http://${requestHandlingMicroserviceHost}:${requestHandlingMicroservicePort}/requests/${requestId}/rendered-image`,
       { method: "GET" }
     );
 

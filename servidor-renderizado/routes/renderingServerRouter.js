@@ -30,10 +30,10 @@ router.post("/disable", disable);
 router.post("/enable", enable);
 
 
-// POST /file
+// POST /file-transfer
 router.post("/file-transfer", upload.single("model"), (req, res) => {
   console.log(`Recibido fichero ${req.file.filename}`.magenta);
-  res.status(200).send();
+  res.status(200).send({ message: "Fichero recibido con éxito" });
 });
 
 export default router;

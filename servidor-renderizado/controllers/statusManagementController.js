@@ -52,7 +52,7 @@ const unbind = async (req, res) => {
 
 const abort = async (req, res) => {
   if (getStatus() !== ServerStates.busy) {
-    res.status(200).send({ error: "El servidor no se encontraba procesando una petición" });
+    res.status(400).send({ error: "El servidor no se encontraba procesando una petición" });
     return;
   } 
 
@@ -72,7 +72,7 @@ const abort = async (req, res) => {
     res.status(200).send({ message: "Procesamiento en el servidor abortado con éxito" });
   } catch (error) {
     console.error(`Error al intentar abortar el procesamiento en el servidor: ${error}`.red);
-    res.status(500).send({ message: "Error interno al intentar abortar el procesamiento en el servidor" });
+    res.status(500).send({ error: "Error interno al intentar abortar el procesamiento en el servidor" });
   }
   
 };

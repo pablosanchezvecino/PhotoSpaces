@@ -1,5 +1,6 @@
 import { readdirSync, unlinkSync, statSync } from "fs";
 import PendingEmail from "../models/PendingEmail.js";
+import { cleanupIntervalMs } from "../env.js";
 import Request from "../models/Request.js";
 import { msInADay } from "./timeLogic.js";
 import { parse, extname } from "path";
@@ -14,7 +15,7 @@ const tempDir = "./temp";
 const setUpCleanupInterval = async () => {
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    await wait(process.env.CLEANUP_INTERVAL_MS || 86400000);
+    await wait(cleanupIntervalMs);
     await performCleanup();
   }
 };

@@ -121,7 +121,7 @@ const addServer = async (req, res) => {
   }
 
   // Realizar consulta al servidor para saber si este es capaz de actuar como servidor de renderizado
-  try { console.log(`http://${renderingServerIp}:3000/bind`)
+  try {
     const response = await fetch(`http://${renderingServerIp}:3000/bind`, { method: "POST" });
     if (response.ok) {
       // Todo va bien en el servidor de renderizado

@@ -7,7 +7,7 @@ info:
 
     y llamadas a las APIs de los servidores de renderizado necesarias para
     satisfacer las peticiones de los clientes.
-  version: '1.0'
+  version: "1.0"
 paths:
   /servers:
     get:
@@ -25,18 +25,18 @@ paths:
             type: integer
             format: int32
       responses:
-        '200':
+        "200":
           description: Todo va bien
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Servers'
-        '500':
+                $ref: "#/components/schemas/Servers"
+        "500":
           description: Se produce un error en la consulta a la base de datos
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GetServersServerErrorInfo'
+                $ref: "#/components/schemas/GetServersServerErrorInfo"
     post:
       tags:
         - servers
@@ -58,27 +58,27 @@ paths:
                   type: string
                   example: localhost
       responses:
-        '201':
+        "201":
           description: Todo va bien
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Server'
-        '400':
+                $ref: "#/components/schemas/Server"
+        "400":
           description: Algún parámetro no válido
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AddServerUserError'
-        '500':
+                $ref: "#/components/schemas/AddServerUserError"
+        "500":
           description: >-
             Error relacionado con la base de datos, con el servidor de
             renderizado, o con la comunicación con este
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AddServerServerError'
-  '/servers/{id}':
+                $ref: "#/components/schemas/AddServerServerError"
+  /servers/{id}:
     get:
       tags:
         - servers
@@ -94,30 +94,30 @@ paths:
             type: string
             example: 64be9afac8bd803b63efa530
       responses:
-        '200':
+        "200":
           description: Todo va bien
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Request'
-        '400':
+                $ref: "#/components/schemas/Request"
+        "400":
           description: Id no es válido
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GetServerInvalidIdError'
-        '404':
+                $ref: "#/components/schemas/GetServerInvalidIdError"
+        "404":
           description: No existe petición con el id especificado
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GetServerNotFoundError'
-        '500':
+                $ref: "#/components/schemas/GetServerNotFoundError"
+        "500":
           description: Error en la consulta a la base de datos
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GetServerServerError'
+                $ref: "#/components/schemas/GetServerServerError"
     delete:
       tags:
         - servers
@@ -134,35 +134,35 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Todo va bien
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Server'
-        '400':
+                $ref: "#/components/schemas/Server"
+        "400":
           description: >-
             Id no es válido o se ha enviado la petición se ha enviado en un
             momento ilógico o conflictivo
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DeleteServerInvalidIdError'
-        '404':
+                $ref: "#/components/schemas/DeleteServerInvalidIdError"
+        "404":
           description: No existe servidor con el id especificado
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DeleteServerNotFoundError'
-        '500':
+                $ref: "#/components/schemas/DeleteServerNotFoundError"
+        "500":
           description: >-
             Error relacionado con la base de datos, con el servidor de
             renderizado, o con la comunicación con este
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DeleteServerServerError'
-  '/servers/{id}/disable':
+                $ref: "#/components/schemas/DeleteServerServerError"
+  /servers/{id}/disable:
     post:
       tags:
         - servers
@@ -178,35 +178,35 @@ paths:
             type: string
             example: 64be9afac8bd803b63efa530
       responses:
-        '200':
+        "200":
           description: Todo va bien
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DisableServerSuccess'
-        '400':
+                $ref: "#/components/schemas/DisableServerSuccess"
+        "400":
           description: >-
             Id no es válido o se ha enviado la petición se ha enviado en un
             momento ilógico o conflictivo
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DisableServerInvalidIdError'
-        '404':
+                $ref: "#/components/schemas/DisableServerInvalidIdError"
+        "404":
           description: No existe servidor con el id especificado
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DisableServerNotFoundError'
-        '500':
+                $ref: "#/components/schemas/DisableServerNotFoundError"
+        "500":
           description: >-
             Error relacionado con la base de datos, con el servidor de
             renderizado, o con la comunicación con este
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DisableServerServerError'
-  '/servers/{id}/enable':
+                $ref: "#/components/schemas/DisableServerServerError"
+  /servers/{id}/enable:
     post:
       tags:
         - servers
@@ -222,35 +222,35 @@ paths:
             type: string
             example: 64be9afac8bd803b63efa530
       responses:
-        '200':
+        "200":
           description: Todo va bien
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EnableServerSuccess'
-        '400':
+                $ref: "#/components/schemas/EnableServerSuccess"
+        "400":
           description: >-
             Id no es válido o se ha enviado la petición se ha enviado en un
             momento ilógico o conflictivo
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EnableServerInvalidIdError'
-        '404':
+                $ref: "#/components/schemas/EnableServerInvalidIdError"
+        "404":
           description: No existe servidor con el id especificado
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EnableServerNotFoundError'
-        '500':
+                $ref: "#/components/schemas/EnableServerNotFoundError"
+        "500":
           description: >-
             Error relacionado con la base de datos, con el servidor de
             renderizado, o con la comunicación con este
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EnableServerServerError'
-  '/servers/{id}/abort':
+                $ref: "#/components/schemas/EnableServerServerError"
+  /servers/{id}/abort:
     post:
       tags:
         - servers
@@ -268,34 +268,34 @@ paths:
             type: string
             example: 64be9afac8bd803b63efa530
       responses:
-        '200':
+        "200":
           description: Todo va bien
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AbortServerSuccess'
-        '400':
+                $ref: "#/components/schemas/AbortServerSuccess"
+        "400":
           description: >-
             Id no es válido o se ha enviado la petición se ha enviado en un
             momento ilógico o conflictivo
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AbortServerInvalidIdError'
-        '404':
+                $ref: "#/components/schemas/AbortServerInvalidIdError"
+        "404":
           description: No existe servidor con el id especificado
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AbortServerNotFoundError'
-        '500':
+                $ref: "#/components/schemas/AbortServerNotFoundError"
+        "500":
           description: >-
             Error relacionado con la base de datos, con el servidor de
             renderizado, o con la comunicación con este
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AbortServerServerError'
+                $ref: "#/components/schemas/AbortServerServerError"
   /requests:
     get:
       tags:
@@ -312,18 +312,18 @@ paths:
             type: integer
             format: int32
       responses:
-        '200':
+        "200":
           description: Todo va bien
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Requests'
-        '500':
+                $ref: "#/components/schemas/Requests"
+        "500":
           description: Se produce un error en la consulta a la base de datos
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GetRequestsServerErrorInfo'
+                $ref: "#/components/schemas/GetRequestsServerErrorInfo"
     post:
       requestBody:
         required: true
@@ -364,19 +364,19 @@ paths:
       description: Generar petición de renderizado en el sistema
       operationId: addRequest
       responses:
-        '200':
+        "200":
           description: Todo va bien
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AddRequestSuccess'
-        '400':
+                $ref: "#/components/schemas/AddRequestSuccess"
+        "400":
           description: Algún parámetro no válido
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AddRequestInvalidParametersError'
-        '500':
+                $ref: "#/components/schemas/AddRequestInvalidParametersError"
+        "500":
           description: >-
             Error relacionado con la base de datos, con el servidor de
             renderizado, con la comunicación con este, con el manejo de
@@ -384,8 +384,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AddRequestServerError'
-  '/requests/{id}':
+                $ref: "#/components/schemas/AddRequestServerError"
+  /requests/{id}:
     get:
       tags:
         - requests
@@ -400,30 +400,30 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Todo va bien
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Request'
-        '400':
+                $ref: "#/components/schemas/Request"
+        "400":
           description: Id existe pero no se corresponde con una petición finalizada
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GetRequestInvalidIdError'
-        '404':
+                $ref: "#/components/schemas/GetRequestInvalidIdError"
+        "404":
           description: Id no existe
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GetRequestNotFoundError'
-        '500':
+                $ref: "#/components/schemas/GetRequestNotFoundError"
+        "500":
           description: Error en la consulta a la base de datos
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GetRequestServerError'
+                $ref: "#/components/schemas/GetRequestServerError"
     delete:
       tags:
         - requests
@@ -441,35 +441,35 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Todo va bien
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Request'
-        '400':
+                $ref: "#/components/schemas/Request"
+        "400":
           description: >-
             Id no es válido o se ha enviado la petición se ha enviado en un
             momento ilógico o conflictivo
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DeleteRequestInvalidIdError'
-        '404':
+                $ref: "#/components/schemas/DeleteRequestInvalidIdError"
+        "404":
           description: No existe servidor con el id especificado
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DeleteRequestNotFoundError'
-        '500':
+                $ref: "#/components/schemas/DeleteRequestNotFoundError"
+        "500":
           description: >-
             Error relacionado con la base de datos, con el servidor de
             renderizado, o con la comunicación con este
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DeleteRequestServerError'
-  '/requests/{id}/info':
+                $ref: "#/components/schemas/DeleteRequestServerError"
+  /requests/{id}/info:
     get:
       tags:
         - requests
@@ -488,33 +488,33 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Todo va bien
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RequestInfo'
-        '400':
+                $ref: "#/components/schemas/RequestInfo"
+        "400":
           description: >-
             Id no es válida o existe pero se corresponde con una petición
             finalizada
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GetRequestInfoInvalidIdError'
-        '404':
+                $ref: "#/components/schemas/GetRequestInfoInvalidIdError"
+        "404":
           description: Id no existe
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GetRequestInfoNotFoundError'
-        '500':
+                $ref: "#/components/schemas/GetRequestInfoNotFoundError"
+        "500":
           description: Error en la consulta a la base de datos
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GetRequestInfoServerError'
-  '/requests/{id}/rendered-image':
+                $ref: "#/components/schemas/GetRequestInfoServerError"
+  /requests/{id}/rendered-image:
     get:
       tags:
         - requests
@@ -531,32 +531,45 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Todo va bien
           content:
             image/png:
               schema:
-                $ref: '#/components/schemas/RenderedImage'
-        '400':
+                $ref: "#/components/schemas/RenderedImage"
+        "400":
           description: Id no es válido o se corresponde a una petición no finalizada
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DownloadRenderedImageInvalidIdError'
-        '404':
+                $ref: "#/components/schemas/DownloadRenderedImageInvalidIdError"
+        "404":
           description: Id no existe
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DownloadRenderedImageNotFoundError'
-        '500':
+                $ref: "#/components/schemas/DownloadRenderedImageNotFoundError"
+        "500":
           description: >-
             Error relacionado con la base de datos o con la transferencia de la
             imagen renderizada
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DownloadRenderedImageServerError'
+                $ref: "#/components/schemas/DownloadRenderedImageServerError"
+
+  /new-server-available:
+    post:
+      tags:
+        - aux
+      summary: Aviso de nuevo servidor disponible
+      description: >-
+        Avisar al microservicio de gestión de peticiones desde el microservicio 
+        de administración de que hay un nuevo servidor siponible en el sistema
+      operationId: notifyNewIdleServer
+      responses:
+        "200":
+          description: Petición recibida
 components:
   schemas:
     GetServersServerErrorInfo:
@@ -597,7 +610,7 @@ components:
           registrationDate:
             type: string
             format: date-time
-            example: '2023-04-21T15:00:16.398Z'
+            example: "2023-04-21T15:00:16.398Z"
           timeSpentOnRenderTest:
             type: integer
             format: int64
@@ -671,7 +684,7 @@ components:
           cpu: Intel® Core™ i7-7700K
           gpu: NVIDIA GeForce GTX 1080 Ti
           blenderVersion: 3.4.1
-          registrationDate: '2023-04-21T15:00:16.398Z'
+          registrationDate: "2023-04-21T15:00:16.398Z"
           timeSpentOnRenderTest: 56956
           fulfilledRequestsCount: 0
           enqueuedRequestsCount: 0
@@ -696,7 +709,7 @@ components:
           cpu: Intel® Core™ i7-13700K
           gpu: NVIDIA GeForce RTX 4070
           blenderVersion: 3.0 Alpha
-          registrationDate: '2023-04-21T15:00:16.398Z'
+          registrationDate: "2023-04-21T15:00:16.398Z"
           timeSpentOnRenderTest: 10443
           fulfilledRequestsCount: 0
           enqueuedRequestsCount: 0
@@ -743,7 +756,7 @@ components:
         registrationDate:
           type: string
           format: date-time
-          example: '2023-04-21T15:00:16.398Z'
+          example: "2023-04-21T15:00:16.398Z"
         timeSpentOnRenderTest:
           type: integer
           format: int64
@@ -992,7 +1005,7 @@ components:
                     type: number
                     format: double
                     example: 0
-                  'y':
+                  "y":
                     type: number
                     format: double
                     example: 0
@@ -1028,15 +1041,15 @@ components:
           queueStartTime:
             type: string
             format: date-time
-            example: '2023-04-21T15:00:16.398Z'
+            example: "2023-04-21T15:00:16.398Z"
           processingStartTime:
             type: string
             format: date-time
-            example: '2023-04-21T15:00:16.398Z'
+            example: "2023-04-21T15:00:16.398Z"
           processingEndTime:
             type: string
             format: date-time
-            example: '2023-04-21T15:00:16.398Z'
+            example: "2023-04-21T15:00:16.398Z"
           requestLabel:
             type: string
             example: request1
@@ -1065,7 +1078,7 @@ components:
             lens: 13.048987490261585
             location:
               x: 0
-              'y': 0
+              "y": 0
               z: 0
             engine: CYCLES
             qua:
@@ -1074,9 +1087,9 @@ components:
               _z: 0
               _w: 0
             ssr: false
-          queueStartTime: '2023-04-21T15:00:16.398Z'
-          processingStartTime: '2023-04-21T15:00:16.398Z'
-          processingEndTime: '2023-04-21T15:00:16.398Z'
+          queueStartTime: "2023-04-21T15:00:16.398Z"
+          processingStartTime: "2023-04-21T15:00:16.398Z"
+          processingEndTime: "2023-04-21T15:00:16.398Z"
           requestLabel: request1
           totalBlenderTime: 55499
           nonDeletableFile: false
@@ -1094,7 +1107,7 @@ components:
             lens: 13.048987490261585
             location:
               x: 0
-              'y': 0
+              "y": 0
               z: 0
             engine: EEVEE
             qua:
@@ -1103,9 +1116,9 @@ components:
               _z: 0
               _w: 0
             ssr: false
-          queueStartTime: '2023-04-21T15:00:16.398Z'
-          processingStartTime: '2023-04-21T15:00:16.398Z'
-          processingEndTime: '2023-04-21T15:00:16.398Z'
+          queueStartTime: "2023-04-21T15:00:16.398Z"
+          processingStartTime: "2023-04-21T15:00:16.398Z"
+          processingEndTime: "2023-04-21T15:00:16.398Z"
           requestLabel: request2
           totalBlenderTime: 67543
           nonDeletableFile: false
@@ -1162,7 +1175,7 @@ components:
                   type: number
                   format: double
                   example: 0
-                'y':
+                "y":
                   type: number
                   format: double
                   example: 0
@@ -1198,15 +1211,15 @@ components:
         queueStartTime:
           type: string
           format: date-time
-          example: '2023-04-21T15:00:16.398Z'
+          example: "2023-04-21T15:00:16.398Z"
         processingStartTime:
           type: string
           format: date-time
-          example: '2023-04-21T15:00:16.398Z'
+          example: "2023-04-21T15:00:16.398Z"
         processingEndTime:
           type: string
           format: date-time
-          example: '2023-04-21T15:00:16.398Z'
+          example: "2023-04-21T15:00:16.398Z"
         requestLabel:
           type: string
           example: request1

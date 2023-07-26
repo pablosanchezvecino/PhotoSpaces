@@ -425,7 +425,7 @@ const addLightToDiv = (type, name, gui) => {
   span.style.display = "ruby";
 
   const img = document.createElement("img");
-  img.src = "../img/trash.svg";
+  img.src = "../img/svg/trash.svg";
   img.className = "removeLight";
   img.style.width = "1.5rem";
   img.style.height = "1.5rem";

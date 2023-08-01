@@ -1,4 +1,4 @@
-import { requestHandlingMicroserviceHost, requestHandlingMicroservicePort, pollingIntervalMs } from "../env.js";
+import { requestHandlingMicroserviceUrl, pollingIntervalMs } from "../env.js";
 import { wait, msToTime } from "../logic/timeLogic.js";
 
 // Consiltar al sistema  estado de la petición de forma periódica hasta que finalice
@@ -13,7 +13,7 @@ const requestPolling = async (requestId, requestStatus) => {
   
     try {
       const response = await fetch(
-        `http://${requestHandlingMicroserviceHost}:${requestHandlingMicroservicePort}/requests/${requestId}/info`,
+        `${requestHandlingMicroserviceUrl}/requests/${requestId}/info`,
         { method: "GET" }
       );
     

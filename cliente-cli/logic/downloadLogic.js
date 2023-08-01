@@ -1,4 +1,4 @@
-import { requestHandlingMicroserviceHost, requestHandlingMicroservicePort } from "../env.js";
+import { requestHandlingMicroserviceUrl } from "../env.js";
 import { writeFileSync } from "fs";
 
 // Descargar la imagen cuando esta ya ha sido renderizada 
@@ -6,7 +6,7 @@ import { writeFileSync } from "fs";
 const downloadImage = async (requestId) => {
   try {
     const response = await fetch(
-      `http://${requestHandlingMicroserviceHost}:${requestHandlingMicroservicePort}/requests/${requestId}/rendered-image`,
+      `${requestHandlingMicroserviceUrl}/requests/${requestId}/rendered-image`,
       { method: "GET" }
     );
   

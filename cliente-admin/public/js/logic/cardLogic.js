@@ -145,7 +145,7 @@ const addServerCard = (serverData) => {
   fulfilledRequestsCountImage.title = "Número de peticiones satisfechas";
   fulfilledRequestsCountCardText.appendChild(fulfilledRequestsCountImage);
   fulfilledRequestsCountImage.after(
-    document.createTextNode(" " + serverData.fulfilledRequestsCount)
+    document.createTextNode(" " + serverData.fulfilledRequestsCount.toLocaleString())
   );
 
   // Peticiones encoladas
@@ -157,7 +157,7 @@ const addServerCard = (serverData) => {
   enqueuedRequestsCountImage.title = "Número de peticiones encoladas";
   enqueuedRequestsCountCardText.appendChild(enqueuedRequestsCountImage);
   enqueuedRequestsCountImage.after(
-    document.createTextNode(" " + serverData.enqueuedRequestsCount)
+    document.createTextNode(" " + serverData.enqueuedRequestsCount.toLocaleString())
   );
 
   let boldElement = null;
@@ -199,7 +199,7 @@ const addServerCard = (serverData) => {
   auxText = document.createTextNode(" (CYCLES) ");
   boldElement.appendChild(auxText);
   totalPixelsProcessedCyclesImage.after(boldElement);
-  boldElement.after(document.createTextNode(serverData.totalCyclesProcessedPixels));
+  boldElement.after(document.createTextNode(serverData.totalCyclesProcessedPixels.toLocaleString()));
 
   // Tiempo total requerido Cycles
   const totalNeededTimeCyclesCardText = document.createElement("p");
@@ -299,7 +299,7 @@ const addServerCard = (serverData) => {
   auxText = document.createTextNode(" (CYCLES) ");
   boldElement.appendChild(auxText);
   cyclesScoreImage.after(boldElement);
-  boldElement.after(document.createTextNode(" " + (serverData.cyclesScore !== null ? (serverData.cyclesScore.toFixed(2) + " puntos") : "N/A" )));
+  boldElement.after(document.createTextNode(" " + (serverData.cyclesScore !== null ? (parseFloat(serverData.cyclesScore.toFixed(2)).toLocaleString() + " puntos") : "N/A" )));
 
   // Tamaño total procesado Eevee
   const totalSizeProcessedEeveeCardText = document.createElement("p");
@@ -337,7 +337,7 @@ const addServerCard = (serverData) => {
   auxText = document.createTextNode(" (EEVEE) ");
   boldElement.appendChild(auxText);
   totalPixelsProcessedEeveeImage.after(boldElement);
-  boldElement.after(document.createTextNode(serverData.totalEeveeProcessedPixels));
+  boldElement.after(document.createTextNode(serverData.totalEeveeProcessedPixels.toLocaleString()));
 
   // Tiempo total requerido Eevee
   const totalNeededTimeEeveeCardText = document.createElement("p");
@@ -437,7 +437,7 @@ const addServerCard = (serverData) => {
   auxText = document.createTextNode(" (EEVEE) ");
   boldElement.appendChild(auxText);
   eeveeScoreImage.after(boldElement);
-  boldElement.after(document.createTextNode(" " + (serverData.eeveeScore !== null ? (serverData.eeveeScore.toFixed(2) + " puntos") : "N/A" )));
+  boldElement.after(document.createTextNode(" " + (serverData.eeveeScore !== null ? (parseFloat(serverData.eeveeScore.toFixed(2)).toLocaleString() + " puntos") : "N/A" )));
 
 
 
@@ -595,9 +595,9 @@ const addRequestCard = (requestData, queuePosition) => {
   const userIpImage = document.createElement("img");
   userIpImage.src = "./res/img/svg/user-ip.svg";
   userIpImage.width = "24";
-  userIpImage.title = "Información del usuario";
+  userIpImage.title = "Información del usuario (etiqueta opcional y dirección IP)";
   userIpCardText.appendChild(userIpImage);
-  userIpImage.after(document.createTextNode(" " + (requestData.requestLabel ? (requestData.requestLabel + " ") : "Etiqueta no especificada ") + `(${requestData.clientIp})`));
+  userIpImage.after(document.createTextNode(" " + (requestData.requestLabel ? (requestData.requestLabel + " ") : "No especificada ") + `(${requestData.clientIp})`));
   cardBody.appendChild(userIpCardText);
   
   // Servidor asignado

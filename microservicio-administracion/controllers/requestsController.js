@@ -1,6 +1,6 @@
-import { renderServerPort, requestHandlingMicroserviceHost, requestHandlingMicroservicePort } from "../env.js";
+import { renderServerPort, requestHandlingMicroserviceUrl } from "../env.js";
 import { options } from "../constants/sendRenderedImageOptions.js";
-import { writeFileSync, unlinkSync} from "fs";
+import { unlinkSync } from "fs";
 import Request from "../models/Request.js";
 import Server from "../models/Server.js";
 import mongoose from "mongoose";
@@ -19,11 +19,11 @@ const getRequests = async (req, res) => {
 
     let requests = null;
     if (limit === 0) { // Sin límite
-      requests = await Request.find({}, "-renderedImage").sort({ queueStartTime: 1 });
+      requests = await Request.find({}).sort({ queueStartTime: 1 });
     } else { // Consulta limitada por cada estado posible
-      const processingRequests = await Request.find({ status: "processing" }, "-renderedImage").sort({ processingStartTime: -1 }).limit(limit);
-      const enqueuedRequests = await Request.find({ status: "enqueued" }, "-renderedImage").sort({ queueStartTime: 1 }).limit(limit);
-      const fulfilledRequests = await Request.find({ status: "fulfilled" }, "-renderedImage").sort({ processingEndTime: -1 }).limit(limit);
+      const processingRequests = await Request.find({ status: "processing" }).sort({ processingStartTime: -1 }).limit(limit);
+      const enqueuedRequests = await Request.find({ status: "enqueued" }).sort({ queueStartTime: 1 }).limit(limit);
+      const fulfilledRequests = await Request.find({ status: "fulfilled" }).sort({ processingEndTime: -1 }).limit(limit);
 
       requests = processingRequests.concat(enqueuedRequests, fulfilledRequests);
     }
@@ -46,7 +46,7 @@ const getRequestById = async (req, res) => {
   // Buscar petición en BD
   let request = null;
   try {
-    request = await Request.findById(req.params.id, "-renderedImage");
+    request = await Request.findById(req.params.id);
   } catch (error) {
     console.error(`Error en la consulta de la petición a la base de datos. ${error}`.red);
     res.status(400).send({ error: "Error en la consulta de la petición a la base de datos" });
@@ -76,7 +76,7 @@ const getRequestRenderedImage = async (req, res) => {
   // Buscar petición en BD
   let request = null;
   try {
-    request = await Request.findById(req.params.id, "-renderedImage");
+    request = await Request.findById(req.params.id);
   } catch (error) {
     console.error(`Error en la consulta previa de la petición a la base de datos. ${error}`.red);
     res.status(500).send({ error: "Error en en la consulta previa de la petición a la base de datos" });
@@ -97,39 +97,8 @@ const getRequestRenderedImage = async (req, res) => {
     return;
   }
 
-  // Obtener imagen renderizada
-  let renderedImageModel = null;
-  try {
-    renderedImageModel = await Request.findById(req.params.id).select("renderedImage");
-  } catch (error) {
-    res.status(500).send({ error: "Error al intentar obtener la imagen renderizada de la base de datos"});
-    console.error(`Error al intentar obtener la imagen renderizada de la base de datos (Petición ${req.params.id}). ${error}`.red);
-    return;
-  }
-
-  // Almacenar temporalmente la imagen
-  try {
-    writeFileSync(`./${req.params.id}.png`, renderedImageModel.renderedImage);
-  } catch (error) {
-    res.status(500).send({ error: "Error al intentar almacenar temporalmente la imagen renderizada en el microservicio"});
-    console.error(`Error al intentar almacenar temporalmente el archivo ${req.params.id}.png. ${error}`.red);
-    return;
-  }
-
   // Enviar imagen renderizada para que el navegador pueda descargarla
-  res.status(200).sendFile(`./${req.params.id}.png`, options);
-
-  // Hasta que no termine la transferencia no podemos borrar el archivo temporal
-  res.on("finish", async () => {
-    try {
-      console.log(`Archivo ${req.params.id}.png enviado`.magenta);
-      // Eliminar archivo .png temporal
-      unlinkSync(`${req.params.id}.png`);
-    } catch (error) {
-      console.error(`Error al eliminar el archivo ${req.params.id}.png. ${error}`.red);
-    }
-  });
-
+  res.status(200).sendFile(`./temp/${req.params.id}.png`, options);
 };
 
 const deleteRequest = async (req, res) => {
@@ -143,7 +112,7 @@ const deleteRequest = async (req, res) => {
   // Consultar petición en BD
   let requestToDelete = null;
   try {
-    requestToDelete = await Request.findById(req.params.id, "-renderedImage");
+    requestToDelete = await Request.findById(req.params.id);
   } catch (error) {
     console.error(`Error en la consulta de la petición a la base de datos. ${error}`.red);
     res.status(500).send({ error: "Error en la consulta de la petición a la base de datos" });
@@ -172,7 +141,7 @@ const deleteRequest = async (req, res) => {
 
     // Contactar con el servidor
     try {
-      const response = await fetch(`http://${server.ip}:${renderServerPort}/abort`, 
+      const response = await fetch(`${requestHandlingMicroserviceUrl}/abort`, 
         { method: "POST" }
       );
 
@@ -223,7 +192,7 @@ const deleteRequest = async (req, res) => {
   if (notifyRequestHandlingMicroservice) {
     // Avisar al microservicio de gestión de peticiones de que hay un nuevo servidor disponible
     try {
-      await fetch(`http://${requestHandlingMicroserviceHost}:${requestHandlingMicroservicePort}/new-server-available`,
+      await fetch(`${requestHandlingMicroserviceUrl}/new-server-available`,
         { method: "POST" }
       );
     } catch (error) {
@@ -231,8 +200,63 @@ const deleteRequest = async (req, res) => {
     }
   }
 
+  if (deletedRequest.status === "fulfilled") {
+    // Eliminar imagen asociada del directorio temp
+    try {
+      unlinkSync(`./temp/${req.params.id}.png`);
+    } catch (error) {
+      console.error(`Error al eliminar el archivo ${req.params.id}.png. ${error}`.red);
+    }
+  }
+
   // Todo bien
   res.status(200).send(deletedRequest);
 };
 
-export { getRequests, getRequestById, getRequestRenderedImage, deleteRequest };
+const handleReceivedImage = async (req, res) => {
+  console.log(`Recibido fichero ${req.file.filename}`.magenta);
+
+  // Oid no válido
+  if (!mongoose.isValidObjectId(req.params.id)) {
+    console.error(`Recibido parámetro id no válido (${req.params.id})`.red);
+    res.status(400).send({ error: "El parámetro id no es válido" });
+    try {
+      unlinkSync(`./temp/${req.params.id}.png`);
+    } catch (error) {
+      console.error(`Error al eliminar el archivo ${req.params.id}.png. ${error}`.red);
+    }
+    return;
+  }
+  
+  // Consultar petición en BD
+  let request = null;
+  try {
+    request = await Request.findById(req.params.id);
+  } catch (error) {
+    console.error(`Error en la consulta de la petición a la base de datos. ${error}`.red);
+    res.status(500).send({ error: "Error en la consulta de la petición a la base de datos" });
+    try {
+      unlinkSync(`./temp/${req.params.id}.png`);
+    } catch (error) {
+      console.error(`Error al eliminar el archivo ${req.params.id}.png. ${error}`.red);
+    }
+    return;
+  }
+
+  // No se encuentra la petición
+  if (!request) {
+    console.error(`Petición de renderizado asociada al id ${req.params.id} no encontrada`.red);
+    res.status(404).send({ error: "El parámetro id no se corresponde con ninguna petición de renderizado almacenada en el sistema" });
+    try {
+      unlinkSync(`./temp/${req.params.id}.png`);
+    } catch (error) {
+      console.error(`Error al eliminar el archivo ${req.params.id}.png. ${error}`.red);
+    }
+    return;
+  }
+
+  // Todo bien
+  res.status(200).send({ message: "Fichero recibido con éxito" });
+};
+
+export { getRequests, getRequestById, getRequestRenderedImage, deleteRequest, handleReceivedImage };

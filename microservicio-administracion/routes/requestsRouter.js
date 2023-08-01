@@ -1,7 +1,8 @@
-// Router para los endpoints relacionados con la administración de las peticiones de renderizado
-
+import { getRequests, getRequestById, getRequestRenderedImage, deleteRequest, handleReceivedImage } from "../controllers/requestsController.js";
+import { upload } from "../constants/multerConfig.js";
 import { Router } from "express";
-import { getRequests, getRequestById, getRequestRenderedImage, deleteRequest } from "../controllers/requestsController.js";
+
+// Router para los endpoints relacionados con la administración de las peticiones de renderizado
 
 const router = Router();
 
@@ -16,5 +17,8 @@ router.get("/:id/rendered-image", getRequestRenderedImage);
 
 // DELETE /requests/:id
 router.delete("/:id", deleteRequest);
+
+// POST /rendered-image
+router.post("/:id/rendered-image", upload.single("renderedImage"), handleReceivedImage);
 
 export default router;

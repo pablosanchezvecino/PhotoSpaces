@@ -1,6 +1,8 @@
-import { administrationMicroserviceHost, administrationMicroservicePort, maxCardsPerContainer } from "../constants/parameters.js";
+import { administrationMicroserviceUrl, maxCardsPerContainer } from "../constants/parameters.js";
 import { addServerCard, addRequestCard } from "./cardLogic.js";
+import { refreshPeriodMs } from "../constants/parameters.js";
 import { msToTime } from "./conversionsLogic.js";
+import { wait } from "./timeLogic.js";
 import {
   idleServerContainer,
   busyServerContainer,
@@ -20,13 +22,15 @@ import {
   averageRequestQueueWaitingTimeElement
 } from "./DOMElements.js";
 
+let stop = false;
+
 const refresh = async () => {
 
   let servers = null;
   let requests = null;
   let totalProcessingTime = 0;
   let totalQueueTime = 0;
-
+  
   // Guardar estado de los scrolls para restablecerlos tras refrescar
   const idleServerContainerScroll = idleServerContainer.scrollLeft;
   const busyServerContainerScroll = busyServerContainer.scrollLeft;
@@ -39,14 +43,16 @@ const refresh = async () => {
   
   // Obtener servidores y peticiones
   try {
-    const serversResponse = await fetch(`http://${administrationMicroserviceHost}:${administrationMicroservicePort}/servers${queryString}`);
+    const serversResponse = await fetch(`${administrationMicroserviceUrl}/servers${queryString}`, 
+      { headers : { "ngrok-skip-browser-warning": true } });
     if (serversResponse.ok) {
       servers = await serversResponse.json();
     } else {
       throw new Error(`Obtenido código ${serversResponse.status} en la consulta de servidores`);
     }
-    
-    const requestsResponse = await fetch(`http://${administrationMicroserviceHost}:${administrationMicroservicePort}/requests${queryString}`);
+      
+    const requestsResponse = await fetch(`${administrationMicroserviceUrl}/requests${queryString}`, 
+      { headers : { "ngrok-skip-browser-warning": true } });
     if (requestsResponse.ok) {
       requests = await requestsResponse.json();
     } else {
@@ -54,8 +60,9 @@ const refresh = async () => {
     }
     
   } catch (error) {
+    stop = true;
     console.error(`Error en la consulta del estado del sistema. ${error}`);
-    alert("Error en la consulta del estado del sistema");
+    alert("Error en la consulta del estado del sistema. Pruebe a recargar la página");
     return;
   }
   
@@ -63,16 +70,16 @@ const refresh = async () => {
   document.querySelectorAll(".server").forEach((e) => e.className="server-remove");
   document.querySelectorAll(".request").forEach((e) => e.className="request-remove");
   // document.querySelectorAll(".empty-info").forEach((e) => e.className="remove");
-
+  
   // Generar tarjetas servidores
   servers.forEach((server) => addServerCard(server));
   document.querySelectorAll(".server-remove").forEach((e) => e.remove());
-
-
+  
+  
   idleServerContainer.scrollLeft = idleServerContainerScroll;
   busyServerContainer.scrollLeft = busyServerContainerScroll;
   disabledServerContainer.scrollLeft = disabledServerContainerScroll;
-
+  
   // Obtener número total de servidores y cuántos hay de cada tipo
   const totalServerCount = servers.length;
   const idleServerCount = servers.filter(server => server.status === "idle").length;
@@ -118,7 +125,7 @@ const refresh = async () => {
   } else if (disabledServerCount > 0 && emptyDisabledServerContainerInfo) {
     emptyDisabledServerContainerInfo.remove();
   }
-
+  
   // Generar tarjetas peticiones
   // Utilizamos objeto para poder pasar por referencia e ir incrementando el valor
   let queuePosition = { position: 1 };
@@ -139,8 +146,8 @@ const refresh = async () => {
     }
   });
   document.querySelectorAll(".request-remove").forEach((e) => e.remove());
-
-
+  
+  
   processingRequestContainer.scrollLeft = processingRequestContainerScroll;
   enqueuedRequestContainer.scrollLeft = enqueuedRequestContainerScroll;
   fulfilledRequestContainer.scrollLeft = fulfilledRequestContainerScroll;
@@ -150,17 +157,17 @@ const refresh = async () => {
   const processingRequestCount = requests.filter(request => request.status === "processing").length;
   const enqueuedRequestCount = requests.filter(request => request.status === "enqueued").length;
   const fulfilledRequestCount = requests.filter(request => request.status === "fulfilled").length;
-
+  
   // Mostrar información en la interfaz de usuario
   totalRequestCountElement.innerText = totalRequestCount;
   processingRequestCountElement.innerText = processingRequestCount;
   enqueuedRequestCountElement.innerText = enqueuedRequestCount;
   fulfilledRequestCountElement.innerText = fulfilledRequestCount;
-
+  
   averageRequestProcessingTimeElement.innerText = totalProcessingTime === 0 ? "N/A" : msToTime(totalProcessingTime / fulfilledRequestCount);
 
   averageRequestQueueWaitingTimeElement.innerText = fulfilledRequestCount === 0 ? "N/A" : msToTime(totalQueueTime / (fulfilledRequestCount + processingRequestCount));
-
+  
   // Mostrar texto informativo si no hay ninguna petición en algún estado
   let emptyProcessingRequestContainerInfo = document.getElementById("processing-request-container-empty-info");
   if (processingRequestCount === 0 && !emptyProcessingRequestContainerInfo) {
@@ -172,7 +179,7 @@ const refresh = async () => {
   } else if (processingRequestCount > 0 && emptyProcessingRequestContainerInfo) {
     emptyProcessingRequestContainerInfo.remove();
   }
-
+  
   let emptyEnqueuedRequestContainerInfo = document.getElementById("enqueued-request-container-empty-info");
   if (enqueuedRequestCount === 0 && !emptyEnqueuedRequestContainerInfo) {
     emptyEnqueuedRequestContainerInfo = document.createElement("h4");
@@ -195,7 +202,13 @@ const refresh = async () => {
     emptyFulfilledRequestContainerInfo.remove();
   }
 
- 
+
 };
 
-export { refresh };
+const setUpRefreshInterval = async () => {
+  while (!stop) {
+    refresh();
+    await wait(refreshPeriodMs);
+  }
+};
+export { setUpRefreshInterval };

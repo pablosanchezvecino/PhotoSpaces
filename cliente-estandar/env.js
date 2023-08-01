@@ -14,16 +14,11 @@ if (process.env.DOCKER_CONTAINER_EXECUTION) {
 // Valor por defecto: 8081
 const port = process.env.PORT || 8081;
 
-// Host del microservicio de gestión de peticiones
-// Valor por defecto: "0.0.0.0" (se aceptan todas)
-const requestHandlingMicroserviceHost = process.env.REQUEST_HANDLING_MICROSERVICE_HOST || "0.0.0.0";
-
-// Puerto de escucha del microservicio de gestión de peticiones
-// Valor por defecto: 9001
-const requestHandlingMicroservicePort = process.env.REQUEST_HANDLING_MICROSERVICE_PORT || 9001;
+// URL del microservicio de gestión de peticiones
+// Valor por defecto: "http://localhost:9001"
+const requestHandlingMicroserviceUrl = process.env.REQUEST_HANDLING_MICROSERVICE_URL || "http://localhost:9001";
 
 export { 
   port,
-  requestHandlingMicroserviceHost,
-  requestHandlingMicroservicePort  
+  requestHandlingMicroserviceUrl
 };

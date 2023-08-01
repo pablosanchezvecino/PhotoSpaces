@@ -14,13 +14,9 @@ if (process.env.DOCKER_CONTAINER_EXECUTION) {
 // Valor por defecto: 8080
 const port = process.env.PORT || 8080;
 
-// Host del microservicio de administración
-// Valor por defecto: "127.0.0.1"
-const administrationMicroserviceHost = process.env.ADMINISTRATION_MICROSERVICE_HOST || "127.0.0.1";
-
-// Puerto de escucha del microservicio de administración
-// Valor por defecto: 9000
-const administrationMicroservicePort = process.env.ADMINISTRATION_MICROSERVICE_PORT || 9000;
+// URL del microservicio de administración
+// Valor por defecto: "http://localhost:9000"
+const administrationMicroserviceUrl = process.env.ADMINISTRATION_MICROSERVICE_URL || "http://localhost:9000";
 
 // Periodo (en ms) de refresco del panel de administración
 // Valor por defecto: 1000 (1s)
@@ -42,8 +38,7 @@ try {
 
 export { 
   port,
-  administrationMicroserviceHost,
-  administrationMicroservicePort,
+  administrationMicroserviceUrl,
   refreshPeriodMs,
   maxCardsPerContainer,
   allowedIps

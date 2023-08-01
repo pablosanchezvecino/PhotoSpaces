@@ -24,19 +24,19 @@ const bytesToSize = (bytes) => {
   const tebibyte = gibibyte * 1024;
 
   if (bytes < kibibyte) {
-    return bytes.toFixed(2) + " B";
+    return parseFloat(bytes.toFixed(2)).toLocaleString() + " B";
   } else if (bytes < mebibyte) {
     const kibibytes = bytes / kibibyte;
-    return kibibytes.toFixed(2) + " KiB";
+    return parseFloat(kibibytes.toFixed(2)).toLocaleString() + " KiB";
   } else if (bytes < gibibyte) {
     const mebibytes = bytes / mebibyte;
-    return mebibytes.toFixed(2) + " MiB";
+    return parseFloat(mebibytes.toFixed(2)).toLocaleString() + " MiB";
   } else if (bytes < tebibyte) {
     const gibibytes = bytes / gibibyte;
-    return gibibytes.toFixed(2) + " GiB";
+    return parseFloat(gibibytes.toFixed(2)).toLocaleString() + " GiB";
   } else {
     const tebibytes = bytes / tebibyte;
-    return tebibytes.toFixed(2) + " TiB";
+    return parseFloat(tebibytes.toFixed(2)).toLocaleString() + " TiB";
   }
 };
 

@@ -151,10 +151,6 @@ const RequestSchema = Schema(
     nonDeletableFile: {
       type: Boolean,
       require: false
-    },
-    renderedImage: {
-      type: Buffer,
-      require: false
     }
   },
   { optimisticConcurrency: true }

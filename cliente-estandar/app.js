@@ -1,4 +1,4 @@
-import { port, requestHandlingMicroserviceHost, requestHandlingMicroservicePort } from "./env.js";
+import { port, requestHandlingMicroserviceUrl } from "./env.js";
 import { printAsciiArt } from "./logic/asciiArtLogic.js";
 import express from "express";
 import morgan from "morgan";
@@ -11,8 +11,7 @@ printAsciiArt();
 const app = express();
 
 const parameters = {
-  requestHandlingMicroserviceHost: requestHandlingMicroserviceHost,
-  requestHandlingMicroservicePort: requestHandlingMicroservicePort
+  requestHandlingMicroserviceUrl: requestHandlingMicroserviceUrl
 };
 
 try {

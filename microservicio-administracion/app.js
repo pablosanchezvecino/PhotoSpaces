@@ -1,9 +1,9 @@
 import { ipCheckMiddleware } from "./middleware/ipCheckMiddleware.js";
-import { port } from "./env.js";
 import { printAsciiArt } from "./logic/asciiArtLogic.js";
 import requestsRouter from "./routes/requestsRouter.js";
 import dbConnection from "./database/databaseConfig.js";
 import serversRouter from "./routes/serversRouter.js";
+import { port } from "./env.js";
 import express from "express";
 import morgan from "morgan";
 import cors from "cors";

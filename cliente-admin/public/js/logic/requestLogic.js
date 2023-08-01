@@ -1,7 +1,4 @@
-import {
-  administrationMicroserviceHost,
-  administrationMicroservicePort,
-} from "../constants/parameters.js";
+import { administrationMicroserviceUrl } from "../constants/parameters.js";
 import {
   confirmationModal,
   confirmationModalConfirmationButton,
@@ -16,7 +13,7 @@ const deleteRequest = async (requestId) => {
   confirmationModalBody.innerHTML = spinnerHtml;
 
   try {
-    const response = await fetch(`http://${administrationMicroserviceHost}:${administrationMicroservicePort}/requests/${requestId}`, { method: "DELETE" });
+    const response = await fetch(`${administrationMicroserviceUrl}/requests/${requestId}`, { method: "DELETE" });
 
     const jsonContent = await response.json();
     

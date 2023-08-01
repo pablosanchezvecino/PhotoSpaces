@@ -1,4 +1,4 @@
-import { administrationMicroserviceHost, administrationMicroservicePort } from "../constants/parameters.js";
+import { administrationMicroserviceUrl } from "../constants/parameters.js";
 import { showDownloadingRenderedImageModal } from "./modalLogic.js";
 import { confirmationModal } from "./DOMElements.js";
 
@@ -6,7 +6,7 @@ const downloadRenderedImage = (id) => {
   // Mostrar modal de carga
   showDownloadingRenderedImageModal();
 
-  fetch(`http://${administrationMicroserviceHost}:${administrationMicroservicePort}/requests/${id}/rendered-image`)
+  fetch(`${administrationMicroserviceUrl}/requests/${id}/rendered-image`)
     .then(response => response.blob()) // Se convierte la respuesta en un objeto Blob
     .then(blob => {
       // Crear un enlace temporal para la descarga de la imagen
@@ -25,7 +25,10 @@ const downloadRenderedImage = (id) => {
       window.URL.revokeObjectURL(url);
 
       // Ocultar modal de carga
-      confirmationModal.hide();
+      setTimeout(() => {
+        confirmationModal.hide();
+      }, 500);
+      
     })
     .catch(error => {
       console.error("Error al descargar la imagen:", error);

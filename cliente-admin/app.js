@@ -1,12 +1,12 @@
 import { ipCheckMiddleware } from "./middleware/ipCheckMiddleware.js";
-import { printAsciiArt } from "./public/js/logic/asciiArtLogic.js";
+import { printAsciiArt } from "./logic/asciiArtLogic.js";
 import { writeFileSync } from "fs";
 import express from "express";
 import path from "path";
+import morgan from "morgan";
 import { 
   port,
-  administrationMicroserviceHost,
-  administrationMicroservicePort,
+  administrationMicroserviceUrl,
   refreshPeriodMs,
   maxCardsPerContainer,
 } from "./env.js";
@@ -19,8 +19,7 @@ const app = express();
 // Generar archivo parameters.json con los parámetros cofigurables
 try {
   const parameters = {
-    administrationMicroserviceHost: administrationMicroserviceHost,
-    administrationMicroservicePort: administrationMicroservicePort,
+    administrationMicroserviceUrl: administrationMicroserviceUrl,
     refreshPeriodMs: refreshPeriodMs,
     maxCardsPerContainer: maxCardsPerContainer
   };
@@ -29,6 +28,7 @@ try {
 } catch (error) {
   console.error(`Error en la escritura del archivo parameters.json. ${error}`.red);
 }
+app.use(morgan("dev"));
 
 // Utilizar comprobación de direcciones IP
 app.use(ipCheckMiddleware);

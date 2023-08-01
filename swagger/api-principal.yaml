@@ -475,7 +475,7 @@ paths:
         - requests
       summary: Obtener información de la petición
       description: >-
-        Obtener estado y, en su cso, la posición en la cola y el tiempo restante
+        Obtener estado y, en su caso, la posición en la cola y el tiempo restante
         estimado de la petición de renderizado (si esta está siendo procesada,
         para su finalizción, y si esta se encuentra encolada, para su avance en
         la cola)
@@ -557,6 +557,48 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DownloadRenderedImageServerError"
+    post:
+      tags:
+        - aux
+      summary: Transferir imagen renderizada
+      description: >-
+        Transferir imagen renderizada del microservicio de gestión de peticiones
+        al microservicio de administración
+      operationId: transferRenderedImage
+      parameters:
+        - name: id
+          in: path
+          description: Id de la petición
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Todo va bien
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransferRenderedImageSuccess"
+        "400":
+          description: Id no es válido
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransferRenderedImageInvalidIdError"
+        "404":
+          description: Id no existe
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransferRenderedImageNotFoundError"
+        "500":
+          description: >-
+            Error relacionado con la base de datos o con la transferencia de la
+            imagen renderizada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransferRenderedImageServerError"
 
   /new-server-available:
     post:
@@ -1358,3 +1400,29 @@ components:
         error:
           type: string
           example: Error interno en las consultas a la base de datos
+    TransferRenderedImageSuccess:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Fichero recibido con éxito
+    TransferRenderedImageInvalidIdError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: El parámetro id no es válido
+    TransferRenderedImageNotFoundError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: >-
+            El parámetro id no se corresponde con ninguna petición de
+            renderizado almacenada en el sistema
+    TransferRenderedImageServerError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Error en la consulta de la petición a la base de datos

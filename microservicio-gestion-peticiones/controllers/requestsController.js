@@ -1,6 +1,7 @@
 
 import { extensionFromFilename, extensionToMimeType, generateGltfFromGlb, generateDracoFromGltf } from "../logic/fileLogic.js";
 import { isValidEmail, isValidModel, isValidDracoCompressionLevel, isValidRequestLabel } from "../logic/validationLogic.js";
+import { renderServerPort, administrationMicroserviceUrl } from "../env.js";
 import { resolutionToRatioWithRespectTo1080p, resolutionToPixelCount } from "../logic/resolutionLogic.js";
 import { existsSync, readFileSync, writeFileSync, unlinkSync, renameSync, statSync } from "fs";
 import { options } from "../constants/sendRenderedImageOptions.js";
@@ -8,7 +9,6 @@ import { processIpAddress } from "../logic/ipAddressLogic.js";
 import { performPolling } from "../logic/pollingLogic.js";
 import PendingEmail from "../models/PendingEmail.js";
 import { sendMail } from "../logic/emailLogic.js";
-import { renderServerPort } from "../env.js";
 import Request from "../models/Request.js";
 import Server from "../models/Server.js";
 import mongoose from "mongoose";
@@ -303,6 +303,29 @@ const forwardRequest = async (res, request, server, originalFilename) => {
           throw new Error(`Error en la escritura del archivo con imagen renderizada ${request._id}.png. ${error}`.red);
         }
         
+        // Enviar imagen renderizada al microservicio de administración para que el
+        // administrador pueda descargarla desde el panel de administración
+        try {
+          const formData = new FormData();
+          formData.append("renderedImage", new Blob([binaryData], { type: "image/png" }));
+          const response = await fetch(
+            `${administrationMicroserviceUrl}/requests/${request._id}/rendered-image`, 
+            { 
+              method: "POST",
+              body: formData 
+            }
+          );
+
+          if (response.ok) {
+            console.log(`Imagen renderizada transferida correctamente al microservicio de administración (${request._id})`.magenta);
+          } else {
+            console.error(`Código erróneo ${response.status} recibido al intentar transferir la imagen renderizada al microservicio de administración`.red);
+          }
+
+        } catch (error) {
+          console.error(`Error al intentar transferir la imagen renderizada al microservicio de adminisración. ${error}`.red);
+        }
+
         // Si se indicó envío por email
         if (request.email) {
           // Enviar correo al usuario con la imagen renderizada
@@ -358,8 +381,7 @@ const forwardRequest = async (res, request, server, originalFilename) => {
               status: "fulfilled", 
               nonDeletableFile: true, 
               totalBlenderTime: jsonContent.totalBlenderTime, 
-              processingEndTime: request.processingEndTime, 
-              renderedImage: readFileSync(`./temp/${request._id}.png`) 
+              processingEndTime: request.processingEndTime
             },
             { new: true }
           );
@@ -476,7 +498,7 @@ const enqueueRequest = async (res, request, originalFilename) => {
       { $inc: { enqueuedRequestsCount: 1 } }, 
       { sort: { timeSpentOnRenderTest: 1 } },
       { new: true } 
-    ));console.log(bestBusyServer)
+    ));
     
     if (!bestBusyServer) {console.log("CONSULTA 2 ENCOLAR");
       // Buscar servidor en estado "busy" con menos peticiones encoladas (de los
@@ -596,7 +618,7 @@ const updateQueues = async () => {
       // Si tiene peticiones encoladas
       if (server.enqueuedRequestsCount > 0) {
         // Obtener primera petición de la cola correspondiente
-        console.log("Encontrado servidor libre con encoladas".yellow)
+        console.log("Encontrado servidor libre con encoladas".yellow);
         let firstEnqueuedRequest = null;
         try {
           firstEnqueuedRequest = await Request.findOne({ status: "enqueued", sentFile: true, assignedServer: server.name }).sort({ queueStartTime: 1 });
@@ -651,7 +673,7 @@ const updateQueues = async () => {
     }
 
     if (newIdleServer) {
-      console.log("Encontrado servidor libre sin encoladas".yellow)
+      console.log("Encontrado servidor libre sin encoladas".yellow);
 
       // Enviar la primera directamente al servidor
       try {

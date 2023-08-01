@@ -1,4 +1,4 @@
-import { requestHandlingMicroserviceHost, requestHandlingMicroservicePort } from "./constants/parameters.js";
+import { requestHandlingMicroserviceUrl } from "./constants/parameters.js";
 import { PointerLockControls } from "/jsm/controls/PointerLockControls.js";
 import { GLTFExporter } from "/jsm/exporters/GLTFExporter.js";
 import { GLTFLoader } from "/jsm/loaders/GLTFLoader.js";
@@ -508,7 +508,7 @@ const sendModel = async (cam) => {
 
       try {
         const response = await fetch(
-          `http://${requestHandlingMicroserviceHost}:${requestHandlingMicroservicePort}/requests`,
+          `${requestHandlingMicroserviceUrl}/requests`,
           {
             method: "POST",
             body: formData
@@ -573,7 +573,7 @@ const requestPolling = async (requestId, requestStatus) => {
   while (requestStatus !== "fulfilled") {
 
     const response = await fetch(
-      `http://${requestHandlingMicroserviceHost}:${requestHandlingMicroservicePort}/requests/${requestId}/info`,
+      `${requestHandlingMicroserviceUrl}/requests/${requestId}/info`,
       { method: "GET" }
     );
 
@@ -613,7 +613,7 @@ const requestPolling = async (requestId, requestStatus) => {
 
   try {
     const response = await fetch(
-      `http://${requestHandlingMicroserviceHost}:${requestHandlingMicroservicePort}/requests/${requestId}/rendered-image`,
+      `${requestHandlingMicroserviceUrl}/requests/${requestId}/rendered-image`,
       { method: "GET" }
     );
 

@@ -5,13 +5,9 @@ import "colors";
 
 dotenv.config();
 
-// Host del microservicio de gestión de peticiones
-// Valor por defecto: "127.0.0.1"
-const requestHandlingMicroserviceHost = process.env.REQUEST_HANDLING_MICROSERVICE_HOST || "127.0.0.1";
-
-// Puerto de escucha del microservicio de gestión de peticiones
-// Valor por defecto: 9001
-const requestHandlingMicroservicePort = process.env.REQUEST_HANDLING_MICROSERVICE_PORT || 9001;
+// URL del microservicio de gestión de peticiones
+// Valor por defecto: "http://localhost:9001"
+const requestHandlingMicroserviceUrl = process.env.REQUEST_HANDLING_MICROSERVICE_URL || "http://localhost:9001";
 
 // Tiempo de espera (en ms) entre la recepción de la respuesta a una consulta 
 // del estado de la petición enviada y la siguiente
@@ -19,7 +15,6 @@ const requestHandlingMicroservicePort = process.env.REQUEST_HANDLING_MICROSERVIC
 const pollingIntervalMs = process.env.POLLING_INTERVAL_MS || 1000;
 
 export { 
-  requestHandlingMicroserviceHost,
-  requestHandlingMicroservicePort,
+  requestHandlingMicroserviceUrl,
   pollingIntervalMs
 };

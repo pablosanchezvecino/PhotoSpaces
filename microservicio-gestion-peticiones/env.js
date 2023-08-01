@@ -22,6 +22,10 @@ const port = process.env.PORT || 9001;
 // Valor por defecto: 3000
 const renderServerPort = process.env.RENDER_SERVER_PORT || 3000;
 
+// URL del microservicio de administración
+// Valor por defecto: "http://localhost:9000"
+const administrationMicroserviceUrl = process.env.ADMINISTRATION_MICROSERVICE_URL || "http://localhost:9000";
+
 // Dirección de correo electrónico de la cuenta Gmail que envía los correos automatizados
 // Valor por defecto: ""
 const emailUser = process.env.EMAIL_USER || "";
@@ -59,6 +63,7 @@ export {
   mongoDbConnectionString,
   port,
   renderServerPort,
+  administrationMicroserviceUrl,
   emailUser,
   emailPassword,
   dbCheckPeriodMs,

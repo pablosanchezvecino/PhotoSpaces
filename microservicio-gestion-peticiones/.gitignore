@@ -1,5 +1,6 @@
-# Archivos temporales
+# Directorio /temp vacío
 temp/*
+!temp/.gitkeep
 
 # Logs
 logs

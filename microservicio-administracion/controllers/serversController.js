@@ -1,4 +1,4 @@
-import { renderServerPort, requestHandlingMicroserviceHost, requestHandlingMicroservicePort } from "../env.js";
+import { renderServerPort, requestHandlingMicroserviceUrl } from "../env.js";
 import { isValidServerName, isValidIpv4 } from "../logic/validationLogic.js";
 import Request from "../models/Request.js";
 import Server from "../models/Server.js";
@@ -122,7 +122,7 @@ const addServer = async (req, res) => {
 
   // Realizar consulta al servidor para saber si este es capaz de actuar como servidor de renderizado
   try {
-    const response = await fetch(`http://${renderingServerIp}:3000/bind`, { method: "POST" });
+    const response = await fetch(`http://${renderingServerIp}:${renderServerPort}/bind`, { method: "POST" });
     if (response.ok) {
       // Todo va bien en el servidor de renderizado
       // Persistir info servidor
@@ -164,7 +164,7 @@ const addServer = async (req, res) => {
 
       // Avisar al microservicio de gestión de peticiones de que hay un nuevo servidor disponible
       try {
-        await fetch(`http://${requestHandlingMicroserviceHost}:${requestHandlingMicroservicePort}/new-server-available`,
+        await fetch(`${requestHandlingMicroserviceUrl}/new-server-available`,
           { method: "POST" }
         );
       } catch (error) {
@@ -296,7 +296,7 @@ const enableServer = async (req, res) => {
 
       // Avisar al microservicio de gestión de peticiones de que hay un nuevo servidor disponible
       try {
-        await fetch(`http://${requestHandlingMicroserviceHost}:${requestHandlingMicroservicePort}/new-server-available`, 
+        await fetch(`${requestHandlingMicroserviceUrl}/new-server-available`, 
           { method: "POST" }
         );
       } catch (error) {
@@ -348,7 +348,7 @@ const abortServer = async (req, res) => {
   // Obtener petición que está siendo procesada el servidor
   let request = null;
   try {
-    request = await Request.findOne({ status: "processing", assignedServer: serverInfo.name }, "-renderedImage");
+    request = await Request.findOne({ status: "processing", assignedServer: serverInfo.name });
   } catch (error) {
     console.error(`Error en las consultas a la base de datos previas a abortar el procesamiento en el servidor. ${error}`.red);
     res.status(500).send({ error: "Error en las consultas a la base de datos previas a abortar el procesamiento en el servidor" });
@@ -382,7 +382,7 @@ const abortServer = async (req, res) => {
 
       // Avisar al microservicio de gestión de peticiones de que hay un nuevo servidor disponible
       try {
-        await fetch(`http://${requestHandlingMicroserviceHost}:${requestHandlingMicroservicePort}/new-server-available`, 
+        await fetch(`${requestHandlingMicroserviceUrl}/new-server-available`, 
           { method: "POST" }
         );
       } catch (error) {

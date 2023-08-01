@@ -22,13 +22,9 @@ const port = process.env.PORT || 9000;
 // Valor por defecto: 3000
 const renderServerPort = process.env.RENDER_SERVER_PORT || 3000;
 
-// Host del microservicio de gestión de peticiones
-// Valor por defecto: "127.0.0.1"
-const requestHandlingMicroserviceHost = process.env.REQUEST_HANDLING_MICROSERVICE_HOST || "127.0.0.1";
-
-// Puerto de escucha del microservicio de gestión de peticiones
-// Valor por defecto: 9001
-const requestHandlingMicroservicePort = process.env.REQUEST_HANDLING_MICROSERVICE_PORT || 9001;
+// URL del microservicio de gestión de peticiones
+// Valor por defecto: "http://localhost:9001"
+const requestHandlingMicroserviceUrl = process.env.REQUEST_HANDLING_MICROSERVICE_URL || "http://localhost:9001";
 
 // Direcciones IP permitdas (en principio deberían ser las de los administradores del sistema)
 // Valor por defecto: "0.0.0.0" (se aceptan todas)
@@ -44,7 +40,6 @@ export {
   mongoDbConnectionString,
   port,
   renderServerPort,
-  requestHandlingMicroserviceHost,
-  requestHandlingMicroservicePort,
+  requestHandlingMicroserviceUrl,
   allowedIps
 };

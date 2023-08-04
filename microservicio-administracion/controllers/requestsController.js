@@ -101,6 +101,8 @@ const getRequestRenderedImage = async (req, res) => {
   res.status(200).sendFile(`./temp/${req.params.id}.png`, options);
 };
 
+// Aunque se produzcan errores, se seguirá intentando eliminar la petición
+// para evitar posibles situaciones de bloqueo
 const deleteRequest = async (req, res) => {
   // Oid no válido
   if (!mongoose.isValidObjectId(req.params.id)) {
@@ -140,30 +142,28 @@ const deleteRequest = async (req, res) => {
     }
 
     // Contactar con el servidor
-    try {
-      const response = await fetch(`${requestHandlingMicroserviceUrl}/abort`, 
-        { method: "POST" }
-      );
-
-      // Si todo fue bien
-      if (response.ok) {
-        // Actualizar estado en BD
-        try {
-          await Server.findByIdAndUpdate(server._id, { status: "idle" });
-        } catch (error) {
-          console.error(`Error interno en la conexión con la base de datos tras abortar el procesamiento en el servidor. ${error}`.red);
-          res.status(500).send({ error: "Error interno en la conexión con la base de datos tras abortar el procesamiento en el servidor" });
-          return;
+    if (server) {
+      try {
+        const response = await fetch(`http://${server.ip}:${renderServerPort}/abort`, 
+          { method: "POST" }
+        );
+  
+        // Si todo fue bien
+        if (response.ok) {
+          // Actualizar estado en BD
+          try {
+            await Server.findByIdAndUpdate(server._id, { status: "idle" });
+            notifyRequestHandlingMicroservice = true;
+          } catch (error) {
+            console.error(`Error interno en la conexión con la base de datos tras abortar el procesamiento en el servidor. ${error}`.red);
+          }
+        } else {
+          console.error(`Obtenido código ${response.status} en la respuesta del servidor`.red);
         }
-        notifyRequestHandlingMicroservice = true;
-      } else {
-        throw new Error(`Obtenido código ${response.status} en la respuesta del servidor`);
+  
+      } catch (error) {
+        console.error(`Error en la conexión con el servidor de renderizado. ${error}`.red);
       }
-
-    } catch (error) {
-      console.error(`Error en la conexión con el servidor de renderizado. ${error}`.red);
-      res.status(500).send({ error: "Error en la conexión con el servidor de renderizado" });
-      return;
     }
     
   } else if (requestToDelete.status === "enqueued" && requestToDelete.assignedServer !== null) {
@@ -175,8 +175,6 @@ const deleteRequest = async (req, res) => {
         { $inc: { enqueuedRequestsCount: -1} });
     } catch (error) {
       console.error(`Error al intentar decrementar el número de peticiones encoladas del servidor ${requestToDelete.assignedServer}. ${error}`.red);
-      res.status(500).send({ error: "Error al intentar decrementar el número de peticiones encoladas del servidor" });
-      return;
     }
   }
   

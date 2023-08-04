@@ -8,7 +8,7 @@ const ipCheckMiddleware = (req, res, next) => {
     // Extraer IPv4
     requestIp = requestIp.toString().slice(7);
   }
-  console.log(allowedIps);
+  console.log(requestIp);
   if (!allowedIps.includes("0.0.0.0") && !allowedIps.includes(requestIp)) {
     // Envía una respuesta de acceso denegado si la dirección IP no coincide con ninguna de las permitidas
     return res.status(403).send("Acceso denegado"); 

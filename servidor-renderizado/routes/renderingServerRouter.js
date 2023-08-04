@@ -1,4 +1,4 @@
-import { handleEstimatedRemainingProcessingTimeRequest } from "../controllers/timeController.js";
+import { handleEstimatedRemainingProcessingTimeRequest } from "../controllers/infoController.js";
 import { disable, enable, unbind, abort } from "../controllers/statusManagementController.js";
 import { bind, handleRenderingRequest } from "../controllers/renderingController.js";
 import { upload } from "../constants/multerConfig.js";
@@ -17,8 +17,8 @@ router.post("/unbind", unbind);
 // POST /render
 router.post("/render", upload.single("model"), handleRenderingRequest);
 
-// GET /time
-router.get("/time", handleEstimatedRemainingProcessingTimeRequest);
+// GET /info
+router.get("/info", handleEstimatedRemainingProcessingTimeRequest);
 
 // POST /abort
 router.post("/abort", abort);

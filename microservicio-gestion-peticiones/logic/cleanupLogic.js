@@ -1,10 +1,9 @@
 import { readdirSync, unlinkSync, statSync } from "fs";
 import PendingEmail from "../models/PendingEmail.js";
+import { msInADay, wait } from "./timeLogic.js";
 import { cleanupIntervalMs } from "../env.js";
 import Request from "../models/Request.js";
-import { msInADay } from "./timeLogic.js";
 import { parse, extname } from "path";
-import { wait } from "./timeLogic.js";
 import mongoose from "mongoose";
 
 // Funciones relacionadas con la limpieza periódica de archivos temporales

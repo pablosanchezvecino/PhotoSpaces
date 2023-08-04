@@ -1,4 +1,4 @@
-import { setEstimatedRemainingProcessingTime } from "../serverStatus.js";
+import { setEstimatedRemainingProcessingTime, setLatestRequest } from "../serverStatus.js";
 import dataString from "../constants/renderTestSettings.js";
 import ServerStates from "../constants/serverStatesEnum.js";
 import { setStatus, getStatus } from "../serverStatus.js";
@@ -16,7 +16,7 @@ const bind = async (req, res) => {
     res.status(400).send({ error: "El servidor no se encuentra disponible" });
     return;
   }
-
+ 
   // Inicializar cronómetro
   const hrStart = process.hrtime();
 
@@ -57,7 +57,7 @@ const bind = async (req, res) => {
     serverInfo.os = osData.distro;
     serverInfo.cpu = cpuData.manufacturer + " " + cpuData.brand;
     try {
-      serverInfo.gpu = gpuData.controllers[gpuData.controllers.length - 1].name;
+      serverInfo.gpu = gpuData.controllers[gpuData.controllers.length - 1].name || "N/A";
     } catch {
       serverInfo.gpu = "N/A";
     }
@@ -103,16 +103,17 @@ const handleRenderingRequest = async (req, res) => {
   //   // return;
   // }
 
-  // El servidor pasa a encontrarse ocupado
-  setStatus(ServerStates.busy);
-
-  let totalBlenderTime = null;
   // Obtener de la petición la información necesaria para el renderizado
   const parameters = JSON.parse(req.body.data);
   const requestId = req.body.requestId;
 
+  // El servidor pasa a encontrarse ocupado
+  setStatus(ServerStates.busy);
+  setLatestRequest(requestId);
+
   // Comenzar proceso de renderizado
   const filename = req.file ? req.file.filename : req.body.filename;
+  let totalBlenderTime = null;
   try {
 
     totalBlenderTime = await render(parameters, filename);

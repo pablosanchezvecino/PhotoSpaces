@@ -12,6 +12,7 @@
   "author": "Pablo Sánchez Vecino",
   "license": "ISC",
   "dependencies": {
+    "axios": "^1.4.0",
     "body-parser": "^1.20.2",
     "colors": "^1.4.0",
     "cors": "^2.8.5",

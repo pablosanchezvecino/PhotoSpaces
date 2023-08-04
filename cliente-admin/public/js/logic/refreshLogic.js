@@ -43,16 +43,14 @@ const refresh = async () => {
   
   // Obtener servidores y peticiones
   try {
-    const serversResponse = await fetch(`${administrationMicroserviceUrl}/servers${queryString}`, 
-      { headers : { "ngrok-skip-browser-warning": true } });
+    const serversResponse = await fetch(`${administrationMicroserviceUrl}/servers${queryString}`);
     if (serversResponse.ok) {
       servers = await serversResponse.json();
     } else {
       throw new Error(`Obtenido código ${serversResponse.status} en la consulta de servidores`);
     }
       
-    const requestsResponse = await fetch(`${administrationMicroserviceUrl}/requests${queryString}`, 
-      { headers : { "ngrok-skip-browser-warning": true } });
+    const requestsResponse = await fetch(`${administrationMicroserviceUrl}/requests${queryString}`);
     if (requestsResponse.ok) {
       requests = await requestsResponse.json();
     } else {

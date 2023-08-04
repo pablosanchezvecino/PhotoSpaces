@@ -13,7 +13,7 @@ import Request from "../models/Request.js";
 import Server from "../models/Server.js";
 import mongoose from "mongoose";
 import path from "path";
-
+import axios from "axios";
 
 // Funciones asociadas a los endpoints relacionados con la administración de las peticiones de renderizado
 
@@ -279,19 +279,15 @@ const forwardRequest = async (res, request, server, originalFilename) => {
     }
     
     // Enviar petición a servidor de renderizado
-    fetch(
-      `http://${server.ip}:${renderServerPort}/render`,
-      {
-        method: "POST",
-        body: formData
-      }
-    )
+    axios.post(`http://${server.ip}:${renderServerPort}/render`, formData)
       .then(async (response) => {
-        if (response.ok) {
+        // if (response.ok) {
+        if (response.status >= 200 && response.status < 300) {
           request.processingEndTime = new Date();
-          return response.json();
+          // return response.json();
+          return response.data;
         } else {
-          throw new Error(`Código erróneo obtenido en la respuesta del servidor. ${(await response.json()).error}`);
+          throw new Error(`Código erróneo obtenido en la respuesta del servidor. ${(await response.data).error}`);
         }
       })
       .then(async (jsonContent) => {
@@ -392,7 +388,6 @@ const forwardRequest = async (res, request, server, originalFilename) => {
         }
 
         console.log(`Actualizando servidor ${request.assignedServer}...`.magenta);
-        //TODO: QUITAR?
         // Comprobar si el servidor tiene peticiones encoladas
         let firstEnqueuedRequest = null;
         try {
@@ -824,7 +819,7 @@ const getWaitingInfo = async (req, res) => {
           estimatedRemianingProcessingTime: { $exists: true }
         })
           .sort({ processingStartTime: 1 }) // Ordenar en orden ascendente por "processingStartTime"
-          .select("estimatedRemainingProcessingTime") // Seleccionar solo el campo "estimatedRemianingProcessingTime"
+          .select("estimatedRemainingProcessingTime") // Seleccionar solo el campo "estimatedRemainingProcessingTime"
           .exec()
       )?.estimatedRemainingProcessingTime ?? null;
       

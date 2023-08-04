@@ -30,6 +30,7 @@
     "globals": {
         "process": true,
         "Buffer": true,
-        "bootstrap": true
+        "bootstrap": true,
+        "axios": true
     }
 }

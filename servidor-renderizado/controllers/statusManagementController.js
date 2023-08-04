@@ -1,6 +1,6 @@
 import { killBlenderOnWindows, killBlenderOnUnixBasedOs } from "../logic/killLogic.js";
 import ServerStates from "../constants/serverStatesEnum.js";
-import { setStatus, getStatus } from "../serverStatus.js";
+import { setStatus, getStatus, setEstimatedRemainingProcessingTime, setLatestRequest } from "../serverStatus.js";
 import { performCleanup } from "../logic/cleanupLogic.js";
 
 // Funciones asociadas a los endpoints relacionados con los cambios de estado del servidor
@@ -36,23 +36,29 @@ const enable = async (req, res) => {
 };
 
 const unbind = async (req, res) => {
-  // Solo es posible desvincular el servidor si no se encuentra en estado "busy"
-  if (getStatus() === ServerStates.busy) {
-    res.status(400).send({ error: "El servidor se encuentra procesando una petición" });
-    return;
-  } 
 
   console.log("Desvinculando servidor...".magenta);
 
   performCleanup();
 
   setStatus(ServerStates.unbound);
+  setLatestRequest("N/A");
+  setEstimatedRemainingProcessingTime(null);
+
   res.status(200).send({ message: "Servidor desvinculado con éxito" });
 };
 
 const abort = async (req, res) => {
-  if (getStatus() !== ServerStates.busy) {
-    res.status(400).send({ error: "El servidor no se encontraba procesando una petición" });
+  // Aunque localmente se encuentre en estado idle 
+  // (conflicto entre estado local y el de BD), devolverá código 200 para que el
+  // microservicio de adminisración lo actualice en BD y evitar una situación de bloqueo
+  if (getStatus() === ServerStates.idle) {
+    res.status(200).send({ message: "Procesamiento en el servidor abortado con éxito" });
+    return;
+  } 
+
+  if (getStatus() === ServerStates.disabled) {
+    res.status(400).send({ error: "El servidor se encontraba deshabilitado" });
     return;
   } 
 
@@ -67,7 +73,10 @@ const abort = async (req, res) => {
     }
 
     console.log("Procesamiento en el servidor abortado con éxito".magenta);
+
     setStatus(ServerStates.idle);
+    setLatestRequest("N/A");
+    setEstimatedRemainingProcessingTime(null);
 
     res.status(200).send({ message: "Procesamiento en el servidor abortado con éxito" });
   } catch (error) {

@@ -1,4 +1,4 @@
-import { setStatus, setEstimatedRemainingProcessingTime } from "./serverStatus.js";
+import { setStatus, setEstimatedRemainingProcessingTime, setLatestRequest } from "./serverStatus.js";
 import { ipCheckMiddleware } from "./middleware/ipCheckMiddleware.js";
 import renderingServerRouter from "./routes/renderingServerRouter.js";
 import ServerStates from "./constants/serverStatesEnum.js";
@@ -12,6 +12,7 @@ import "colors";
 printAsciiArt();
 
 setStatus(ServerStates.unbound);
+setLatestRequest("N/A");
 setEstimatedRemainingProcessingTime(null);
 
 const app = express();

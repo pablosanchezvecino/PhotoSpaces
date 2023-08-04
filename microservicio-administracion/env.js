@@ -11,8 +11,8 @@ if (process.env.DOCKER_CONTAINER_EXECUTION) {
 }
 
 // URL para la conexión con la base de datos
-// Valor por defecto: ""
-const mongoDbConnectionString = process.env.MONGODB_CONNECTION_STRING || "";
+// Valor por defecto: "mongodb://127.0.0.1:27017/photoSpacesDB"
+const mongoDbConnectionString = process.env.MONGODB_CONNECTION_STRING || "mongodb://127.0.0.1:27017/photoSpacesDB";
 
 // Puerto de escucha del propio microservicio
 // Valor por defecto: 9000

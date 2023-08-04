@@ -104,30 +104,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RenderServerErrorInfo'
-  /time:
+  /info:
     get:
       tags:
-        - time
+        - info
       summary: >-
-        Obtener el tiempo estimado de espera para la finalización del
-        renderizado
+        Obtener información sobre el estado actual del servidor
       description: >-
-        Consultar el último log que ha ralizado el proceso de Blender
-        relacionado con el tiempo de procesamiento restante (en milsiengundos)
-      operationId: time
+        Obtener el estado y la petición de renderizado más reciente del 
+        servidor y, en su caso, el tiempo de espera estimado para que termine 
+        el proceso de renderizado en curso
+      operationId: info
       responses:
         '200':
           description: Todo va bien
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TimeSuccessInfo'
-        '400':
-          description: El servidor no se encuentra procesando una petición
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TimeUserErrorInfo'
+                $ref: '#/components/schemas/InfoSuccessInfo'
+
   /abort:
     post:
       tags:
@@ -296,19 +291,19 @@ components:
         message:
           type: string
           example: Procesamiento en el servidor abortado con éxito
-    TimeSuccessInfo:
+    InfoSuccessInfo:
       type: object
       properties:
         estimatedRemainingProcessingTime:
           type: integer
           format: int64
           example: 30123
-    TimeUserErrorInfo:
-      type: object
-      properties:
-        error:
+        status:
           type: string
-          example: El servidor no se encuentra procesando una petición
+          example: busy
+        latestRequest:
+          type: string
+          example: 64cbef25fb0f8e0251c1dbe7
     AbortUserErrorInfo:
       type: object
       properties:

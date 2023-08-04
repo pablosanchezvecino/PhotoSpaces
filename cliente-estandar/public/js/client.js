@@ -453,6 +453,7 @@ const sendModel = async (cam) => {
 
     btnRender.disabled = true;
     btnRender.style.display = "none";
+    btnLoading.innerText = "Enviando...";
     btnLoading.style.display = "block";
 
     const exporter = new GLTFExporter();
@@ -516,6 +517,7 @@ const sendModel = async (cam) => {
         );
 
         if (response.ok) {
+          btnLoading.innerText = "Renderizando...";
           if (browserDownload.checked) {
             const jsonContent = await response.json();
             await requestPolling(jsonContent.requestId, jsonContent.requestStatus);

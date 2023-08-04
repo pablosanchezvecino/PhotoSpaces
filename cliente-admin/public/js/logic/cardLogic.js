@@ -517,18 +517,16 @@ const addServerCard = (serverData) => {
   cardBody.appendChild(cardTitle);
   cardBody.appendChild(row);
 
-  if (serverData.status !== "busy") {
-    const button2 = document.createElement("button");
-    button2.className = "btn btn-danger mt-3 ms-4";
-    button2.title = "Eliminar servidor";
-    button2.onclick = () => showDeleteModal(serverData._id);
-    const deleteImage = document.createElement("img");
-    deleteImage.src = "./res/img/svg/trash.svg";
-    deleteImage.width = "24";
-    deleteImage.title = "Eliminar servidor";
-    button2.appendChild(deleteImage);
-    buttonsContainer.appendChild(button2);
-  }
+  const button2 = document.createElement("button");
+  button2.className = "btn btn-danger mt-3 ms-4";
+  button2.title = "Eliminar servidor";
+  button2.onclick = () => showDeleteModal(serverData._id);
+  const deleteImage = document.createElement("img");
+  deleteImage.src = "./res/img/svg/trash.svg";
+  deleteImage.width = "24";
+  deleteImage.title = "Eliminar servidor";
+  button2.appendChild(deleteImage);
+  buttonsContainer.appendChild(button2);
 
   cardBody.appendChild(buttonsContainer);
   card.appendChild(cardBody);
@@ -574,13 +572,13 @@ const addRequestCard = (requestData, queuePosition) => {
 
 
   if (requestData.status === "enqueued") {
-    // Posición en la cola
+    // Orden de llegada
     const positionCardText = document.createElement("p");
     positionCardText.className = "card-text";
     const positionImage = document.createElement("img");
     positionImage.src = "./res/img/svg/position.svg";
     positionImage.width = "24";
-    positionImage.title = "Posición en la cola";
+    positionImage.title = "Orden de llegada";
     positionCardText.appendChild(positionImage);
     positionImage.after(
       document.createTextNode(" " + queuePosition.position)
@@ -670,6 +668,8 @@ const addRequestCard = (requestData, queuePosition) => {
         ? "Tiempo procesando"
         : "Tiempo total de procesamiento";
     neededTimeCardText.appendChild(neededTimeImage);
+    console.log(`ACTUAL: ${new Date().getTime()}`)
+    console.log(`START: ${Date.parse(requestData.processingStartTime)}`)
     neededTimeImage.after(
       document.createTextNode(
         " " +

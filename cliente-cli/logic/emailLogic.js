@@ -20,7 +20,7 @@ const getEmail = async () => {
       email = await new Promise((resolve, reject) => {
         rl.question(
           `\nIndique la dirección de correo electrónico al que enviar la imagen renderizada.
-Para recepción síncrona en la carpeta output, no escriba nada y presione la tecla Enter
+Para recepción síncrona en la carpeta out, no escriba nada y presione la tecla Enter
 `
             .bold.magenta,
           (input) => {

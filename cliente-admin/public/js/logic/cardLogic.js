@@ -668,8 +668,6 @@ const addRequestCard = (requestData, queuePosition) => {
         ? "Tiempo procesando"
         : "Tiempo total de procesamiento";
     neededTimeCardText.appendChild(neededTimeImage);
-    console.log(`ACTUAL: ${new Date().getTime()}`)
-    console.log(`START: ${Date.parse(requestData.processingStartTime)}`)
     neededTimeImage.after(
       document.createTextNode(
         " " +

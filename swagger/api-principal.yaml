@@ -31,6 +31,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Servers"
+        '403':
+          description: >-
+            Acceso denegado
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Acceso denegado
         "500":
           description: Se produce un error en la consulta a la base de datos
           content:
@@ -70,6 +78,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/AddServerUserError"
+        '403':
+          description: >-
+            Acceso denegado
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Acceso denegado
         "500":
           description: >-
             Error relacionado con la base de datos, con el servidor de
@@ -106,6 +122,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/GetServerInvalidIdError"
+        '403':
+          description: >-
+            Acceso denegado
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Acceso denegado
         "404":
           description: No existe petición con el id especificado
           content:
@@ -148,6 +172,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DeleteServerInvalidIdError"
+        '403':
+          description: >-
+            Acceso denegado
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Acceso denegado
         "404":
           description: No existe servidor con el id especificado
           content:
@@ -192,6 +224,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DisableServerInvalidIdError"
+        '403':
+          description: >-
+            Acceso denegado
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Acceso denegado
         "404":
           description: No existe servidor con el id especificado
           content:
@@ -236,6 +276,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/EnableServerInvalidIdError"
+        '403':
+          description: >-
+            Acceso denegado
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Acceso denegado
         "404":
           description: No existe servidor con el id especificado
           content:
@@ -282,6 +330,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/AbortServerInvalidIdError"
+        '403':
+          description: >-
+            Acceso denegado
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Acceso denegado
         "404":
           description: No existe servidor con el id especificado
           content:
@@ -318,6 +374,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Requests"
+        '403':
+          description: >-
+            Acceso denegado
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Acceso denegado
         "500":
           description: Se produce un error en la consulta a la base de datos
           content:
@@ -412,6 +476,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/GetRequestInvalidIdError"
+        '403':
+          description: >-
+            Acceso denegado
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Acceso denegado
         "404":
           description: Id no existe
           content:
@@ -455,6 +527,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DeleteRequestInvalidIdError"
+        '403':
+          description: >-
+            Acceso denegado
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Acceso denegado
         "404":
           description: No existe servidor con el id especificado
           content:
@@ -543,6 +623,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DownloadRenderedImageInvalidIdError"
+        '403':
+          description: >-
+            Acceso denegado
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Acceso denegado
         "404":
           description: Id no existe
           content:
@@ -585,6 +673,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/TransferRenderedImageInvalidIdError"
+        '403':
+          description: >-
+            Acceso denegado
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Acceso denegado
         "404":
           description: Id no existe
           content:

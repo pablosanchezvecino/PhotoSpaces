@@ -1,6 +1,13 @@
 import readline from "readline";
 
 const validParameters = (parameters) => {
+  // resolution
+  const possibleResolutions = ["480p", "720p", "1080p", "1440p", "2160p"];
+  if (!parameters.resolution || typeof parameters.resolution !== "string" || !possibleResolutions.includes(parameters.resolution)) {
+    console.error("Parámetro \"resolution\" no válido".red);
+    return false;
+  }
+
   // lens
   if (
     !parameters.lens || 

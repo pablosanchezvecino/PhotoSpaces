@@ -1,7 +1,7 @@
 import { requestHandlingMicroserviceUrl, pollingIntervalMs } from "../env.js";
 import { wait, msToTime } from "../logic/timeLogic.js";
 
-// Consiltar al sistema  estado de la petición de forma periódica hasta que finalice
+// Consultar al sistema  estado de la petición de forma periódica hasta que finalice
 const requestPolling = async (requestId, requestStatus) => {
   console.log(`Petición recibida por el sistema (id = ${requestId}). Comenzando monitorización...`.bold.magenta);
   

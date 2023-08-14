@@ -60,7 +60,6 @@ while (!terminate) {
   }
 
   try {
-
     const response = await fetch(
       `${requestHandlingMicroserviceUrl}/requests`,
       {

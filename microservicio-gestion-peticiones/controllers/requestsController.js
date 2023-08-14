@@ -4,7 +4,6 @@ import { isValidEmail, isValidModel, isValidDracoCompressionLevel, isValidReques
 import { renderServerPort, administrationMicroserviceUrl } from "../env.js";
 import { resolutionToRatioWithRespectTo1080p, resolutionToPixelCount } from "../logic/resolutionLogic.js";
 import { existsSync, readFileSync, writeFileSync, unlinkSync, renameSync, statSync } from "fs";
-import { options } from "../constants/sendRenderedImageOptions.js";
 import { processIpAddress } from "../logic/ipAddressLogic.js";
 import { performPolling } from "../logic/pollingLogic.js";
 import PendingEmail from "../models/PendingEmail.js";
@@ -220,14 +219,6 @@ const handleNewRequest = async (req, res) => {
   }
   
 };
-
-
-
-
-
-
-
-
 
 
 
@@ -789,12 +780,6 @@ const getWaitingInfo = async (req, res) => {
       return;
     }
 
-    // if (requestInfo.status === "fulfilled") {
-    //   res.status(400).send({ error: "La petición ya ha sido procesada" });
-    //   console.error(`La petición con id ${req.params.id} ya ha sido procesada`.red);
-    //   return;
-    // }
-
     let queuePosition = 0;
     let estimatedRemainingProcessingTime = requestInfo.estimatedRemainingProcessingTime;
 
@@ -885,7 +870,7 @@ const transferRenderedImage = async (req, res) => {
     if (existsSync(`${fileRoute}.png`)) {
 
       // Enviar imagen renderizada para que el navegador pueda descargarla
-      res.status(200).sendFile(`${fileRoute}.png`, options);
+      res.status(200).download(`${fileRoute}.png`);
 
       // Hasta que no termine la transferencia no podemos borrar los archivos temporales
       res.on("finish", async () => {

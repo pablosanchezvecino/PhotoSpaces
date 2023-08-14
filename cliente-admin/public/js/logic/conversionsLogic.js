@@ -2,7 +2,7 @@
 // Funciones para conversiones entre unidades y de un formato a otro
 
 const msToTime = (duration) => {
-  if (!duration && duration !== 0) {
+  if ((!duration && duration !== 0) || duration < 0) {
     return "N/A";
   } else {
     let seconds = Math.floor((duration / 1000) % 60),

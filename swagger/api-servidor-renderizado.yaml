@@ -30,6 +30,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BindUserErrorInfo'
+        '403':
+          description: >-
+            Acceso denegado
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Acceso denegado
         '500':
           description: >-
             El servidor no es capaz de realizar el renderizado de prueba o de
@@ -60,6 +68,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UnbindErrorInfo'
+        '403':
+          description: >-
+            Acceso denegado
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Acceso denegado
   /render:
     post:
       requestBody:
@@ -96,6 +112,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RenderUserErrorInfo'
+        '403':
+          description: >-
+            Acceso denegado
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Acceso denegado
         '500':
           description: >-
             El servidor no es capaz de realizar el renderizado o de devolver la
@@ -122,6 +146,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InfoSuccessInfo'
+        '403':
+          description: >-
+            Acceso denegado
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Acceso denegado
 
   /abort:
     post:
@@ -143,6 +175,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AbortUserErrorInfo'
+        '403':
+          description: >-
+            Acceso denegado
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Acceso denegado
         '500':
           description: Error interno al intentar abortar el proceso
           content:
@@ -171,6 +211,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DisableErrorInfo'
+        '403':
+          description: >-
+            Acceso denegado
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Acceso denegado
   /enable:
     post:
       tags:
@@ -193,6 +241,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/EnableErrorInfo'
+        '403':
+          description: >-
+            Acceso denegado
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Acceso denegado
   /file-transfer:
     post:
       tags:
@@ -216,6 +272,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/FileTransferMulterErrorInfo'
+        '403':
+          description: >-
+            Acceso denegado
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Acceso denegado
 components:
   schemas:
     ServerInfo:

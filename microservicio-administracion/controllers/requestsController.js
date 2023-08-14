@@ -1,6 +1,6 @@
 import { renderServerPort, requestHandlingMicroserviceUrl } from "../env.js";
 import { options } from "../constants/sendRenderedImageOptions.js";
-import { unlinkSync } from "fs";
+import { statSync, existsSync, unlinkSync } from "fs";
 import Request from "../models/Request.js";
 import Server from "../models/Server.js";
 import mongoose from "mongoose";
@@ -97,8 +97,14 @@ const getRequestRenderedImage = async (req, res) => {
     return;
   }
 
-  // Enviar imagen renderizada para que el navegador pueda descargarla
-  res.status(200).sendFile(`./temp/${req.params.id}.png`, options);
+  if (existsSync(`./temp/${req.params.id}.png`)) {
+    // Enviar imagen renderizada para que el navegador pueda descargarla
+    res.status(200).download(`./temp/${req.params.id}.png`, options);
+  } else {
+    console.error(`Fichero ${req.params.id}.png no encontrado`.red);
+    res.status(500).send({ error: "Fichero no disponible" });
+    return;
+  }
 };
 
 // Aunque se produzcan errores, se seguirá intentando eliminar la petición

@@ -617,7 +617,7 @@ const addRequestCard = (requestData, queuePosition) => {
   const receiveMethodImage = document.createElement("img");
   receiveMethodImage.src = "./res/img/svg/send.svg";
   receiveMethodImage.width = "24";
-  receiveMethodImage.title = "Dirección IP del usuario";
+  receiveMethodImage.title = "Método para la recepción de la imagen renderizada";
   receiveMethodCardText.appendChild(receiveMethodImage);
   receiveMethodImage.after(document.createTextNode(" " + ( requestData.email ? `${requestData.email}` : "Descarga en el navegador")));
   cardBody.appendChild(receiveMethodCardText);

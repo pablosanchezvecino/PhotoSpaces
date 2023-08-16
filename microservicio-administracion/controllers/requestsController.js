@@ -1,6 +1,6 @@
 import { renderServerPort, requestHandlingMicroserviceUrl } from "../env.js";
 import { options } from "../constants/sendRenderedImageOptions.js";
-import { statSync, existsSync, unlinkSync } from "fs";
+import { existsSync, unlinkSync } from "fs";
 import Request from "../models/Request.js";
 import Server from "../models/Server.js";
 import mongoose from "mongoose";

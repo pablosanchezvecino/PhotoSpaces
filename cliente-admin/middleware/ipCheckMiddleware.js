@@ -11,6 +11,7 @@ const ipCheckMiddleware = (req, res, next) => {
   
   if (!allowedIps.includes("0.0.0.0") && !allowedIps.includes(requestIp)) {
     // Envía una respuesta de acceso denegado si la dirección IP no coincide con ninguna de las permitidas
+    console.error(`Recibida petición de dirección IP no permitida (${requestIp})`.red);
     return res.status(403).send("Acceso denegado"); 
   }
   

@@ -1,9 +1,10 @@
+import { setUpEmailSendingBackupInterval } from "./logic/emailLogic.js";
 import { updateQueues } from "./controllers/requestsController.js";
 import { setUpCleanupInterval } from "./logic/cleanupLogic.js";
-import { setUpEmailSendingBackupInterval } from "./logic/emailLogic.js";
+import { printAsciiArt } from "./logic/asciiArtLogic.js";
 import requestsRouter from "./routes/requestsRouter.js";
 import dbConnection from "./database/databaseConfig.js";
-import { printAsciiArt } from "./logic/asciiArtLogic.js";
+import corsOptions from "./constants/corsOptions.js";
 import { port, dbCheckPeriodMs } from "./env.js";
 import express from "express";
 import morgan from "morgan";
@@ -16,7 +17,7 @@ dbConnection();
 
 const app = express();
 
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(morgan("dev"));
 
 app.use("/requests", requestsRouter);

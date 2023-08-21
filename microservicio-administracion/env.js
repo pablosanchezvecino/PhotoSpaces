@@ -26,6 +26,13 @@ const renderServerPort = process.env.RENDER_SERVER_PORT || 3000;
 // Valor por defecto: "http://localhost:9001"
 const requestHandlingMicroserviceUrl = process.env.REQUEST_HANDLING_MICROSERVICE_URL || "http://localhost:9001";
 
+// Orígenes permitidos para la configuración de CORS.
+// Idealmente, únicamente se permitirán las URLs de los servidores
+// que proporcionen el contenido del cliente de administración que sean
+// directamente accesibles desde el navegador.
+// Valor por defecto: "*" (se permite cualquier origen)
+const corsAllowedOrigins = process.env.CORS_ALLOWED_ORIGINS || "*";
+
 // Direcciones IP permitdas (en principio deberían ser las de los administradores del sistema)
 // Valor por defecto: "0.0.0.0" (se aceptan todas)
 const allowedIpsString = process.env.ALLOWED_IPS || "0.0.0.0";
@@ -41,5 +48,6 @@ export {
   port,
   renderServerPort,
   requestHandlingMicroserviceUrl,
+  corsAllowedOrigins,
   allowedIps
 };

@@ -26,6 +26,14 @@ const renderServerPort = process.env.RENDER_SERVER_PORT || 3000;
 // Valor por defecto: "http://localhost:9000"
 const administrationMicroserviceUrl = process.env.ADMINISTRATION_MICROSERVICE_URL || "http://localhost:9000";
 
+// Orígenes permitidos para la configuración de CORS.
+// Idealmente, únicamente se permitirán las URLs de los servidores
+// que proporcionen el contenido del cliente estándar que sean
+// directamente accesibles desde el navegador.
+// Valor por defecto: "*" (se permite cualquier origen)
+const corsAllowedOrigins = process.env.CORS_ALLOWED_ORIGINS || "*";
+
+
 // Dirección de correo electrónico de la cuenta Gmail que envía los correos automatizados
 // Valor por defecto: ""
 const emailUser = process.env.EMAIL_USER || "";
@@ -64,6 +72,7 @@ export {
   port,
   renderServerPort,
   administrationMicroserviceUrl,
+  corsAllowedOrigins,
   emailUser,
   emailPassword,
   dbCheckPeriodMs,

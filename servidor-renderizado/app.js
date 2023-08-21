@@ -6,7 +6,6 @@ import { printAsciiArt } from "./logic/asciiArtLogic.js";
 import { port } from "./env.js";
 import express from "express";
 import morgan from "morgan";
-import cors from "cors";
 import "colors";
 
 printAsciiArt();
@@ -17,7 +16,6 @@ setEstimatedRemainingProcessingTime(null);
 
 const app = express();
 
-app.use(cors());
 app.use(morgan("dev"));
 app.use(ipCheckMiddleware);
 app.use("", renderingServerRouter);

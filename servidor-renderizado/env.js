@@ -1,14 +1,19 @@
+import { isMainThread } from "worker_threads";
 import dotenv from "dotenv";
 import "colors";
 
 // Carga de las variables de entorno
 
-if (process.env.DOCKER_CONTAINER_EXECUTION) {
-  console.log("Ejecución en contenedor Docker detectada".bold.blue);
-} else {
-  console.log("No se detectó ejecución en contenedor Docker, se cargarán las variables de entorno de fichero .env".bold.blue);
-  dotenv.config();
+
+if (isMainThread) {
+  if (process.env.DOCKER_CONTAINER_EXECUTION) {
+    console.log("Ejecución en contenedor Docker detectada".bold.blue);
+  } else {
+    console.log("No se detectó ejecución en contenedor Docker, se cargarán las variables de entorno de fichero .env".bold.blue);
+    dotenv.config();
+  }
 }
+
 
 // Puerto de escucha del propio servidor de renderizado
 // Valor por defecto: 3000

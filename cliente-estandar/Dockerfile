@@ -11,7 +11,6 @@ COPY package*.json ./
 
 # Instala las dependencias de la aplicación
 RUN npm install
-# RUN npm ci --only=production
 
 # Copia el resto de los archivos de la aplicación
 COPY . .

@@ -3,6 +3,7 @@ import { printAsciiArt } from "./logic/asciiArtLogic.js";
 import requestsRouter from "./routes/requestsRouter.js";
 import dbConnection from "./database/databaseConfig.js";
 import serversRouter from "./routes/serversRouter.js";
+import corsOptions from "./constants/corsOptions.js";
 import { port } from "./env.js";
 import express from "express";
 import morgan from "morgan";
@@ -17,7 +18,7 @@ const app = express();
 dbConnection();
 
 // Middleware
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(morgan("dev"));
 app.use(express.json());
 

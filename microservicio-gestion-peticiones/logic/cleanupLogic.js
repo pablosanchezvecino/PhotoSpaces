@@ -50,7 +50,7 @@ const performCleanup = async () => {
 
     // Tratar 1)
     if (!mongoose.isValidObjectId(parse(file).name)) {
-      if (extname(file) !== ".gitkeep") {
+      if (extname(file) !== "") { // Si no se trata del fichero .gitkeep
         // Obtener fecha de creación del fichero
         let creationDate = null;
         try {

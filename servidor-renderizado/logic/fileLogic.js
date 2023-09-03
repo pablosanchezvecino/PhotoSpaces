@@ -14,6 +14,9 @@ const mimeTypeToExtension = (mimeType) => {
   case "model/vnd.gltf.draco":
     return ".drc";
 
+  case "text/plain":
+    return ".txt";
+
   default:
     throw new Error(`Recibido MIME Type no válido (${mimeType})`);
 
@@ -31,6 +34,9 @@ const extensionToMimeType = (extension) => {
       
   case ".drc":
     return "model/vnd.gltf.draco";
+
+  case ".txt":
+    return "text/plain";
       
   default:
     throw new Error(`Recibida extensión no válida (${extension})`);

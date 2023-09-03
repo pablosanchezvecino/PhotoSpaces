@@ -91,7 +91,7 @@ const RequestSchema = Schema(
     },
     fileExtension: {
       type: String,
-      enum: [".gltf", ".glb", ".drc"],
+      enum: [".gltf", ".glb", ".drc", ".txt"],
       require: true,
     },
     fileSize: {

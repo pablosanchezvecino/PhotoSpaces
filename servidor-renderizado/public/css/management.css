@@ -1,0 +1,184 @@
+body {
+	padding-top: 70px;
+}
+
+table {
+	width: 90%;
+	border: 1px solid #CCC;
+	margin: 15px;
+}
+
+table th {
+	background: #EEE;
+	padding: 5px;
+}
+
+table td {
+	padding: 5px;
+}
+
+.data-selection-table:before {
+	content: '';
+	position: absolute;
+	width: 0;
+	height: 0;
+	left: 80%;
+	margin-top: -60px;
+	border-left: 15px solid transparent;
+	border-right: 15px solid transparent;
+	border-bottom: 15px solid #ccc;
+}
+
+#nueva, #editar, #eliminar, #preTextura, #preMiniatura, #preMiniatura_pdf, #preIcono,#preMiniatura_index,#thumbnailConformidad {
+	background-image: url('');
+	background-size: cover;
+	background-position: center;
+	background-size: 100%;
+	background-repeat: no-repeat;
+	background-color: #FFFFFF;
+	height: 100px;
+	width: 100px;
+	border: 1px solid #bbb;
+}
+
+#image_preview img {
+    height:150px;
+    padding-right: 20px;
+}
+
+#design_preview img {
+    height: 150px;
+    padding-right: 20px;
+}
+
+#logo_catalogo_preview img {
+    height: 150px;
+    padding-right: 20px;
+}
+
+#add-items img {
+	width: 150px;
+	height: 150px;
+}
+
+.add-item p {
+	font-size: small;
+	margin: 0;
+}
+
+#divTexturas, #divGrupos, #purgeTextures, #purgePieces {
+	display: inline-block;
+	overflow-y: scroll;
+	max-height: 300px;
+}
+
+#users {
+        display: inline-block;
+	overflow-y: scroll;
+	max-height: 350px;
+        table-layout: fixed;
+        word-wrap:break-word;
+}
+
+.myTable > .th {
+    width: 100px;
+}
+
+.items-table-texturas, .items-table-grupos, .purge-textures,
+	.purge-pieces {
+	margin: auto;
+}
+
+.modal-admin {
+	width: 90%;
+	margin: 0 auto;
+	overflow-y: scroll;
+	max-height: 500px;
+}
+
+#manDiv {
+	text-align: center;
+}
+
+.opt-fb {
+	background-image: url('../img/fbicon.png');
+	background-size: 15px 15px;
+	background-repeat: no-repeat;
+}
+
+.table-log {
+	width: 96%;
+}
+
+#loadingSVG {
+	z-index: 999;
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	margin-top: -50px;
+	margin-left: -100px;
+	background-color: #f3f3f3;
+}
+
+.jumbotron .row{
+	padding: 5px;
+}
+
+.btn-file {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-file input[type=file] {
+    position: absolute;
+    top: 0;
+    right: 0;
+    min-width: 100%;
+    min-height: 100%;
+    font-size: 100px;
+    text-align: right;
+    filter: alpha(opacity=0);
+    opacity: 0;
+    outline: none;
+    background: white;
+    cursor: inherit;
+    display: block;
+}
+
+a.export,
+a.export:visited {
+  display: inline-block;
+  text-decoration: none;
+  color: #000;
+  background-color: #ddd;
+  border: 1px solid #ccc;
+  padding: 8px;
+}
+
+
+#myTable {
+	width: 95%;
+	border: 1px solid #CCC;
+	margin: 15px;
+}
+
+input[type=date].form-control,input[type=datetime-local].form-control,input[type=month].form-control,input[type=time].form-control {
+  line-height:normal;
+}
+
+#borrarpdf {
+    margin-top: 25px;
+    margin-left: -25px;
+}
+
+#outerContainer #mainContainer div.toolbar {
+  display: none !important; /* hide PDF viewer toolbar */
+}
+#outerContainer #mainContainer #viewerContainer {
+  top: 0 !important; /* move doc up into empty bar space */
+}
+
+#outerContainer #sidebarContainer #sidebarContent {
+  margin-top: -70px;
+  margin-left: -40px;
+}

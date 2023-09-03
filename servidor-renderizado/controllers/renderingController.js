@@ -1,4 +1,5 @@
 import { setEstimatedRemainingProcessingTime, setLatestRequest } from "../serverStatus.js";
+import { generateGltfFromTxt } from "../logic/experimentalOptimizationLogic.js";
 import dataString from "../constants/renderTestSettings.js";
 import ServerStates from "../constants/serverStatesEnum.js";
 import { setStatus, getStatus } from "../serverStatus.js";
@@ -22,7 +23,9 @@ const bind = async (req, res) => {
 
   // Realizar renderizado de prueba
   try {
+
     await render(JSON.parse(dataString), "renderTest.glb");
+    
   } catch (error) {
     console.error(`Error en la prueba de renderizado. ${error}`.red);
     res.status(500).send({ error: "Error en la prueba de renderizado" });
@@ -112,7 +115,20 @@ const handleRenderingRequest = async (req, res) => {
   setLatestRequest(requestId);
 
   // Comenzar proceso de renderizado
-  const filename = req.file ? req.file.filename : req.body.filename;
+  let filename = req.file ? req.file.filename : req.body.filename;
+
+  // TODO: Si se recibe .txt, generar .gltf a partir de este
+  if (path.extname(filename) === ".txt") {
+    try {
+      await generateGltfFromTxt(requestId);
+      filename = `${requestId}.gltf`;
+    } catch (error) {
+      console.error(`Error en la generación del fichero .gltf (Petición ${requestId}). ${error}`.red);
+      res.status(500).send({ error: "Error en la generación del fichero .gltf" });
+      return;
+    }
+  }
+
   let totalBlenderTime = null;
   try {
 

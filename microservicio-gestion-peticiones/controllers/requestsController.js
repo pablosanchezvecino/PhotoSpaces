@@ -1,9 +1,9 @@
 
 import { extensionFromFilename, extensionToMimeType, generateGltfFromGlb, generateDracoFromGltf } from "../logic/fileLogic.js";
 import { isValidEmail, isValidModel, isValidDracoCompressionLevel, isValidRequestLabel } from "../logic/validationLogic.js";
-import { renderServerPort, administrationMicroserviceUrl } from "../env.js";
 import { resolutionToRatioWithRespectTo1080p, resolutionToPixelCount } from "../logic/resolutionLogic.js";
 import { existsSync, readFileSync, writeFileSync, unlinkSync, renameSync, statSync } from "fs";
+import { renderServerPort, administrationMicroserviceUrl } from "../env.js";
 import { processIpAddress } from "../logic/ipAddressLogic.js";
 import { performPolling } from "../logic/pollingLogic.js";
 import PendingEmail from "../models/PendingEmail.js";
@@ -43,16 +43,21 @@ const handleNewRequest = async (req, res) => {
     return;
   }
   
-  // Validar archivo
-  if (!(await isValidModel(model.filename))) {
-    console.error(`Archivo recibido no válido (${model.filename})`.red);
-    res.status(400).send({ error: "El archivo recibido no es válido" });
-    try {
-      unlinkSync(`./temp/${model.filename}`);
-    } catch (error) {
-      console.error(`Error al eliminar archivo no válido (${model.filename}). ${error}`.red);
+  // Al tratarse de un experimento, si el archivo es un .txt, no se valida
+  if (extensionFromFilename(model.filename) !== ".txt") {
+
+    // Validar archivo
+    if (!(await isValidModel(model.filename))) {
+      console.error(`Archivo recibido no válido (${model.filename})`.red);
+      res.status(400).send({ error: "El archivo recibido no es válido" });
+      try {
+        unlinkSync(`./temp/${model.filename}`);
+      } catch (error) {
+        console.error(`Error al eliminar archivo no válido (${model.filename}). ${error}`.red);
+      }
+      return;
     }
-    return;
+
   }
   
   // Obtener dirección IP del cliente
@@ -83,51 +88,56 @@ const handleNewRequest = async (req, res) => {
     }
   }
 
-  // Si se especificó compresión con Draco, comprimir el archivo recibido
-  if (req.body.dracoCompressionLevel !== undefined) {
-    
-    let dracoCompressionLevel = null;
-    if (!isValidDracoCompressionLevel(req.body.dracoCompressionLevel)) {
-      dracoCompressionLevel = parseInt(dracoCompressionLevel);
-      console.error(`Nivel de compresión Draco recibido no válido (${dracoCompressionLevel})`.red);
-      res.status(400).send({ error: "Nivel de compresión Draco recibido no válido" });
-      return;
-    }
+  // Compresión Draco no tiene sentido con fichero .txt
+  if (extensionFromFilename(model.filename) !== ".txt") {
 
-    // Si se recibió archivo .glb
-    if (extensionFromFilename(model.filename) === ".glb") {
-      try {
-        // Primero pasarlo a .gltf
-        await generateGltfFromGlb(`./temp/${model.filename}`);
-        // Borrar archivo .glb
-        try {
-          unlinkSync(`./temp/${model.filename}`);
-        } catch (error) {
-          console.error(`Error al eliminar el archivo .glb tras transformarlo a .gltf (Petición ${request._id}). ${error}`.red);
-        }
-      } catch (error) {
-        console.error(`Error al convertir el archivo .glb a .gltf (Petición ${request._id}). ${error}`.red);
-        res.status(500).send({ error: "Error al transformar el archivo .glb a .gltf" });
+    // Si se especificó compresión con Draco, comprimir el archivo recibido
+    if (req.body.dracoCompressionLevel !== undefined) {
+      
+      let dracoCompressionLevel = null;
+      if (!isValidDracoCompressionLevel(req.body.dracoCompressionLevel)) {
+        dracoCompressionLevel = parseInt(dracoCompressionLevel);
+        console.error(`Nivel de compresión Draco recibido no válido (${dracoCompressionLevel})`.red);
+        res.status(400).send({ error: "Nivel de compresión Draco recibido no válido" });
         return;
       }
-    }
-    try {
-      // Comprimir archivo .gltf a .drc
-      await generateDracoFromGltf(`./temp/${path.basename(model.filename, path.extname(model.filename))}.gltf`, dracoCompressionLevel);
-      // Borrar archivo .gltf
-      try {
-        unlinkSync(`./temp/${path.basename(model.filename, path.extname(model.filename))}.gltf`);
-      } catch (error) {
-        console.error(`Error al eliminar el archivo .gltf tras comprimirlo a .drc (Petición ${request._id}). ${error}`.red);
+
+      // Si se recibió archivo .glb
+      if (extensionFromFilename(model.filename) === ".glb") {
+        try {
+          // Primero pasarlo a .gltf
+          await generateGltfFromGlb(`./temp/${model.filename}`);
+          // Borrar archivo .glb
+          try {
+            unlinkSync(`./temp/${model.filename}`);
+          } catch (error) {
+            console.error(`Error al eliminar el archivo .glb tras transformarlo a .gltf (Petición ${request._id}). ${error}`.red);
+          }
+        } catch (error) {
+          console.error(`Error al convertir el archivo .glb a .gltf (Petición ${request._id}). ${error}`.red);
+          res.status(500).send({ error: "Error al transformar el archivo .glb a .gltf" });
+          return;
+        }
       }
-    } catch (error) {
-      console.error(`Error al comprimir el archivo .gltf con Draco (Petición ${request._id}). ${error}`.red);
-      res.status(500).send({ error: "Error al comprimir el archivo .gltf con Draco" });
-      return;
+      try {
+        // Comprimir archivo .gltf a .drc
+        await generateDracoFromGltf(`./temp/${path.basename(model.filename, path.extname(model.filename))}.gltf`, dracoCompressionLevel);
+        // Borrar archivo .gltf
+        try {
+          unlinkSync(`./temp/${path.basename(model.filename, path.extname(model.filename))}.gltf`);
+        } catch (error) {
+          console.error(`Error al eliminar el archivo .gltf tras comprimirlo a .drc (Petición ${request._id}). ${error}`.red);
+        }
+      } catch (error) {
+        console.error(`Error al comprimir el archivo .gltf con Draco (Petición ${request._id}). ${error}`.red);
+        res.status(500).send({ error: "Error al comprimir el archivo .gltf con Draco" });
+        return;
+      }
+      request.fileExtension = ".drc";
     }
-    request.fileExtension = ".drc";
+
   }
-  
+
   // Si se ha especificado etiqueta, añadirla a la petición 
   if (req.body.requestLabel) {
     if (!isValidRequestLabel(req.body.requestLabel)) {

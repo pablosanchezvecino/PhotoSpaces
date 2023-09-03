@@ -4,5 +4,6 @@
 export const allowedMimeTypes = [
   "model/gltf+json",
   "model/gltf-binary",
-  "model/vnd.gltf.draco"
+  "model/vnd.gltf.draco",
+  "text/plain"
 ];

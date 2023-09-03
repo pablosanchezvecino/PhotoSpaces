@@ -23,12 +23,13 @@ const getFile = async () => {
               file = fs.readFileSync(input);
               console.log("Fichero localizado".bold.magenta);
               const extension = path.extname(input);
-              valid = [".gltf", ".glb"].includes(extension);
+              valid = [".gltf", ".glb", ".txt"].includes(extension);
               if (valid) {
-                const mimeType = extension === ".gltf" ? "model/gltf+json" : "model/gltf-binary";
+                const mimeType = (extension === ".gltf") ? "model/gltf+json" : 
+                                 (extension === ".glb") ? "model/gltf-binary" : "text/plain" ;
                 resolve([file, mimeType]);
               } else {
-                console.error("Solo se permiten archivos .glf o .glb".red);
+                console.error("Solo se permiten archivos .gltf, .glb y .txt".red);
                 reject();
               }
             } catch (error) {

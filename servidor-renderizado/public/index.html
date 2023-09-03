@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<!--
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Html.html to edit this template
+-->
+<html>
+    <head>
+        <title>TODO supply a title</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        <!-- CSS -->
+        <link rel="stylesheet" href="css/bootstrap.min.css">
+        <link rel="stylesheet" href="css/management.css?1014">
+        
+        <!-- JS -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+        <script src="js/bootstrap.min.js"></script>
+        <script src="js/modernizr.js"></script>
+        <script src="js/jquery.js"></script>
+        <script src="js/atrio3d.js?0194"></script>
+        <script src="js/pruebaExportacion.js?0027"></script>
+
+    </head>
+    <body>
+        <!-- 3D Viewer -->
+        <div id="previsualizacion">
+                <div id="viewer">
+                        
+                                <!--<a class="btn btn-default bottom" href="#"
+                        id="move-left"> <span
+                        class="glyphicon glyphicon-arrow-left"></span>
+                </a> <span class="btn-group-vertical"> <a
+                        class="btn btn-default" href="#" id="move-up"> <span
+                                class="glyphicon glyphicon-arrow-up"></span>
+                </a> <a class="btn btn-default" href="#" id="move-down"> <span
+                                class="glyphicon glyphicon-arrow-down"></span>
+                </a>
+                </span> <a class="btn btn-default bottom" href="#" id="move-right">
+                        <span class="glyphicon glyphicon-arrow-right"></span>
+                </a>-->
+                </div>
+
+                        <!-- 
+                        <div id="loading-modal">
+                                <h1>Loading...</h1>
+                        </div>
+                         -->
+<!-- 									<small><span>La previsualizacion se realiza con -->
+<!-- 											la textura por defecto de la pieza definida en el fichero -->
+<!-- 											.js/.json</span></small> -->
+
+              
+
+                <!-- 2D Floorplanner -->
+                <div id="floorplanner" hidden="hidden">
+                        <canvas id="floorplanner-canvas"></canvas>
+                        <div id="floorplanner-controls">
+
+                                <button id="move" class="btn btn-sm btn-default">
+                                        <span class="glyphicon glyphicon-move"></span> Move Walls
+                                </button>
+                                <button id="draw" class="btn btn-sm btn-default">
+                                        <span class="glyphicon glyphicon-pencil"></span> Draw Walls
+                                </button>
+                                <button id="delete" class="btn btn-sm btn-default">
+                                        <span class="glyphicon glyphicon-remove"></span> Delete Walls
+                                </button>
+                                <span class="pull-right">
+                                        <button class="btn btn-primary btn-sm" id="update-floorplan">Done
+                                                &raquo;</button>
+                                </span>
+
+                        </div>
+                        <div id="draw-walls-hint">Press the "Esc" key to stop
+                                drawing walls</div>
+                </div>
+        </div>
+    </body>
+</html>

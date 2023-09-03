@@ -26,6 +26,7 @@ while (!terminate) {
   // Archivo
   const [file, mimeType] = await getFile();
 
+  
   // Compresión con Draco (opcional)
   const dracoCompressionLevel = await getDracoCompressionLevel();
 
@@ -39,7 +40,7 @@ while (!terminate) {
   const email = await getEmail();
 
   if (!email) {
-    console.log("La imagen renderizada se almaceará en el directorio out\n".bold.magenta);
+    console.log("La imagen renderizada se almacenará en el directorio out\n".bold.magenta);
   } else {
     console.log(`La imagen renderizada se enviará a ${email}\n`.bold.magenta);
   }
@@ -59,6 +60,8 @@ while (!terminate) {
     formData.append("dracoCompressionLevel", dracoCompressionLevel);
   }
 
+  console.log("Enviando petición al sistema...\n".bold.magenta);
+  
   try {
     const response = await fetch(
       `${requestHandlingMicroserviceUrl}/requests`,

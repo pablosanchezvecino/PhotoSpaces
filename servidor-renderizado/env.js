@@ -31,7 +31,7 @@ try {
 
 // Mostrar salida del script Python
 // Valor por defecto: true
-const showPythonLogs = process.env.SHOW_PYTHON_LOGS || true;
+const showPythonLogs = (process.env.SHOW_PYTHON_LOGS === undefined) ? true : process.env.SHOW_PYTHON_LOGS;
 
 export { 
   port,

@@ -1,4 +1,5 @@
 import { exec } from "child_process";
+import "colors";
 
 // Funciones encargadas de finalizar el proceso de Blender 
 // cuando se intenta abortar el procesamiento en el sevidor
@@ -7,7 +8,7 @@ const killBlenderOnWindows = () => {
   return new Promise((resolve) => {
     exec("taskkill /im blender.exe /F", (error) => {
       if (error) {
-        console.error(`No se encontró ningún proceso blender.exe en ejecución`).red;
+        console.error(`No se encontró ningún proceso blender.exe en ejecución`.red);
       } else {
         console.log("Proceso blender.exe terminado".magenta);
       }

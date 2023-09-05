@@ -1,5 +1,4 @@
 import { exec } from "child_process";
-import "colors";
 
 // Funciones encargadas de finalizar el proceso de Blender 
 // cuando se intenta abortar el procesamiento en el sevidor

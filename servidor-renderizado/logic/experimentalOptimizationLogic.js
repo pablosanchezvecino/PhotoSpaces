@@ -5,9 +5,7 @@ import fs from "fs";
 
 const generateGltfFromTxt = async (requestId) => {
 
-  
   try {
-    let renameEventCount = 0;
 
     fs.copyFileSync(`./temp/${requestId}.txt`, './public/assets/escena.txt');
 
@@ -16,6 +14,17 @@ const generateGltfFromTxt = async (requestId) => {
     });
     
     const page = await browser.newPage();
+
+    page.on('console', (message) => {
+      // console.log(`${message.text()}`.yellow);
+      if (message.type() === 'log') {
+        console.log(`${message.text()}`.green);
+      } else if (message.type() === 'warning') {
+        console.warn(`${message.text()}`.yellow);
+      } else {
+        console.error(`${message.text()}`.red);
+      }
+    });
   
     const client = await page.target().createCDPSession();
   

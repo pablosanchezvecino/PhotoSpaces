@@ -14,7 +14,6 @@ if (isMainThread) {
   }
 }
 
-
 // Puerto de escucha del propio servidor de renderizado
 // Valor por defecto: 3000
 const port = process.env.PORT || 3000;
@@ -31,7 +30,8 @@ try {
 
 // Mostrar salida del script Python
 // Valor por defecto: true
-const showPythonLogs = (process.env.SHOW_PYTHON_LOGS === undefined) ? true : process.env.SHOW_PYTHON_LOGS;
+const showPythonLogs = (process.env.SHOW_PYTHON_LOGS === undefined) ? true : 
+                       (process.env.SHOW_PYTHON_LOGS === "false") ? false : true;
 
 export { 
   port,

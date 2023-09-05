@@ -25,7 +25,7 @@ const bind = async (req, res) => {
   try {
 
     await render(JSON.parse(dataString), "renderTest.glb");
-    
+
   } catch (error) {
     console.error(`Error en la prueba de renderizado. ${error}`.red);
     res.status(500).send({ error: "Error en la prueba de renderizado" });
@@ -117,11 +117,13 @@ const handleRenderingRequest = async (req, res) => {
   // Comenzar proceso de renderizado
   let filename = req.file ? req.file.filename : req.body.filename;
 
-  // TODO: Si se recibe .txt, generar .gltf a partir de este
+  // Si se recibe .txt, generar .gltf a partir de este
   if (path.extname(filename) === ".txt") {
     try {
+
       await generateGltfFromTxt(requestId);
       filename = `${requestId}.gltf`;
+
     } catch (error) {
       console.error(`Error en la generación del fichero .gltf (Petición ${requestId}). ${error}`.red);
       res.status(500).send({ error: "Error en la generación del fichero .gltf" });

@@ -26,14 +26,20 @@ while (!terminate) {
   // Archivo
   const [file, mimeType] = await getFile();
 
-  
-  // Compresión con Draco (opcional)
-  const dracoCompressionLevel = await getDracoCompressionLevel();
 
-  if (!dracoCompressionLevel && dracoCompressionLevel !== 0) {
-    console.log("No se aplicará compresión con Draco\n".bold.magenta);
-  } else {
-    console.log(`Se aplicará el nivel ${dracoCompressionLevel} de compresión con Draco\n`.bold.magenta);
+  // Compresión con Draco (opcional)
+  let dracoCompressionLevel = null;
+
+  if (mimeType !== "text/plain") {
+
+    dracoCompressionLevel = await getDracoCompressionLevel();
+
+    if (!dracoCompressionLevel && dracoCompressionLevel !== 0) {
+      console.log("No se aplicará compresión con Draco\n".bold.magenta);
+    } else {
+      console.log(`Se aplicará el nivel ${dracoCompressionLevel} de compresión con Draco\n`.bold.magenta);
+    }
+
   }
 
   // Solicitar email (opcional)
@@ -61,7 +67,6 @@ while (!terminate) {
   }
 
   console.log("Enviando petición al sistema...\n".bold.magenta);
-  
   try {
     const response = await fetch(
       `${requestHandlingMicroserviceUrl}/requests`,

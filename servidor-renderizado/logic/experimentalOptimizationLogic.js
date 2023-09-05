@@ -10,13 +10,13 @@ const generateGltfFromTxt = async (requestId) => {
     fs.copyFileSync(`./temp/${requestId}.txt`, './public/assets/escena.txt');
 
     const browser = await puppeteer.launch({
-      headless: true
+      headless: true,
+      ...((process.platform === "linux") ? { args: ['--no-sandbox'] } : {}),
     });
     
     const page = await browser.newPage();
 
     page.on('console', (message) => {
-      // console.log(`${message.text()}`.yellow);
       if (message.type() === 'log') {
         console.log(`${message.text()}`.green);
       } else if (message.type() === 'warning') {

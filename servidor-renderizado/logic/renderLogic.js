@@ -10,6 +10,7 @@ import "colors";
 const command = spawn(
   process.env.BLENDER_CMD || "blender",
   [
+    ...((process.platform === "linux") ? ['-noaudio'] : []),
     "-b",
     "-P",
     process.env.BLENDER_SCRIPT || "./renderScript.py",

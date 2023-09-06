@@ -18,7 +18,7 @@ router.get("/:id/rendered-image", getRequestRenderedImage);
 // DELETE /requests/:id
 router.delete("/:id", deleteRequest);
 
-// POST /rendered-image
+// POST /requests/:id/rendered-image
 router.post("/:id/rendered-image", upload.single("renderedImage"), handleReceivedImage);
 
 export default router;

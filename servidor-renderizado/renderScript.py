@@ -3,8 +3,6 @@ from pathlib import Path
 import bpy, sys, mathutils, os, json
 from datetime import datetime
 
-print(sys.argv)
-
 # Monitor falso para Eevee
 if os.environ.get("BLENDER_MAJOR") is not None:
     from pyvirtualdisplay import Display
@@ -95,18 +93,6 @@ else:
     bpy.context.scene.cycles.device = "GPU"
     bpy.context.preferences.addons['cycles'].preferences.compute_device_type = "CUDA"
 
-
-    # bpy.context.preferences.addons['cycles'].preferences.get_devices()
-    # bpy.context.preferences.addons['cycles'].preferences.compute_device = 0
-    # bpy.ops.wm.save_userpref()
-
-    # deviceList = bpy.context.preferences.addons["cycles"].preferences.get_devices()
-    # for deviceTuple in deviceList:
-    #     print("Devices:")
-    #     for device in deviceTuple:
-    #         print(f"\t{device.name} ({device.type}) {device.use}")
-
-
     # Muestreo adaptativo
     bpy.context.scene.cycles.use_adaptive_sampling = True
 
@@ -132,7 +118,7 @@ else:
 render = bpy.context.scene.render
 res = parameters["resolution"]
 
-# Cadena de if / else pen lugar de match para mantener retrocompatibilidad
+# Cadena de if / else en lugar de match para mantener retrocompatibilidad
 if res == "2160p":
     render.resolution_x = 3840
     render.resolution_y = 2160 
@@ -155,10 +141,4 @@ else:
 # Donde guardar la imagen y renderizar
 bpy.context.scene.render.filepath = folder + f"{Path(filename).stem}.png"
 
-fecha_antes = datetime.now()
-print("Fecha antes:",  fecha_antes)
 bpy.ops.render.render(write_still=True)
-fecha_despues = datetime.now()
-print("Fecha antes:",  fecha_despues)
-
-print((fecha_despues - fecha_antes).total_seconds() * 1000)

@@ -1,5 +1,0 @@
-# Dependencias necesarias para el script de Python
-pathlib
-bpy
-mathutils
-pyvirtualdisplay

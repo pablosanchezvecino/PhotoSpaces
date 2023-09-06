@@ -587,12 +587,6 @@ const enqueueRequest = async (res, request, originalFilename) => {
 
 
 
-
-
-
-
-
-
 // Manejar la presencia de servidores disponibles enviándoles su próxima petición encolada,
 // y asignar peticiones que no pudieron ser asignadas a ningún servidor cuando se recibieron
 
@@ -701,72 +695,6 @@ const updateQueues = async () => {
 
   console.log("Comprobación de servidores disponibles y colas finalizada".yellow);
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -100,11 +100,12 @@ const bind = async (req, res) => {
 };
 
 const handleRenderingRequest = async (req, res) => {
-  // TODO: Comprobar que el servidor se encuentra disponible
-  // if (getStatus() !== ServerStates.idle) {
-  //   res.status(400).send({ error: "El servidor no se encuentra disponible" });
-  //   // return;
-  // }
+  
+  // Comprobar que el servidor se encuentra disponible
+  if (getStatus() !== ServerStates.idle) {
+    res.status(400).send({ error: "El servidor no se encuentra disponible" });
+    return;
+  }
 
   // Obtener de la petición la información necesaria para el renderizado
   const parameters = JSON.parse(req.body.data);

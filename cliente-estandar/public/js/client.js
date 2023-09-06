@@ -662,8 +662,6 @@ const downloadImage = (body) => {
 
       btnDownload.onclick = () => link.click();
 
-      // clearInterval(intervalUpdate);
-
       // Ocultamos la ventana de información de renderizado
       $("#renderInfoModal").modal("hide");
     });

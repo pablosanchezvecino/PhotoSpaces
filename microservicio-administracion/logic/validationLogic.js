@@ -11,4 +11,4 @@ const isValidIpv4 = (ipv4) => {
   return ipv4 && validator.isIP(ipv4, 4);
 };
 
-export { isValidServerName, isValidIpv4};
+export { isValidServerName, isValidIpv4 };
